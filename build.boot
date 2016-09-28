@@ -3,7 +3,7 @@
   :resource-paths #{"resources"}
   :dependencies '[[org.clojure/clojure "1.9.0-alpha13"]
                   [ring "1.4.0"]
-                  [clojail "1.0.6"]]
+                  [eval-soup "1.0.0"]]
   :repositories (conj (get-env :repositories)
                   ["clojars" {:url "https://clojars.org/repo/"
                               :username (System/getenv "CLOJARS_USER")
