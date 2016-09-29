@@ -29,7 +29,7 @@
     (with-pre-wrap fileset
       (require
         '[clojure.spec.test :refer [instrument]]
-        '[net.sekao.nightlight.core :refer [start]])
+        '[nightlight.core :refer [start]])
       ((resolve 'instrument))
       ((resolve 'start) {:port 3000})
       fileset)))

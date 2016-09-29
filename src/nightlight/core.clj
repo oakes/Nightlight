@@ -1,4 +1,4 @@
-(ns net.sekao.nightlight.core
+(ns nightlight.core
   (:require [clojure.edn :as edn]
             [ring.adapter.jetty :refer [run-jetty]]
             [ring.middleware.resource :refer [wrap-resource]]
