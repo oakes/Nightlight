@@ -1,27 +1,20 @@
 var editor = null;
 var lastTextContent = "";
 
-window.onkeydown = function(e) {
-    if ((e.metaKey || e.ctrlKey) && (e.keyCode == 38 || e.keyCode == 40)) {
-        e.preventDefault();
-    }
-};
-
-var autosave = paren_soup.core.debounce_function(function() {window.java.onautosave();}, 1000);
+var autosave = paren_soup.core.debounce_function(function() {
+    //window.java.onautosave();
+}, 1000);
 
 function init() {
     markClean();
     var parent = document.getElementById('paren-soup');
     editor = paren_soup.core.init(parent, {
         "change-callback": function(e) {
-            if (window.java) {
-                if (e.type == "keyup") {
-                    autosave();
-                }
-                window.java.onchange();
+            if (e.type == "keyup") {
+                autosave();
             }
-        },
-        "disable-undo-redo?": true
+            //window.java.onchange();
+        }
     });
     var content = document.getElementById('content');
     content.style.whiteSpace = "pre";
@@ -32,16 +25,13 @@ function initConsole(isRepl) {
     var parent = document.getElementById('paren-soup');
     editor = paren_soup.core.init(parent, {
         "change-callback": function(e) {
-            if (window.java) {
-                window.java.onchange();
-            }
+            //window.java.onchange();
             if (e.type == "keyup") {
             	parent.scrollTop = parent.scrollHeight;
     		}
         },
-        "disable-undo-redo?": true,
         "console-callback": function(text) {
-            window.java.onenter(text + "\n");
+            //window.java.onenter(text + "\n");
         },
         "disable-clj?": !isRepl,
         "append-limit": 2000
@@ -52,16 +42,12 @@ function initConsole(isRepl) {
 
 function undo() {
     paren_soup.core.undo(editor);
-    if (window.java) {
-        window.java.onautosave();
-    }
+    //window.java.onautosave();
 }
 
 function redo() {
     paren_soup.core.redo(editor);
-    if (window.java) {
-        window.java.onautosave();
-    }
+    //window.java.onautosave();
 }
 
 function canUndo() {
@@ -96,10 +82,8 @@ function getSelectedText() {
 }
 
 function markClean() {
-    if (window.java) {
-    	lastTextContent = getTextContent();
-    	window.java.onchange();
-    }
+    lastTextContent = getTextContent();
+    //window.java.onchange();
 }
 
 function isClean() {
@@ -143,15 +127,7 @@ function setTextSize(size) {
 }
 
 window.onload = function() {
-    // hack thanks to http://stackoverflow.com/a/28414332/1663009
-    window.status = "MY-MAGIC-VALUE";
-    window.status = "";
-    
-    if (window.java) {
-        window.java.onload();
-        window.java.onchange();
-    }
-    else {
-        init();
-    }
+    //window.java.onload();
+    //window.java.onchange();
+    init();
 };
