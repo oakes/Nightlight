@@ -1,6 +1,6 @@
 (set-env!
   :source-paths #{"src/clj" "src/cljs"}
-  :resource-paths #{"resources"}
+  :resource-paths #{"src/clj" "resources"}
   :dependencies '[[adzerk/boot-cljs "1.7.228-1" :scope "test"]
                   [adzerk/boot-reload "0.4.12" :scope "test"]
                   [org.clojure/test.check "0.9.0" :scope "test"]
@@ -9,7 +9,8 @@
                   [ring "1.4.0"]
                   [eval-soup "1.0.0"]
                   [paren-soup "2.6.0"]
-                  [cljsjs/bootstrap "3.3.6-1"]]
+                  [cljsjs/bootstrap "3.3.6-1"]
+                  [cljsjs/bootstrap-treeview "1.2.0-1"]]
   :repositories (conj (get-env :repositories)
                   ["clojars" {:url "https://clojars.org/repo/"
                               :username (System/getenv "CLOJARS_USER")
@@ -28,10 +29,10 @@
   push {:repo "clojars"})
 
 (deftask local []
-  (comp (cljs :optimizations :simple) (pom) (jar) (install)))
+  (comp (cljs :optimizations :advanced) (pom) (jar) (install)))
 
 (deftask deploy []
-  (comp (cljs :optimizations :simple) (pom) (jar) (push)))
+  (comp (cljs :optimizations :advanced) (pom) (jar) (push)))
 
 (deftask run []
   (comp
