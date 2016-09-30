@@ -1,4 +1,3 @@
-(ns nightlight.core)
-
-(js/alert "hi")
+(ns nightlight.core
+  (:require [paren-soup.core]))
 

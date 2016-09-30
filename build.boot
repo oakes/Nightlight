@@ -3,10 +3,12 @@
   :resource-paths #{"resources"}
   :dependencies '[[adzerk/boot-cljs "1.7.228-1" :scope "test"]
                   [adzerk/boot-reload "0.4.12" :scope "test"]
+                  [org.clojure/test.check "0.9.0" :scope "test"]
                   [org.clojure/clojure "1.9.0-alpha13"]
                   [org.clojure/clojurescript "1.9.227"]
                   [ring "1.4.0"]
-                  [eval-soup "1.0.0"]]
+                  [eval-soup "1.0.0"]
+                  [paren-soup "2.6.0"]]
   :repositories (conj (get-env :repositories)
                   ["clojars" {:url "https://clojars.org/repo/"
                               :username (System/getenv "CLOJARS_USER")
