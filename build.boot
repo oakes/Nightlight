@@ -1,13 +1,20 @@
 (set-env!
-  :source-paths #{"src"}
+  :source-paths #{"src/clj" "src/cljs"}
   :resource-paths #{"resources"}
-  :dependencies '[[org.clojure/clojure "1.9.0-alpha13"]
+  :dependencies '[[adzerk/boot-cljs "1.7.228-1" :scope "test"]
+                  [adzerk/boot-reload "0.4.12" :scope "test"]
+                  [org.clojure/clojure "1.9.0-alpha13"]
+                  [org.clojure/clojurescript "1.9.227"]
                   [ring "1.4.0"]
                   [eval-soup "1.0.0"]]
   :repositories (conj (get-env :repositories)
                   ["clojars" {:url "https://clojars.org/repo/"
                               :username (System/getenv "CLOJARS_USER")
                               :password (System/getenv "CLOJARS_PASS")}]))
+
+(require
+  '[adzerk.boot-cljs :refer [cljs]]
+  '[adzerk.boot-reload :refer [reload]])
 
 (task-options!
   pom {:project 'nightlight
@@ -18,19 +25,22 @@
   push {:repo "clojars"})
 
 (deftask local []
-  (comp (pom) (jar) (install)))
+  (comp (cljs :optimizations :simple) (pom) (jar) (install)))
 
 (deftask deploy []
-  (comp (pom) (jar) (push)))
+  (comp (cljs :optimizations :simple) (pom) (jar) (push)))
 
 (deftask run []
   (comp
-    (wait)
+    (watch)
+    (reload :asset-path "public")
+    (cljs :source-map true :optimizations :none)
+    (target)
     (with-pre-wrap fileset
       (require
         '[clojure.spec.test :refer [instrument]]
-        '[nightlight.core :refer [start]])
+        '[nightlight.core :refer [dev-start]])
       ((resolve 'instrument))
-      ((resolve 'start) {:port 3000})
+      ((resolve 'dev-start) {:port 3000})
       fileset)))
 
