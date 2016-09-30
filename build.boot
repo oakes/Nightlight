@@ -8,7 +8,8 @@
                   [org.clojure/clojurescript "1.9.227"]
                   [ring "1.4.0"]
                   [eval-soup "1.0.0"]
-                  [paren-soup "2.6.0"]]
+                  [paren-soup "2.6.0"]
+                  [cljsjs/bootstrap "3.3.6-1"]]
   :repositories (conj (get-env :repositories)
                   ["clojars" {:url "https://clojars.org/repo/"
                               :username (System/getenv "CLOJARS_USER")
