@@ -8,6 +8,9 @@
                 src: url('fonts/FiraCode-Regular.otf') format('opentype');
             }
             html, body, .paren-soup {
+                -webkit-font-feature-settings: "liga" on, "calt" on;
+                -webkit-font-smoothing: antialiased;
+                text-rendering: optimizeLegibility;
                 font-family: 'Fira Code';
                 height: 100%;
                 margin: 0;
