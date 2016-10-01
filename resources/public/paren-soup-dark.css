@@ -1,9 +1,7 @@
 .paren-soup {
-	font-size: 16px;
 	font-family: monospace;
 	color: lightgray;
 	background-color: #272b30;
-	outline: 1px solid;
 }
 
 .paren-soup .error-text {
