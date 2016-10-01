@@ -8,7 +8,7 @@
 (defonce editors (atom {}))
 
 (def toolbar "
-<div>
+<div class='toolbar'>
   <button type='button' class='btn btn-default navbar-btn'>Save</button>
   <button type='button' class='btn btn-default navbar-btn'>Undo</button>
   <button type='button' class='btn btn-default navbar-btn'>Redo</button>
