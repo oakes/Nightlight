@@ -1,23 +1,24 @@
 (ns nightlight.core
   (:require [cljsjs.bootstrap]
             [cljsjs.bootstrap-treeview]
-            [paren-soup.core :as ps]
-            [cljs.reader :refer [read-string]])
+            [cljs.reader :refer [read-string]]
+            [nightlight.editors :as e])
   (:import goog.net.XhrIo))
 
-(defn init-tree []
-  (.send XhrIo
-      "/tree"
-      (fn [e]
-        (when (.isSuccess (.-target e))
-          (->> (.. e -target getResponseText)
-               read-string
-               (hash-map :data)
-               clj->js
-               (.treeview (js/$ "#tree")))))
-      "GET"))
+(defn node-selected [event data]
+  (if (.-file data)
+    (e/init-file (.-path data))
+    (e/clear-editor)))
 
-(init-tree)
+(defn init-tree [nodes]
+  (.treeview (js/$ "#tree")
+    (clj->js {:data nodes
+              :onNodeSelected node-selected})))
 
-(ps/init-all)
+(.send XhrIo
+  "/tree"
+  (fn [e]
+    (when (.isSuccess (.-target e))
+      (init-tree (read-string (.. e -target getResponseText)))))
+  "GET")
 

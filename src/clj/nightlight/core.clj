@@ -24,7 +24,9 @@
                           (not (.startsWith filename "."))))
                       (.listFiles file)
                       (mapv file-node))
-        node {:text (.getName file)}]
+        node {:text (.getName file)
+              :path (.getCanonicalPath file)
+              :file (.isFile file)}]
     (if (seq children)
       (assoc node :nodes children)
       node)))
@@ -42,7 +44,10 @@
                         pr-str)}
     "/tree" {:status 200
              :headers {"Content-Type" "text/plain"}
-             :body (-> (io/file ".") file-node :nodes pr-str)}
+             :body (-> (io/file ".") file-node :nodes (or []) pr-str)}
+    "/file" {:status 200
+             :headers {"Content-Type" "text/plain"}
+             :body (-> request body-string slurp)}
     nil))
 
 (defn start

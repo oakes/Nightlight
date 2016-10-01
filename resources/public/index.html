@@ -25,7 +25,6 @@
             }
             .paren-soup .content {
                 min-height: 100%;
-                overflow: hidden;
             }
             #tree {
                 width: 300px;
@@ -36,17 +35,7 @@
     </head>
     <body>
         <div id="tree"></div>
-        <span>
-            <div>
-                <button type="button" class="btn btn-default navbar-btn">Save</button>
-                <button type="button" class="btn btn-default navbar-btn">Undo</button>
-                <button type="button" class="btn btn-default navbar-btn">Redo</button>
-            </div>
-            <div class="paren-soup" id="paren-soup">
-                <div class="numbers" id="numbers"></div>
-                <div class="content" contenteditable="true" id="content"></div>
-            </div>
-        </span>
+        <span id="editor"></span>
         <script type="text/javascript" src="main.js"></script>
     </body>
 </html>
