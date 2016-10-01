@@ -11,6 +11,8 @@
             [eval-soup.core :as es])
   (:import [java.io File FilenameFilter]))
 
+(def ^:const max-file-size (* 1024 1024 2))
+
 (defonce web-server (atom nil))
 
 (defn form->serializable [form]
@@ -45,9 +47,14 @@
     "/tree" {:status 200
              :headers {"Content-Type" "text/plain"}
              :body (-> (io/file ".") file-node :nodes (or []) pr-str)}
-    "/file" {:status 200
-             :headers {"Content-Type" "text/plain"}
-             :body (-> request body-string slurp)}
+    "/file" (let [path (body-string request)]
+              (if (-> path io/file .length (< max-file-size))
+                {:status 200
+                 :headers {"Content-Type" "text/plain"}
+                 :body (slurp path)}
+                {:status 400
+                 :headers {}
+                 :body "File too large."}))
     nil))
 
 (defn start

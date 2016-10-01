@@ -34,11 +34,12 @@
     (.send XhrIo
       "/file"
       (fn [e]
-        (when (.isSuccess (.-target e))
+        (if (.isSuccess (.-target e))
           (let [elem (create-element (.. e -target getResponseText))]
             (swap! editors assoc path elem)
             (.appendChild (clear-editor) elem)
-            (ps/init-all))))
+            (ps/init-all))
+          (clear-editor)))
       "POST"
       path)))
 
