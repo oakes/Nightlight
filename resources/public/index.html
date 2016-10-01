@@ -3,9 +3,50 @@
     <head>
         <link rel="stylesheet" type="text/css" href="bootstrap-dark.min.css">
         <link rel="stylesheet" type="text/css" href="bootstrap-treeview.min.css">
+        <link rel="stylesheet" type="text/css" href="paren-soup-dark.css">
+        <style>
+            @font-face {
+                font-family: 'Fira Code';
+                src: url('fonts/FiraCode-Regular.otf') format('opentype');
+            }
+            html, body, .paren-soup {
+                -webkit-font-feature-settings: "liga" on, "calt" on;
+                -webkit-font-smoothing: antialiased;
+                text-rendering: optimizeLegibility;
+                font-family: 'Fira Code';
+                height: 100%;
+                margin: 0;
+            }
+            html, body {
+                overflow: hidden;
+            }
+            .paren-soup {
+                overflow: auto;
+            }
+            .paren-soup .content {
+                min-height: 100%;
+                overflow: hidden;
+            }
+            #tree {
+                width: 300px;
+                float: left;
+                padding-right: 5px;
+            }
+        </style>
     </head>
     <body>
         <div id="tree"></div>
+        <span>
+            <div>
+                <button type="button" class="btn btn-default navbar-btn">Save</button>
+                <button type="button" class="btn btn-default navbar-btn">Undo</button>
+                <button type="button" class="btn btn-default navbar-btn">Redo</button>
+            </div>
+            <div class="paren-soup" id="paren-soup">
+                <div class="numbers" id="numbers"></div>
+                <div class="content" contenteditable="true" id="content"></div>
+            </div>
+        </span>
         <script type="text/javascript" src="main.js"></script>
     </body>
 </html>
