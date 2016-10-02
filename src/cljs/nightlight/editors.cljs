@@ -47,11 +47,11 @@
         (clj->js {:value content :lineNumbers true :theme "lesser-dark"})))
     elem))
 
-(defn init-file [path]
+(defn read-file [path]
   (if-let [elem (get @editors path)]
     (.appendChild (clear-editor) elem)
     (.send XhrIo
-      "/file"
+      "/read-file"
       (fn [e]
         (if (.isSuccess (.-target e))
           (->> (.. e -target getResponseText)
@@ -60,4 +60,11 @@
           (clear-editor)))
       "POST"
       path)))
+
+(defn write-file [path content]
+  (.send XhrIo
+    "/write-file"
+    (fn [e])
+    "POST"
+    (pr-str {:path path :content content})))
 

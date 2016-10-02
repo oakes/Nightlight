@@ -12,6 +12,7 @@
   (:import [java.io File FilenameFilter]))
 
 (def ^:const max-file-size (* 1024 1024 2))
+(def ^:const pref-file ".nightlight.edn")
 
 (defonce web-server (atom nil))
 
@@ -20,18 +21,28 @@
     [(.getMessage form)]
     (pr-str form)))
 
-(defn file-node [^File file]
-  (let [children (->> (reify FilenameFilter
-                        (accept [this dir filename]
-                          (not (.startsWith filename "."))))
-                      (.listFiles file)
-                      (mapv file-node))
-        node {:text (.getName file)
-              :path (.getCanonicalPath file)
-              :file (.isFile file)}]
-    (if (seq children)
-      (assoc node :nodes children)
-      node)))
+(defn file-node
+  ([^File file]
+   (let [pref-state (edn/read-string (slurp pref-file))
+         selection (:selection pref-state)]
+     (assoc (file-node file pref-state)
+       :path selection
+       :file? (some-> selection io/file .isFile))))
+  ([^File file {:keys [expansions selection] :as pref-state}]
+   (let [path (.getCanonicalPath file)
+         children (->> (reify FilenameFilter
+                         (accept [this dir filename]
+                           (not (.startsWith filename "."))))
+                       (.listFiles file)
+                       (mapv #(file-node % pref-state)))
+         node {:text (.getName file)
+               :path path
+               :file (.isFile file)
+               :state {:expanded (contains? expansions path)
+                       :selected (= selection path)}}]
+     (if (seq children)
+       (assoc node :nodes children)
+       node))))
 
 (defn handler [request]
   (case (:uri request)
@@ -46,15 +57,24 @@
                         pr-str)}
     "/tree" {:status 200
              :headers {"Content-Type" "text/plain"}
-             :body (-> (io/file ".") file-node :nodes (or []) pr-str)}
-    "/file" (let [path (body-string request)]
-              (if (-> path io/file .length (< max-file-size))
-                {:status 200
-                 :headers {"Content-Type" "text/plain"}
-                 :body (slurp path)}
-                {:status 400
-                 :headers {}
-                 :body "File too large."}))
+             :body (pr-str (file-node (io/file ".")))}
+    "/read-file" (let [path (body-string request)]
+                   (if (-> path io/file .length (< max-file-size))
+                     {:status 200
+                      :headers {"Content-Type" "text/plain"}
+                      :body (slurp path)}
+                     {:status 400
+                      :headers {}
+                      :body "File too large."}))
+    "/write-file" (when-let [{:keys [path content]} (-> request body-string edn/read-string)]
+                    (spit path content))
+    "/read-state" {:status 200
+                   :headers {"Content-Type" "text/plain"}
+                   :body (try (slurp pref-file)
+                           (catch Exception _ "{}"))}
+    "/write-state" {:status 200
+                    :headers {"Content-Type" "text/plain"}
+                    :body (spit pref-file (body-string request))}
     nil))
 
 (defn start
