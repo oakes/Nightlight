@@ -70,8 +70,9 @@
                      {:status 400
                       :headers {}
                       :body "File too large."}))
-    "/write-file" (when-let [{:keys [path content]} (-> request body-string edn/read-string)]
-                    (spit path content))
+    "/write-file" (let [{:keys [path content]} (-> request body-string edn/read-string)]
+                    (spit path content)
+                    {:status 200})
     "/read-state" {:status 200
                    :headers {"Content-Type" "text/plain"}
                    :body (read-state)}

@@ -8,10 +8,13 @@
 (def ^:const clojure-exts #{"boot" "clj" "cljc" "cljs" "cljx" "edn" "pxi"})
 
 (defprotocol Editor
+  (get-path [this])
   (get-element [this])
   (get-content [this])
   (can-undo? [this])
   (can-redo? [this])
+  (undo [this])
+  (redo [this])
   (mark-clean [this])
   (clean? [this]))
 
@@ -41,41 +44,65 @@
     (set! (.-innerHTML editor) "")
     editor))
 
+(defn write-file [editor]
+  (.send XhrIo
+    "/write-file"
+    (fn [e]
+      (mark-clean editor))
+    "POST"
+    (pr-str {:path (get-path editor) :content (get-content editor)})))
+
+(defn connect-buttons [editor]
+  (let [save-elem (-> (get-element editor) (.querySelector "#save"))
+        undo-elem (-> (get-element editor) (.querySelector "#undo"))
+        redo-elem (-> (get-element editor) (.querySelector "#redo"))]
+    (.addEventListener save-elem "click" #(write-file editor))
+    (.addEventListener undo-elem "click" #(undo editor))
+    (.addEventListener redo-elem "click" #(redo editor))))
+
 (defn update-buttons [editor]
-  (let [save (-> (get-element editor) (.querySelector "#save") .-classList)
-        undo (-> (get-element editor) (.querySelector "#undo") .-classList)
-        redo (-> (get-element editor) (.querySelector "#redo") .-classList)]
+  (let [save-css (-> (get-element editor) (.querySelector "#save") .-classList)
+        undo-css (-> (get-element editor) (.querySelector "#undo") .-classList)
+        redo-css (-> (get-element editor) (.querySelector "#redo") .-classList)]
     (if (clean? editor)
-      (.add save "disabled")
-      (.remove save "disabled"))
+      (.add save-css "disabled")
+      (.remove save-css "disabled"))
     (if (can-undo? editor)
-      (.remove undo "disabled")
-      (.add undo "disabled"))
+      (.remove undo-css "disabled")
+      (.add undo-css "disabled"))
     (if (can-redo? editor)
-      (.remove redo "disabled")
-      (.add redo "disabled"))))
+      (.remove redo-css "disabled")
+      (.add redo-css "disabled"))))
 
 (def auto-save
   (debounce
     (fn [editor]
-      (mark-clean editor))
+      (write-file editor))
     1000))
 
-(defn ps-init [elem content]
+(defn ps-init [elem path content]
   (set! (.-innerHTML elem) (str toolbar ps-html))
   (.appendChild (clear-editor) elem)
   (set! (.-textContent (.querySelector elem "#content")) content)
   (let [editor-atom (atom nil)
         last-content (atom "")
         editor (reify Editor
-                 (get-element [this]
-                   elem)
+                 (get-path [this] path)
+                 (get-element [this] elem)
                  (get-content [this]
                    (.-textContent (.querySelector elem "#content")))
                  (can-undo? [this]
                    (some-> @editor-atom ps/can-undo?))
                  (can-redo? [this]
                    (some-> @editor-atom ps/can-redo?))
+                 (undo [this]
+                   (some-> @editor-atom ps/undo)
+                   (auto-save this)
+                   (update-buttons this))
+                 (redo [this]
+                   (some-> @editor-atom ps/redo)
+                   (auto-save this)
+                   (update-buttons this))
                  (mark-clean [this]
                    (reset! last-content (get-content this))
                    (update-buttons this))
@@ -90,22 +117,29 @@
                       (auto-save editor))
                     (update-buttons editor))})))
     (update-buttons editor)
+    (connect-buttons editor)
     editor))
 
-(defn cm-init [elem content]
+(defn cm-init [elem path content]
   (set! (.-innerHTML elem) toolbar)
   (.appendChild (clear-editor) elem)
   (let [editor-atom (atom nil)
         last-content (atom "")
         editor (reify Editor
-                 (get-element [this]
-                   elem)
+                 (get-path [this] path)
+                 (get-element [this] elem)
                  (get-content [this]
                    (some-> @editor-atom .getValue))
                  (can-undo? [this]
                    (some-> @editor-atom .historySize .-undo (> 0)))
                  (can-redo? [this]
                    (some-> @editor-atom .historySize .-redo (> 0)))
+                 (undo [this]
+                   (some-> @editor-atom .undo)
+                   (update-buttons this))
+                 (redo [this]
+                   (some-> @editor-atom .redo)
+                   (update-buttons this))
                  (mark-clean [this]
                    (reset! last-content (get-content this))
                    (update-buttons this))
@@ -121,13 +155,14 @@
             (auto-save editor)
             (update-buttons editor)))))
     (mark-clean editor)
+    (connect-buttons editor)
     editor))
 
 (defn create-editor [path content]
   (let [elem (.createElement js/document "span")]
     (if (-> path get-extension clojure-exts some?)
-      (ps-init elem content)
-      (cm-init elem content))))
+      (ps-init elem path content)
+      (cm-init elem path content))))
 
 (defn read-file [path]
   (if-let [editor (get-in @s/runtime-state [:editors path])]
@@ -142,11 +177,4 @@
           (clear-editor)))
       "POST"
       path)))
-
-(defn write-file [path content]
-  (.send XhrIo
-    "/write-file"
-    (fn [e])
-    "POST"
-    (pr-str {:path path :content content})))
 
