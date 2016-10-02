@@ -21,7 +21,8 @@
 (defn node-collapsed [e data]
   (swap! s/pref-state update :expansions disj (.-path data)))
 
-(defn init-tree [{:keys [nodes path file?]}]
+(defn init-tree [{:keys [text nodes path file?]}]
+  (set! (.-title js/document) text)
   (.treeview (js/$ "#tree")
     (clj->js {:data nodes
               :onNodeSelected node-selected

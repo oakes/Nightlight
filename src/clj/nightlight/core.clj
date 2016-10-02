@@ -61,7 +61,7 @@
                         pr-str)}
     "/tree" {:status 200
              :headers {"Content-Type" "text/plain"}
-             :body (pr-str (file-node (io/file ".")))}
+             :body (-> "." io/file .getCanonicalFile file-node pr-str)}
     "/read-file" (let [path (body-string request)]
                    (if (-> path io/file .length (< max-file-size))
                      {:status 200
