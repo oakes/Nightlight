@@ -1,11 +1,10 @@
 (ns nightlight.editors
   (:require [paren-soup.core :as ps]
-            [clojure.string :as str])
+            [clojure.string :as str]
+            [nightlight.state :as s])
   (:import goog.net.XhrIo))
 
 (def ^:const clojure-exts #{"boot" "clj" "cljc" "cljs" "cljx" "edn" "pxi"})
-
-(defonce editors (atom {}))
 
 (def toolbar "
 <div class='toolbar'>
@@ -48,7 +47,7 @@
     elem))
 
 (defn read-file [path]
-  (if-let [elem (get @editors path)]
+  (if-let [elem (get-in @s/runtime-state [:editors path])]
     (.appendChild (clear-editor) elem)
     (.send XhrIo
       "/read-file"
@@ -56,7 +55,7 @@
         (if (.isSuccess (.-target e))
           (->> (.. e -target getResponseText)
                (create-element path)
-               (swap! editors assoc path))
+               (swap! s/runtime-state update :editors assoc path))
           (clear-editor)))
       "POST"
       path)))

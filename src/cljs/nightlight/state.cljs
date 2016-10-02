@@ -3,6 +3,8 @@
 
 (defonce pref-state (atom {}))
 
+(defonce runtime-state (atom {}))
+
 (add-watch pref-state :write-prefs
   (fn [_ _ _ new-state]
     (.send XhrIo
