@@ -7,16 +7,26 @@
   (:import goog.net.XhrIo))
 
 (defn select-node [path file?]
-  (swap! s/pref-state assoc :selection path)
   (if file?
     (e/read-file path)
     (e/clear-editor)))
 
+(defn node-selected [e data]
+  (swap! s/pref-state assoc :selection (.-path data))
+  (select-node (.-path data) (.-file data)))
+
+(defn node-expanded [e data]
+  (swap! s/pref-state update :expansions #(conj (or % #{}) (.-path data))))
+
+(defn node-collapsed [e data]
+  (swap! s/pref-state update :expansions disj (.-path data)))
+
 (defn init-tree [{:keys [nodes path file?]}]
   (.treeview (js/$ "#tree")
     (clj->js {:data nodes
-              :onNodeSelected (fn [e data]
-                                (select-node (.-path data) (.-file data)))}))
+              :onNodeSelected node-selected
+              :onNodeExpanded node-expanded
+              :onNodeCollapsed node-collapsed}))
   (select-node path file?))
 
 (defn download-tree []
