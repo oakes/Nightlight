@@ -21,9 +21,13 @@
     [(.getMessage form)]
     (pr-str form)))
 
+(defn read-state []
+  (try (slurp pref-file)
+    (catch Exception _ (pr-str {:auto-save? true}))))
+
 (defn file-node
   ([^File file]
-   (let [pref-state (edn/read-string (slurp pref-file))
+   (let [pref-state (edn/read-string (read-state))
          selection (:selection pref-state)]
      (assoc (file-node file pref-state)
        :path selection
@@ -70,8 +74,7 @@
                     (spit path content))
     "/read-state" {:status 200
                    :headers {"Content-Type" "text/plain"}
-                   :body (try (slurp pref-file)
-                           (catch Exception _ "{}"))}
+                   :body (read-state)}
     "/write-state" {:status 200
                     :headers {"Content-Type" "text/plain"}
                     :body (spit pref-file (body-string request))}
