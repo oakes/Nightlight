@@ -39,7 +39,9 @@
       (.log js/console "save"))
     1000))
 
-(defn ps-init [content]
+(defn ps-init [elem content]
+  (set! (.-innerHTML elem) (str toolbar ps-html))
+  (.appendChild (clear-editor) elem)
   (set! (.-textContent (.querySelector js/document ".content")) content)
   (ps/init (.querySelector js/document "#paren-soup")
     (clj->js {:change-callback
@@ -48,6 +50,8 @@
                   (auto-save)))})))
 
 (defn cm-init [elem content]
+  (set! (.-innerHTML elem) toolbar)
+  (.appendChild (clear-editor) elem)
   (-> (.CodeMirror js/window
         elem
         (clj->js {:value content :lineNumbers true :theme "lesser-dark"}))
@@ -56,11 +60,10 @@
           (auto-save)))))
 
 (defn create-element [path content]
-  (let [elem (.createElement js/document "span")
-        clojure? (-> path get-extension clojure-exts some?)]
-    (set! (.-innerHTML elem) (str toolbar (if clojure? ps-html "")))
-    (.appendChild (clear-editor) elem)
-    (if clojure? (ps-init content) (cm-init elem content))
+  (let [elem (.createElement js/document "span")]
+    (if (-> path get-extension clojure-exts some?)
+      (ps-init elem content)
+      (cm-init elem content))
     elem))
 
 (defn read-file [path]
