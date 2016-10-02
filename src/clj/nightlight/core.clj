@@ -83,7 +83,7 @@
 
 (defn start
   ([opts]
-   (start (wrap-resource handler "public") opts))
+   (start (wrap-resource handler "nightlight-public") opts))
   ([app opts]
    (->> (merge {:port 0 :join? false} opts)
         (run-jetty (wrap-content-type app))
@@ -91,6 +91,6 @@
 
 (defn dev-start [opts]
   (when-not @web-server
-    (.mkdirs (io/file "target" "public"))
-    (start (wrap-file handler "target/public") opts)))
+    (.mkdirs (io/file "target" "nightlight-public"))
+    (start (wrap-file handler "target/nightlight-public") opts)))
 

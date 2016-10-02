@@ -37,7 +37,7 @@
 (deftask run []
   (comp
     (watch)
-    (reload :asset-path "public")
+    (reload :asset-path "nightlight-public")
     (cljs :source-map true :optimizations :none)
     (target)
     (with-pre-wrap fileset
