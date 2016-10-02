@@ -9,14 +9,17 @@
 
 (defprotocol Editor
   (get-element [this])
+  (get-content [this])
   (can-undo? [this])
-  (can-redo? [this]))
+  (can-redo? [this])
+  (mark-clean [this])
+  (clean? [this]))
 
 (def toolbar "
 <div class='toolbar'>
-  <button type='button' class='btn btn-default navbar-btn'>Save</button>
-  <button type='button' class='btn btn-default navbar-btn'>Undo</button>
-  <button type='button' class='btn btn-default navbar-btn'>Redo</button>
+  <button type='button' class='btn btn-default navbar-btn' id='save'>Save</button>
+  <button type='button' class='btn btn-default navbar-btn' id='undo'>Undo</button>
+  <button type='button' class='btn btn-default navbar-btn' id='redo'>Redo</button>
 </div>
 ")
 
@@ -38,45 +41,87 @@
     (set! (.-innerHTML editor) "")
     editor))
 
+(defn update-buttons [editor]
+  (let [save (-> (get-element editor) (.querySelector "#save") .-classList)
+        undo (-> (get-element editor) (.querySelector "#undo") .-classList)
+        redo (-> (get-element editor) (.querySelector "#redo") .-classList)]
+    (if (clean? editor)
+      (.add save "disabled")
+      (.remove save "disabled"))
+    (if (can-undo? editor)
+      (.remove undo "disabled")
+      (.add undo "disabled"))
+    (if (can-redo? editor)
+      (.remove redo "disabled")
+      (.add redo "disabled"))))
+
 (def auto-save
   (debounce
-    (fn []
-      (.log js/console "save"))
+    (fn [editor]
+      (mark-clean editor))
     1000))
 
 (defn ps-init [elem content]
   (set! (.-innerHTML elem) (str toolbar ps-html))
   (.appendChild (clear-editor) elem)
-  (set! (.-textContent (.querySelector js/document ".content")) content)
-  (let [editor (ps/init (.querySelector js/document "#paren-soup")
-                 (clj->js {:change-callback
-                           (fn [e]
-                             (when (= (.-type e) "keyup")
-                               (auto-save)))}))]
-    (reify Editor
-      (get-element [this]
-        elem)
-      (can-undo? [this]
-        (ps/can-undo? editor))
-      (can-redo? [this]
-        (ps/can-redo? editor)))))
+  (set! (.-textContent (.querySelector elem "#content")) content)
+  (let [editor-atom (atom nil)
+        last-content (atom "")
+        editor (reify Editor
+                 (get-element [this]
+                   elem)
+                 (get-content [this]
+                   (.-textContent (.querySelector elem "#content")))
+                 (can-undo? [this]
+                   (some-> @editor-atom ps/can-undo?))
+                 (can-redo? [this]
+                   (some-> @editor-atom ps/can-redo?))
+                 (mark-clean [this]
+                   (reset! last-content (get-content this))
+                   (update-buttons this))
+                 (clean? [this]
+                   (= @last-content (get-content this))))]
+    (mark-clean editor)
+    (reset! editor-atom
+      (ps/init (.querySelector elem "#paren-soup")
+        (clj->js {:change-callback
+                  (fn [event]
+                    (when (= (.-type event) "keyup")
+                      (auto-save editor))
+                    (update-buttons editor))})))
+    (update-buttons editor)
+    editor))
 
 (defn cm-init [elem content]
   (set! (.-innerHTML elem) toolbar)
   (.appendChild (clear-editor) elem)
-  (let [editor (.CodeMirror js/window
-                 elem
-                 (clj->js {:value content :lineNumbers true :theme "lesser-dark"}))]
-    (.on editor "change"
-      (fn [editor change]
-        (auto-save)))
-    (reify Editor
-      (get-element [this]
-        elem)
-      (can-undo? [this]
-        (-> editor .historySize .-undo (> 0)))
-      (can-redo? [this]
-        (-> editor .historySize .-redo (> 0))))))
+  (let [editor-atom (atom nil)
+        last-content (atom "")
+        editor (reify Editor
+                 (get-element [this]
+                   elem)
+                 (get-content [this]
+                   (some-> @editor-atom .getValue))
+                 (can-undo? [this]
+                   (some-> @editor-atom .historySize .-undo (> 0)))
+                 (can-redo? [this]
+                   (some-> @editor-atom .historySize .-redo (> 0)))
+                 (mark-clean [this]
+                   (reset! last-content (get-content this))
+                   (update-buttons this))
+                 (clean? [this]
+                   (= @last-content (get-content this))))]
+    (reset! editor-atom
+      (doto
+        (.CodeMirror js/window
+          elem
+          (clj->js {:value content :lineNumbers true :theme "lesser-dark"}))
+        (.on "change"
+          (fn [editor-object change]
+            (auto-save editor)
+            (update-buttons editor)))))
+    (mark-clean editor)
+    editor))
 
 (defn create-editor [path content]
   (let [elem (.createElement js/document "span")]
