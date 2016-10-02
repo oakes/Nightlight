@@ -7,6 +7,11 @@
 
 (def ^:const clojure-exts #{"boot" "clj" "cljc" "cljs" "cljx" "edn" "pxi"})
 
+(defprotocol Editor
+  (get-element [this])
+  (can-undo? [this])
+  (can-redo? [this]))
+
 (def toolbar "
 <div class='toolbar'>
   <button type='button' class='btn btn-default navbar-btn'>Save</button>
@@ -43,38 +48,51 @@
   (set! (.-innerHTML elem) (str toolbar ps-html))
   (.appendChild (clear-editor) elem)
   (set! (.-textContent (.querySelector js/document ".content")) content)
-  (ps/init (.querySelector js/document "#paren-soup")
-    (clj->js {:change-callback
-              (fn [e]
-                (when (= (.-type e) "keyup")
-                  (auto-save)))})))
+  (let [editor (ps/init (.querySelector js/document "#paren-soup")
+                 (clj->js {:change-callback
+                           (fn [e]
+                             (when (= (.-type e) "keyup")
+                               (auto-save)))}))]
+    (reify Editor
+      (get-element [this]
+        elem)
+      (can-undo? [this]
+        (ps/can-undo? editor))
+      (can-redo? [this]
+        (ps/can-redo? editor)))))
 
 (defn cm-init [elem content]
   (set! (.-innerHTML elem) toolbar)
   (.appendChild (clear-editor) elem)
-  (-> (.CodeMirror js/window
-        elem
-        (clj->js {:value content :lineNumbers true :theme "lesser-dark"}))
-      (.on "change"
-        (fn [editor change]
-          (auto-save)))))
+  (let [editor (.CodeMirror js/window
+                 elem
+                 (clj->js {:value content :lineNumbers true :theme "lesser-dark"}))]
+    (.on editor "change"
+      (fn [editor change]
+        (auto-save)))
+    (reify Editor
+      (get-element [this]
+        elem)
+      (can-undo? [this]
+        (-> editor .historySize .-undo (> 0)))
+      (can-redo? [this]
+        (-> editor .historySize .-redo (> 0))))))
 
-(defn create-element [path content]
+(defn create-editor [path content]
   (let [elem (.createElement js/document "span")]
     (if (-> path get-extension clojure-exts some?)
       (ps-init elem content)
-      (cm-init elem content))
-    elem))
+      (cm-init elem content))))
 
 (defn read-file [path]
-  (if-let [elem (get-in @s/runtime-state [:editors path])]
-    (.appendChild (clear-editor) elem)
+  (if-let [editor (get-in @s/runtime-state [:editors path])]
+    (.appendChild (clear-editor) (get-element editor))
     (.send XhrIo
       "/read-file"
       (fn [e]
         (if (.isSuccess (.-target e))
           (->> (.. e -target getResponseText)
-               (create-element path)
+               (create-editor path)
                (swap! s/runtime-state update :editors assoc path))
           (clear-editor)))
       "POST"
