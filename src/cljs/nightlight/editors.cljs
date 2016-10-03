@@ -28,6 +28,7 @@
 
 (def ps-html "
 <div class='paren-soup' id='paren-soup'>
+  <div class='instarepl' id='instarepl'></div>
   <div class='numbers' id='numbers'></div>
   <div class='content' contenteditable='true' id='content'></div>
 </div>
@@ -81,6 +82,16 @@
         (write-file editor)))
     1000))
 
+(defn toggle-instarepl
+  ([show?]
+   (doseq [[_ editor] (:editors @s/runtime-state)]
+     (toggle-instarepl editor show?)))
+  ([editor show?]
+   (some-> (get-element editor)
+           (.querySelector ".instarepl")
+           .-style
+           (aset "display" (if show? "list-item" "none")))))
+
 (defn ps-init [elem path content]
   (set! (.-innerHTML elem) (str toolbar ps-html))
   (.appendChild (clear-editor) elem)
@@ -109,6 +120,7 @@
                    (update-buttons this))
                  (clean? [this]
                    (= @last-content (get-content this))))]
+    (toggle-instarepl editor (:instarepl? @s/pref-state))
     (reset! editor-atom
       (ps/init (.querySelector elem "#paren-soup")
         (clj->js {:change-callback

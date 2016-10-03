@@ -42,11 +42,12 @@
 (defn init-state [{:keys [instarepl? auto-save?] :as state}]
   (-> (.querySelector js/document "#settings")
       .-style
-      .-display
-      (set! "block"))
+      (aset "display" "block"))
   (doto (js/$ "#toggleInstaREPL")
     (.bootstrapToggle (if instarepl? "on" "off"))
-    (.change (fn [e] (swap! s/pref-state assoc :instarepl? (-> e .-target .-checked)))))
+    (.change (fn [e]
+               (swap! s/pref-state assoc :instarepl? (-> e .-target .-checked))
+               (e/toggle-instarepl (-> e .-target .-checked)))))
   (doto (js/$ "#toggleAutoSave")
     (.bootstrapToggle (if auto-save? "on" "off"))
     (.change (fn [e] (swap! s/pref-state assoc :auto-save? (-> e .-target .-checked)))))
