@@ -16,7 +16,9 @@
   (undo [this])
   (redo [this])
   (mark-clean [this])
-  (clean? [this]))
+  (clean? [this])
+  (init [this])
+  (show [this]))
 
 (def toolbar "
 <div class='toolbar'>
@@ -82,111 +84,117 @@
         (write-file editor)))
     1000))
 
-(defn toggle-instarepl
-  ([show?]
-   (doseq [[_ editor] (:editors @s/runtime-state)]
-     (toggle-instarepl editor show?)))
-  ([editor show?]
-   (some-> (get-element editor)
-           (.querySelector ".instarepl")
-           .-style
-           (aset "display" (if show? "list-item" "none")))))
+(defn ps-init [path content]
+  (let [elem (.createElement js/document "span")
+        editor-atom (atom nil)
+        last-content (atom content)]
+    (set! (.-innerHTML elem) (str toolbar ps-html))
+    (set! (.-textContent (.querySelector elem "#content")) content)
+    (reify Editor
+      (get-path [this] path)
+      (get-element [this] elem)
+      (get-content [this]
+        (.-textContent (.querySelector elem "#content")))
+      (can-undo? [this]
+        (some-> @editor-atom ps/can-undo?))
+      (can-redo? [this]
+        (some-> @editor-atom ps/can-redo?))
+      (undo [this]
+        (some-> @editor-atom ps/undo)
+        (auto-save this)
+        (update-buttons this))
+      (redo [this]
+        (some-> @editor-atom ps/redo)
+        (auto-save this)
+        (update-buttons this))
+      (mark-clean [this]
+        (reset! last-content (get-content this))
+        (update-buttons this))
+      (clean? [this]
+        (= @last-content (get-content this)))
+      (init [this]
+        (reset! editor-atom
+          (ps/init (.querySelector elem "#paren-soup")
+            (clj->js {:change-callback
+                      (fn [event]
+                        (when (= (.-type event) "keyup")
+                          (auto-save this))
+                        (update-buttons this))}))))
+      (show [this]
+        (.appendChild (clear-editor) elem)
+        (-> elem
+            (.querySelector ".instarepl")
+            .-style
+            (aset "display" (if (:instarepl? @s/pref-state) "list-item" "none")))
+        (init this)))))
 
-(defn ps-init [elem path content]
-  (set! (.-innerHTML elem) (str toolbar ps-html))
-  (.appendChild (clear-editor) elem)
-  (set! (.-textContent (.querySelector elem "#content")) content)
-  (let [editor-atom (atom nil)
-        last-content (atom content)
-        editor (reify Editor
-                 (get-path [this] path)
-                 (get-element [this] elem)
-                 (get-content [this]
-                   (.-textContent (.querySelector elem "#content")))
-                 (can-undo? [this]
-                   (some-> @editor-atom ps/can-undo?))
-                 (can-redo? [this]
-                   (some-> @editor-atom ps/can-redo?))
-                 (undo [this]
-                   (some-> @editor-atom ps/undo)
-                   (auto-save this)
-                   (update-buttons this))
-                 (redo [this]
-                   (some-> @editor-atom ps/redo)
-                   (auto-save this)
-                   (update-buttons this))
-                 (mark-clean [this]
-                   (reset! last-content (get-content this))
-                   (update-buttons this))
-                 (clean? [this]
-                   (= @last-content (get-content this))))]
-    (toggle-instarepl editor (:instarepl? @s/pref-state))
-    (reset! editor-atom
-      (ps/init (.querySelector elem "#paren-soup")
-        (clj->js {:change-callback
-                  (fn [event]
-                    (when (= (.-type event) "keyup")
-                      (auto-save editor))
-                    (update-buttons editor))})))
-    (update-buttons editor)
-    (connect-buttons editor)
-    editor))
-
-(defn cm-init [elem path content]
-  (set! (.-innerHTML elem) toolbar)
-  (.appendChild (clear-editor) elem)
-  (let [editor-atom (atom nil)
-        last-content (atom content)
-        editor (reify Editor
-                 (get-path [this] path)
-                 (get-element [this] elem)
-                 (get-content [this]
-                   (some-> @editor-atom .getValue))
-                 (can-undo? [this]
-                   (some-> @editor-atom .historySize .-undo (> 0)))
-                 (can-redo? [this]
-                   (some-> @editor-atom .historySize .-redo (> 0)))
-                 (undo [this]
-                   (some-> @editor-atom .undo)
-                   (update-buttons this))
-                 (redo [this]
-                   (some-> @editor-atom .redo)
-                   (update-buttons this))
-                 (mark-clean [this]
-                   (reset! last-content (get-content this))
-                   (update-buttons this))
-                 (clean? [this]
-                   (= @last-content (get-content this))))]
-    (reset! editor-atom
-      (doto
-        (.CodeMirror js/window
-          elem
-          (clj->js {:value content :lineNumbers true :theme "lesser-dark"}))
-        (.on "change"
-          (fn [editor-object change]
-            (auto-save editor)
-            (update-buttons editor)))))
-    (update-buttons editor)
-    (connect-buttons editor)
-    editor))
+(defn cm-init [path content]
+  (let [elem (.createElement js/document "span")
+        editor-atom (atom nil)
+        last-content (atom content)]
+    (set! (.-innerHTML elem) toolbar)
+    (reify Editor
+      (get-path [this] path)
+      (get-element [this] elem)
+      (get-content [this]
+        (some-> @editor-atom .getValue))
+      (can-undo? [this]
+        (some-> @editor-atom .historySize .-undo (> 0)))
+      (can-redo? [this]
+        (some-> @editor-atom .historySize .-redo (> 0)))
+      (undo [this]
+        (some-> @editor-atom .undo)
+        (update-buttons this))
+      (redo [this]
+        (some-> @editor-atom .redo)
+        (update-buttons this))
+      (mark-clean [this]
+        (reset! last-content (get-content this))
+        (update-buttons this))
+      (clean? [this]
+        (= @last-content (get-content this)))
+      (init [this]
+        (reset! editor-atom
+          (doto
+            (.CodeMirror js/window
+              elem
+              (clj->js {:value content :lineNumbers true :theme "lesser-dark"}))
+            (.on "change"
+              (fn [editor-object change]
+                (auto-save this)
+                (update-buttons this))))))
+      (show [this]
+        (.appendChild (clear-editor) (get-element this))
+        (init this)))))
 
 (defn create-editor [path content]
-  (let [elem (.createElement js/document "span")]
-    (if (-> path get-extension clojure-exts some?)
-      (ps-init elem path content)
-      (cm-init elem path content))))
+  (if (-> path get-extension clojure-exts some?)
+    (ps-init path content)
+    (cm-init path content)))
+
+(defn init-editor [editor]
+  (doto editor
+    (show)
+    (update-buttons)
+    (connect-buttons)))
 
 (defn read-file [path]
   (if-let [editor (get-in @s/runtime-state [:editors path])]
-    (.appendChild (clear-editor) (get-element editor))
+    (show editor)
     (.send XhrIo
       "/read-file"
       (fn [e]
         (if (.isSuccess (.-target e))
           (->> (.. e -target getResponseText)
                (create-editor path)
+               (init-editor)
                (swap! s/runtime-state update :editors assoc path))
           (clear-editor)))
       "POST"
       path)))
+
+(defn refresh []
+  (when-let [path (:selection @s/pref-state)]
+    (when-let [editor (get-in @s/runtime-state [:editors path])]
+      (show editor))))
 

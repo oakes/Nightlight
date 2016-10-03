@@ -47,7 +47,7 @@
     (.bootstrapToggle (if instarepl? "on" "off"))
     (.change (fn [e]
                (swap! s/pref-state assoc :instarepl? (-> e .-target .-checked))
-               (e/toggle-instarepl (-> e .-target .-checked)))))
+               (e/refresh))))
   (doto (js/$ "#toggleAutoSave")
     (.bootstrapToggle (if auto-save? "on" "off"))
     (.change (fn [e] (swap! s/pref-state assoc :auto-save? (-> e .-target .-checked)))))
