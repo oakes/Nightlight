@@ -144,9 +144,11 @@
         (some-> @editor-atom .historySize .-redo (> 0)))
       (undo [this]
         (some-> @editor-atom .undo)
+        (auto-save this)
         (update-buttons this))
       (redo [this]
         (some-> @editor-atom .redo)
+        (auto-save this)
         (update-buttons this))
       (mark-clean [this]
         (reset! last-content (get-content this))
