@@ -85,7 +85,7 @@
   (.appendChild (clear-editor) elem)
   (set! (.-textContent (.querySelector elem "#content")) content)
   (let [editor-atom (atom nil)
-        last-content (atom "")
+        last-content (atom content)
         editor (reify Editor
                  (get-path [this] path)
                  (get-element [this] elem)
@@ -108,7 +108,6 @@
                    (update-buttons this))
                  (clean? [this]
                    (= @last-content (get-content this))))]
-    (mark-clean editor)
     (reset! editor-atom
       (ps/init (.querySelector elem "#paren-soup")
         (clj->js {:change-callback
@@ -124,7 +123,7 @@
   (set! (.-innerHTML elem) toolbar)
   (.appendChild (clear-editor) elem)
   (let [editor-atom (atom nil)
-        last-content (atom "")
+        last-content (atom content)
         editor (reify Editor
                  (get-path [this] path)
                  (get-element [this] elem)
@@ -154,7 +153,7 @@
           (fn [editor-object change]
             (auto-save editor)
             (update-buttons editor)))))
-    (mark-clean editor)
+    (update-buttons editor)
     (connect-buttons editor)
     editor))
 
