@@ -23,7 +23,7 @@
 
 (defn read-state []
   (try (slurp pref-file)
-    (catch Exception _ (pr-str {:instarepl? true :auto-save? true}))))
+    (catch Exception _ (pr-str {:instarepl? false :auto-save? true}))))
 
 (defn file-node
   ([^File file]
