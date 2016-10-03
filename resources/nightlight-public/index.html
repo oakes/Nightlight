@@ -4,6 +4,7 @@
         <title>Nightlight</title>
         <link rel="stylesheet" type="text/css" href="bootstrap-dark.min.css">
         <link rel="stylesheet" type="text/css" href="bootstrap-treeview.min.css">
+        <link rel="stylesheet" type="text/css" href="bootstrap-toggle.min.css">
         <link rel="stylesheet" type="text/css" href="codemirror.css">
         <link rel="stylesheet" type="text/css" href="codemirror-dark.css">
         <link rel="stylesheet" type="text/css" href="paren-soup-dark.css">
@@ -40,15 +41,26 @@
             .paren-soup .content {
                 min-height: 100%;
             }
-            #tree {
+            #sidebar {
                 width: 300px;
                 float: left;
                 padding-right: 5px;
             }
+            #settings {
+                display: none;
+            }
         </style>
     </head>
     <body>
-        <div id="tree"></div>
+        <div id="sidebar">
+            <div id="settings">
+                <input type="checkbox" data-toggle="toggle" id="toggleInstaREPL"> InstaREPL
+                <br>
+                <input type="checkbox" data-toggle="toggle" id="toggleAutoSave"> Auto Save
+                <br><br>
+            </div>
+            <div id="tree"></div>
+        </div>
         <span id="editor"></span>
         <script type="text/javascript" src="main.js"></script>
     </body>

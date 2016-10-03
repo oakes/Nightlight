@@ -1,6 +1,7 @@
 (ns nightlight.core
   (:require [cljsjs.bootstrap]
             [cljsjs.bootstrap-treeview]
+            [cljsjs.bootstrap-toggle]
             [cljs.reader :refer [read-string]]
             [nightlight.editors :as e]
             [nightlight.state :as s])
@@ -38,12 +39,25 @@
         (init-tree (read-string (.. e -target getResponseText)))))
     "GET"))
 
+(defn init-state [{:keys [instarepl? auto-save?] :as state}]
+  (-> (.querySelector js/document "#settings")
+      .-style
+      .-display
+      (set! "block"))
+  (doto (js/$ "#toggleInstaREPL")
+    (.bootstrapToggle (if instarepl? "on" "off"))
+    (.change (fn [e] (swap! s/pref-state assoc :instarepl? (-> e .-target .-checked)))))
+  (doto (js/$ "#toggleAutoSave")
+    (.bootstrapToggle (if auto-save? "on" "off"))
+    (.change (fn [e] (swap! s/pref-state assoc :auto-save? (-> e .-target .-checked)))))
+  (reset! s/pref-state state))
+
 (defn download-state []
   (.send XhrIo
     "/read-state"
     (fn [e]
       (when (.isSuccess (.-target e))
-        (reset! s/pref-state (read-string (.. e -target getResponseText))))
+        (init-state (read-string (.. e -target getResponseText))))
       (download-tree))
     "GET"))
 

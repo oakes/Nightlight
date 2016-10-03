@@ -77,7 +77,8 @@
 (def auto-save
   (debounce
     (fn [editor]
-      (write-file editor))
+      (when (:auto-save? @s/pref-state)
+        (write-file editor)))
     1000))
 
 (defn ps-init [elem path content]
