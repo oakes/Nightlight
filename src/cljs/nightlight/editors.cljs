@@ -19,7 +19,8 @@
   (redo [this])
   (mark-clean [this])
   (clean? [this])
-  (init [this]))
+  (init [this])
+  (set-theme [this theme]))
 
 (def toolbar "
 <div class='toolbar'>
@@ -102,10 +103,16 @@
         .-style
         (aset "display" "none"))))
 
+(defn change-css [sel css-file]
+  (let [link (.querySelector js/document sel)]
+    (when-not (-> link (.getAttribute "href") (= css-file))
+      (.setAttribute link "href" css-file))))
+
 (defn ps-init [path content]
   (let [elem (.createElement js/document "span")
         editor-atom (atom nil)
-        last-content (atom content)]
+        last-content (atom content)
+        themes {:dark "paren-soup-dark.css" :light "paren-soup-light.css"}]
     (set! (.-innerHTML elem) (str toolbar ps-html))
     (set! (.-textContent (.querySelector elem "#content")) content)
     (-> elem (.querySelector "#instarepl") .-style (aset "display" "none"))
@@ -138,12 +145,15 @@
                       (fn [event]
                         (when (= (.-type event) "keyup")
                           (auto-save this))
-                        (update-buttons this))})))))))
+                        (update-buttons this))}))))
+      (set-theme [this theme]
+        (change-css "#paren-soup-css" (get themes theme :dark))))))
 
 (defn cm-init [path content]
   (let [elem (.createElement js/document "span")
         editor-atom (atom nil)
-        last-content (atom content)]
+        last-content (atom content)
+        themes {:dark "lesser-dark" :light "default"}]
     (set! (.-innerHTML elem) toolbar)
     (reify Editor
       (get-path [this] path)
@@ -172,11 +182,13 @@
           (doto
             (.CodeMirror js/window
               elem
-              (clj->js {:value content :lineNumbers true :theme "lesser-dark"}))
+              (clj->js {:value content :lineNumbers true :theme (:dark themes)}))
             (.on "change"
               (fn [editor-object change]
                 (auto-save this)
-                (update-buttons this)))))))))
+                (update-buttons this))))))
+      (set-theme [this theme]
+        (some-> @editor-atom (.setOption "theme" (get themes theme :dark)))))))
 
 (defn create-editor [path content]
   (if (-> path get-extension clojure-exts some?)
@@ -188,6 +200,7 @@
   (doto editor
     (init)
     (init-instarepl)
+    (set-theme (:theme @s/pref-state))
     (update-buttons)
     (connect-buttons)))
 

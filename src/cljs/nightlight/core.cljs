@@ -44,11 +44,16 @@
     (.bootstrapToggle (if auto-save? "on" "off"))
     (.change (fn [e] (swap! s/pref-state assoc :auto-save?
                        (-> e .-target .-checked)))))
-  (doto (js/$ "#toggleTheme")
-    (.bootstrapToggle (if (= theme :light) "on" "off"))
-    (.change (fn [e] (swap! s/pref-state assoc :theme
-                       (if (-> e .-target .-checked)
-                         :light :dark)))))
+  (let [themes {:dark "bootstrap-dark.min.css" :light "bootstrap-light.min.css"}]
+    (doto (js/$ "#toggleTheme")
+      (.bootstrapToggle (if (= theme :light) "on" "off"))
+      (.change (fn [e]
+                 (let [theme (if (-> e .-target .-checked) :light :dark)]
+                   (swap! s/pref-state assoc :theme theme)
+                   (e/change-css "#bootstrap-css" (get themes theme :dark))
+                   (doseq [editor (-> @s/runtime-state :editors vals)]
+                     (e/set-theme editor theme))))))
+    (e/change-css "#bootstrap-css" (get themes theme :dark)))
   (reset! s/pref-state state))
 
 (defn download-state []
