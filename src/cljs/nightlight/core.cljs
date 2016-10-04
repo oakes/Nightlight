@@ -7,6 +7,10 @@
             [nightlight.state :as s])
   (:import goog.net.XhrIo))
 
+(def ^:const version "1.0.0-SNAPSHOT")
+(def ^:const api-url "https://clojars.org/api/artifacts/nightlight")
+(def ^:const page-url "https://clojars.org/nightlight")
+
 (defn select-node [path file?]
   (if file?
     (e/read-file path)
@@ -66,4 +70,20 @@
     "GET"))
 
 (download-state)
+
+(defn check-version []
+  (.send XhrIo
+    api-url
+    (fn [e]
+      (when (and (.isSuccess (.-target e))
+                 (->> (.. e -target getResponseText)
+                      (.parse js/JSON)
+                      .-latest_version
+                      (not= version)))
+        (doto (.querySelector js/document "#update")
+          (-> .-style (aset "display" "block"))
+          (.addEventListener "click" #(.open js/window page-url)))))
+    "GET"))
+
+(check-version)
 

@@ -49,6 +49,12 @@
             #settings {
                 height: 50px;
             }
+            #update {
+                display: none;
+                position: absolute;
+                top: 5px;
+                right: 5px;
+            }
         </style>
     </head>
     <body>
@@ -58,6 +64,7 @@
                 <input type="checkbox" data-toggle="toggle" id="toggleTheme" data-on="Light" data-off="Dark">
             </div>
             <div id="tree"></div>
+            <button type="button" class="btn btn-warning" id="update">Update Nightlight</button>
         </div>
         <span id="editor"></span>
         <script type="text/javascript" src="main.js"></script>
