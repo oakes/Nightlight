@@ -23,7 +23,7 @@
 
 (defn read-state []
   (try (slurp pref-file)
-    (catch Exception _ (pr-str {:auto-save? true}))))
+    (catch Exception _ (pr-str {:auto-save? true :theme :dark}))))
 
 (defn file-node
   ([^File file]

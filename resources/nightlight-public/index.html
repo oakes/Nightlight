@@ -47,15 +47,15 @@
                 padding: 5px;
             }
             #settings {
-                display: none;
+                height: 50px;
             }
         </style>
     </head>
     <body>
         <div id="sidebar">
             <div id="settings">
-                <label><input type="checkbox" data-toggle="toggle" id="toggleAutoSave"> Auto Save</label>
-                <br><br>
+                <input type="checkbox" data-toggle="toggle" id="toggleAutoSave" data-on="Auto Save" data-off="Auto Save">
+                <input type="checkbox" data-toggle="toggle" id="toggleTheme" data-on="Light" data-off="Dark">
             </div>
             <div id="tree"></div>
         </div>

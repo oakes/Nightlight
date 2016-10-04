@@ -39,13 +39,16 @@
         (init-tree (read-string (.. e -target getResponseText)))))
     "GET"))
 
-(defn init-state [{:keys [auto-save?] :as state}]
-  (-> (.querySelector js/document "#settings")
-      .-style
-      (aset "display" "block"))
+(defn init-state [{:keys [auto-save? theme] :as state}]
   (doto (js/$ "#toggleAutoSave")
     (.bootstrapToggle (if auto-save? "on" "off"))
-    (.change (fn [e] (swap! s/pref-state assoc :auto-save? (-> e .-target .-checked)))))
+    (.change (fn [e] (swap! s/pref-state assoc :auto-save?
+                       (-> e .-target .-checked)))))
+  (doto (js/$ "#toggleTheme")
+    (.bootstrapToggle (if (= theme :light) "on" "off"))
+    (.change (fn [e] (swap! s/pref-state assoc :theme
+                       (if (-> e .-target .-checked)
+                         :light :dark)))))
   (reset! s/pref-state state))
 
 (defn download-state []
