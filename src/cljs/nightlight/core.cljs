@@ -39,15 +39,10 @@
         (init-tree (read-string (.. e -target getResponseText)))))
     "GET"))
 
-(defn init-state [{:keys [instarepl? auto-save?] :as state}]
+(defn init-state [{:keys [auto-save?] :as state}]
   (-> (.querySelector js/document "#settings")
       .-style
       (aset "display" "block"))
-  (doto (js/$ "#toggleInstaREPL")
-    (.bootstrapToggle (if instarepl? "on" "off"))
-    (.change (fn [e]
-               (swap! s/pref-state assoc :instarepl? (-> e .-target .-checked))
-               (e/refresh))))
   (doto (js/$ "#toggleAutoSave")
     (.bootstrapToggle (if auto-save? "on" "off"))
     (.change (fn [e] (swap! s/pref-state assoc :auto-save? (-> e .-target .-checked)))))

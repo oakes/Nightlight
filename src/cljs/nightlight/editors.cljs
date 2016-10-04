@@ -7,6 +7,7 @@
   (:import goog.net.XhrIo))
 
 (def ^:const clojure-exts #{"boot" "clj" "cljc" "cljs" "cljx" "edn" "pxi"})
+(def ^:const instarepl-exts #{"clj" "cljc"})
 
 (defprotocol Editor
   (get-path [this])
@@ -18,14 +19,14 @@
   (redo [this])
   (mark-clean [this])
   (clean? [this])
-  (init [this])
-  (show [this]))
+  (init [this]))
 
 (def toolbar "
 <div class='toolbar'>
   <button type='button' class='btn btn-default navbar-btn' id='save'>Save</button>
   <button type='button' class='btn btn-default navbar-btn' id='undo'>Undo</button>
   <button type='button' class='btn btn-default navbar-btn' id='redo'>Redo</button>
+  <input type='checkbox' data-toggle='toggle' id='toggleInstaRepl' data-on='InstaREPL' data-off='InstaREPL'>
 </div>
 ")
 
@@ -85,12 +86,29 @@
         (write-file editor)))
     1000))
 
+(defn toggle-instarepl [editor show?]
+  (-> (.querySelector (get-element editor) ".instarepl")
+      .-style
+      (aset "display" (if show? "list-item" "none")))
+  (init editor))
+
+(defn init-instarepl [editor]
+  (if (-> editor get-path get-extension instarepl-exts some?)
+    (doto (js/$ "#toggleInstaRepl")
+      (.bootstrapToggle "off")
+      (.change (fn [e] (toggle-instarepl editor (-> e .-target .-checked)))))
+    (-> js/document
+        (.querySelector "#toggleInstaRepl")
+        .-style
+        (aset "display" "none"))))
+
 (defn ps-init [path content]
   (let [elem (.createElement js/document "span")
         editor-atom (atom nil)
         last-content (atom content)]
     (set! (.-innerHTML elem) (str toolbar ps-html))
     (set! (.-textContent (.querySelector elem "#content")) content)
+    (-> elem (.querySelector "#instarepl") .-style (aset "display" "none"))
     (reify Editor
       (get-path [this] path)
       (get-element [this] elem)
@@ -120,14 +138,7 @@
                       (fn [event]
                         (when (= (.-type event) "keyup")
                           (auto-save this))
-                        (update-buttons this))}))))
-      (show [this]
-        (.appendChild (clear-editor) elem)
-        (-> elem
-            (.querySelector ".instarepl")
-            .-style
-            (aset "display" (if (:instarepl? @s/pref-state) "list-item" "none")))
-        (init this)))))
+                        (update-buttons this))})))))))
 
 (defn cm-init [path content]
   (let [elem (.createElement js/document "span")
@@ -165,10 +176,7 @@
             (.on "change"
               (fn [editor-object change]
                 (auto-save this)
-                (update-buttons this))))))
-      (show [this]
-        (.appendChild (clear-editor) (get-element this))
-        (init this)))))
+                (update-buttons this)))))))))
 
 (defn create-editor [path content]
   (if (-> path get-extension clojure-exts some?)
@@ -176,14 +184,16 @@
     (cm-init path content)))
 
 (defn init-editor [editor]
+  (.appendChild (clear-editor) (get-element editor))
   (doto editor
-    (show)
+    (init)
+    (init-instarepl)
     (update-buttons)
     (connect-buttons)))
 
 (defn read-file [path]
   (if-let [editor (get-in @s/runtime-state [:editors path])]
-    (show editor)
+    (.appendChild (clear-editor) (get-element editor))
     (.send XhrIo
       "/read-file"
       (fn [e]
@@ -195,9 +205,4 @@
           (clear-editor)))
       "POST"
       path)))
-
-(defn refresh []
-  (when-let [path (:selection @s/pref-state)]
-    (when-let [editor (get-in @s/runtime-state [:editors path])]
-      (show editor))))
 
