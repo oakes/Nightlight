@@ -11,7 +11,8 @@
                   [paren-soup "2.6.1"]
                   [cljsjs/bootstrap "3.3.6-1"]
                   [cljsjs/bootstrap-toggle "2.2.2-0"]
-                  [cljsjs/bootstrap-treeview "1.2.0-1"]]
+                  [cljsjs/bootstrap-treeview "1.2.0-1"]
+                  [cljsjs/codemirror "5.19.0-0"]]
   :repositories (conj (get-env :repositories)
                   ["clojars" {:url "https://clojars.org/repo/"
                               :username (System/getenv "CLOJARS_USER")

@@ -2,7 +2,8 @@
   (:require [paren-soup.core :as ps]
             [clojure.string :as str]
             [nightlight.state :as s]
-            [goog.functions :refer [debounce]])
+            [goog.functions :refer [debounce]]
+            [cljsjs.codemirror])
   (:import goog.net.XhrIo))
 
 (def ^:const clojure-exts #{"boot" "clj" "cljc" "cljs" "cljx" "edn" "pxi"})
