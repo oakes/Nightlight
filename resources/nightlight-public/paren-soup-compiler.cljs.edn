@@ -1,3 +1,0 @@
-{:require  [nightlight.compiler]
- :init-fns []
- :compiler-options {:optimizations :simple}}
