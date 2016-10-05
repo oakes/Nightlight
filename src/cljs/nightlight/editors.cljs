@@ -6,7 +6,7 @@
             [cljsjs.codemirror])
   (:import goog.net.XhrIo))
 
-(def ^:const clojure-exts #{"boot" "clj" "cljc" "cljs" "cljx" "edn" "pxi"})
+(def ^:const clojure-exts #{"boot" "clj" "cljc" "cljs" "cljx" "edn" "pxi" "hl"})
 (def ^:const instarepl-exts #{"clj" "cljc"})
 
 (defprotocol Editor
