@@ -35,10 +35,10 @@
                 margin-top: 50px;
                 padding-bottom: 50px;
                 margin-left: 300px;
-                margin-right: 300px;
             }
             .paren-soup {
                 overflow: auto;
+                margin-right: 300px;
             }
             .paren-soup .content {
                 min-height: 100%;
@@ -46,13 +46,10 @@
             #update {
                 display: none;
             }
-            #settings {
-                text-align: right;
-            }
             #settings > * {
                 margin: 5px;
             }
-            #leftsidebar {
+            .leftsidebar {
                 position: absolute;
                 width: 300px;
                 left: 0px;
@@ -61,7 +58,7 @@
                 height: 100%;
                 overflow: auto;
             }
-            #rightsidebar {
+            .rightsidebar {
                 position: absolute;
                 width: 300px;
                 right: 0px;
@@ -77,18 +74,15 @@
         </style>
     </head>
     <body>
-        <div id="leftsidebar">
-            <div id="tree"></div>
-        </div>
-        <span id="editor"></span>
-        <div id="rightsidebar">
+        <div class="leftsidebar">
             <div id="settings">
                 <button type="button" class="btn btn-warning" id="update">Update Nightlight</button>
                 <input type="checkbox" data-toggle="toggle" id="toggleAutoSave" data-on="Auto Save" data-off="Auto Save">
                 <input type="checkbox" data-toggle="toggle" id="toggleTheme" data-on="Light Theme" data-off="Dark Theme">
             </div>
-            <div id="completions"></div>
+            <div id="tree"></div>
         </div>
+        <span id="editor"></span>
         <script type="text/javascript" src="main.js"></script>
     </body>
 </html>

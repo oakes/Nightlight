@@ -40,6 +40,9 @@
   <div class='numbers' id='numbers'></div>
   <div class='content' contenteditable='true' id='content'></div>
 </div>
+<div class='rightsidebar'>
+  <div id='completions'></div>
+</div>
 ")
 
 (defn get-extension [path]
@@ -113,7 +116,8 @@
 
 (defn display-completions [completions]
   (.treeview (js/$ "#completions")
-    (clj->js {:data (clj->js completions)})))
+    (clj->js {:data (clj->js completions)
+              :onNodeSelected (fn [e data])})))
 
 (defn refresh-completions []
   (if-let [info (psd/get-completion-info)]

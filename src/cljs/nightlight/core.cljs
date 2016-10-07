@@ -69,8 +69,6 @@
       (download-tree))
     "GET"))
 
-(download-state)
-
 (defn check-version []
   (.send XhrIo
     api-url
@@ -84,6 +82,10 @@
           (-> .-style (aset "display" "block"))
           (.addEventListener "click" #(.open js/window page-url)))))
     "GET"))
-#_
-(check-version)
+
+(defn main []
+  (download-state)
+  #_(check-version))
+
+(main)
 
