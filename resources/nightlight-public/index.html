@@ -34,6 +34,8 @@
             .paren-soup, .CodeMirror {
                 margin-top: 50px;
                 padding-bottom: 50px;
+                margin-left: 300px;
+                margin-right: 300px;
             }
             .paren-soup {
                 overflow: auto;
@@ -41,33 +43,52 @@
             .paren-soup .content {
                 min-height: 100%;
             }
-            #sidebar {
-                width: 300px;
-                float: left;
-                padding: 5px;
-            }
-            #settings {
-                height: 50px;
-            }
             #update {
                 display: none;
+            }
+            #settings {
+                text-align: right;
+            }
+            #settings > * {
+                margin: 5px;
+            }
+            #leftsidebar {
                 position: absolute;
-                top: 5px;
-                right: 5px;
+                width: 300px;
+                left: 0px;
+                top: 0px;
+                padding: 5px;
+                height: 100%;
+                overflow: auto;
+            }
+            #rightsidebar {
+                position: absolute;
+                width: 300px;
+                right: 0px;
+                top: 0px;
+                padding: 5px;
+                height: 100%;
+                overflow: auto;
+            }
+            li {
+                white-space: nowrap;
+                overflow: hidden;
             }
         </style>
     </head>
     <body>
-        <div id="sidebar">
-            <div id="settings">
-                <input type="checkbox" data-toggle="toggle" id="toggleAutoSave" data-on="Auto Save" data-off="Auto Save">
-                <input type="checkbox" data-toggle="toggle" id="toggleTheme" data-on="Light" data-off="Dark">
-            </div>
+        <div id="leftsidebar">
             <div id="tree"></div>
-            <div id="completions"></div>
         </div>
         <span id="editor"></span>
-        <button type="button" class="btn btn-warning" id="update">Update Nightlight</button>
+        <div id="rightsidebar">
+            <div id="settings">
+                <button type="button" class="btn btn-warning" id="update">Update Nightlight</button>
+                <input type="checkbox" data-toggle="toggle" id="toggleAutoSave" data-on="Auto Save" data-off="Auto Save">
+                <input type="checkbox" data-toggle="toggle" id="toggleTheme" data-on="Light Theme" data-off="Dark Theme">
+            </div>
+            <div id="completions"></div>
+        </div>
         <script type="text/javascript" src="main.js"></script>
     </body>
 </html>

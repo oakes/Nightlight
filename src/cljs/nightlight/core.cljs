@@ -84,6 +84,6 @@
           (-> .-style (aset "display" "block"))
           (.addEventListener "click" #(.open js/window page-url)))))
     "GET"))
-
+#_
 (check-version)
 

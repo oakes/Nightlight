@@ -4,7 +4,8 @@
             [clojure.string :as str]
             [nightlight.state :as s]
             [goog.functions :refer [debounce]]
-            [cljsjs.codemirror])
+            [cljsjs.codemirror]
+            [cljs.reader :refer [read-string]])
   (:import goog.net.XhrIo))
 
 (def ^:const clojure-exts #{"boot" "clj" "cljc" "cljs" "cljx" "edn" "pxi" "hl"})
@@ -110,14 +111,19 @@
     (when-not (-> link (.getAttribute "href") (= css-file))
       (.setAttribute link "href" css-file))))
 
+(defn display-completions [completions]
+  (.treeview (js/$ "#completions")
+    (clj->js {:data (clj->js completions)})))
+
 (defn refresh-completions []
-  (when-let [info (psd/get-completion-info)]
+  (if-let [info (psd/get-completion-info)]
     (.send XhrIo
       "/completions"
       (fn [e]
-        (.log js/console (.. e -target getResponseText)))
+        (display-completions (read-string (.. e -target getResponseText))))
       "POST"
-      (pr-str info))))
+      (pr-str info))
+    (display-completions [])))
 
 (defn ps-init [path content]
   (let [elem (.createElement js/document "span")

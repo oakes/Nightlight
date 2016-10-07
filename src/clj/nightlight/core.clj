@@ -1,6 +1,7 @@
 (ns nightlight.core
   (:require [clojure.edn :as edn]
             [clojure.java.io :as io]
+            [clojure.set :as set]
             [ring.adapter.jetty :refer [run-jetty]]
             [ring.middleware.resource :refer [wrap-resource]]
             [ring.middleware.content-type :refer [wrap-content-type]]
@@ -82,8 +83,12 @@
                     :body (spit pref-file (body-string request))}
     "/completions" {:status 200
                     :headers {"Content-Type" "text/plain"}
-                    :body (let [{:keys [ns context prefix]} (->> request body-string edn/read-string)]
-                            (pr-str (com/completions prefix {:ns ns :context (read-string context)})))}
+                    :body (let [{:keys [ns context prefix text]} (->> request body-string edn/read-string)]
+                            (->> {:ns ns :context (read-string context)}
+                                 (com/completions prefix)
+                                 (map #(set/rename-keys % {:candidate :text}))
+                                 (filter #(not= text (:text %)))
+                                 pr-str))}
     nil))
 
 (defn start
