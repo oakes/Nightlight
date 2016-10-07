@@ -84,12 +84,14 @@
     "/completions" {:status 200
                     :headers {"Content-Type" "text/plain"}
                     :body (let [{:keys [ns context-before context-after prefix text]} (->> request body-string edn/read-string)]
-                            (->> {:ns ns :context (read-string (str context-before "__prefix__" context-after))}
-                                 (com/completions prefix)
-                                 (map #(set/rename-keys % {:candidate :text}))
-                                 (filter #(not= text (:text %)))
-                                 vec
-                                 pr-str))}
+                            (try
+                              (->> {:ns ns :context (read-string (str context-before "__prefix__" context-after))}
+                                   (com/completions prefix)
+                                   (map #(set/rename-keys % {:candidate :text}))
+                                   (filter #(not= text (:text %)))
+                                   vec
+                                   pr-str)
+                              (catch Exception _ "[]")))}
     nil))
 
 (defn start

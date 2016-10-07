@@ -5,8 +5,6 @@
             [paren-soup.dom :as psd])
   (:import goog.net.XhrIo))
 
-(def ^:const shortcuts #{32 38 40})
-
 (declare refresh-completions)
 
 (defn select-completion [editor {:keys [context-before context-after start-position]} text]
@@ -15,64 +13,51 @@
       (str context-before text context-after))
     (let [pos (+ start-position (count text))]
       (psd/set-cursor-position! top-level-elem [pos pos]))
-    (->> (ps/init-state (.querySelector js/document ".content") true false)
+    (->> (ps/init-state (.querySelector js/document "#content") true false)
          (ps/add-parinfer true -1 :paren)
          (ps/edit-and-refresh! editor))))
 
-(defn display-completions [editor completions-atom info]
-  (let [event (fn [e data]
+(defn display-completions [editor info completions]
+  (let [completions (if (seq completions)
+                      (assoc-in completions [0 :state :selected] true)
+                      completions)
+        event (fn [e data]
                 (select-completion editor info (.-text data))
-                (refresh-completions editor completions-atom))]
+                (refresh-completions editor))]
     (.treeview (js/$ "#completions")
-      (clj->js {:data (clj->js @completions-atom)
+      (clj->js {:data (clj->js completions)
                 :onNodeSelected event
                 :onNodeUnselected event}))))
 
-(defn select-node [editor completions-atom old-id new-id]
-  (when (get @completions-atom new-id)
-    (swap! completions-atom
-      (fn [completions]
-        (-> completions
-            (assoc-in [old-id :state :selected] false)
-            (assoc-in [new-id :state :selected] true)))))
-  (display-completions editor completions-atom (psd/get-completion-info)))
-
-(defn refresh-completions [editor completions-atom]
+(defn refresh-completions [editor]
   (if-let [info (psd/get-completion-info)]
     (.send XhrIo
       "/completions"
       (fn [e]
-        (reset! completions-atom (read-string (.. e -target getResponseText)))
-        (select-node editor completions-atom 0 0))
+        (display-completions editor info (read-string (.. e -target getResponseText))))
       "POST"
       (pr-str info))
-    (do
-      (reset! completions-atom [])
-      (display-completions editor completions-atom {}))))
-
-(defn refresh? [e]
-  (not (or (.-shiftKey e) (= 16 (.-keyCode e)))))
+    (display-completions editor {} [])))
 
 (defn completion-shortcut? [e]
-  (and (.-shiftKey e) (shortcuts (.-keyCode e))))
+  (and (= 9 (.-keyCode e))
+       (not (.-shiftKey e))
+       (psd/get-completion-info)
+       (some-> (psd/get-focused-top-level)
+               (psd/get-cursor-position true)
+               set
+               count
+               (= 1))))
 
-(defn init-completions [editor completions-atom elem]
+(defn init-completions [editor-atom elem]
   (events/listen (.querySelector elem "#completions") "mousedown"
     (fn [e]
       (.preventDefault e)))
-  (events/listen elem "keydown"
-    (fn [e]
-      (when (completion-shortcut? e)
-        (.preventDefault e))))
   (events/listen elem "keyup"
     (fn [e]
       (when (completion-shortcut? e)
         (when-let [node (some-> (.treeview (js/$ "#completions") "getSelected") (aget 0))]
-          (case (.-keyCode e)
-            32 (when-let [info (psd/get-completion-info)]
-                 (select-completion editor info (.-text node))
-                 (refresh-completions editor completions-atom))
-            38 (select-node editor completions-atom (.-nodeId node) (dec (.-nodeId node)))
-            40 (select-node editor completions-atom (.-nodeId node) (inc (.-nodeId node)))))
-        (.preventDefault e)))))
+          (when-let [info (psd/get-completion-info)]
+            (select-completion @editor-atom info (.-text node))
+            (refresh-completions @editor-atom)))))))
 

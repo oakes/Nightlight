@@ -118,8 +118,7 @@
         editor-atom (atom nil)
         last-content (atom content)
         themes {:dark "paren-soup-dark.css" :light "paren-soup-light.css"}
-        completions (when (completion-exts (get-extension path))
-                      (atom []))]
+        completions? (completion-exts (get-extension path))]
     (set! (.-innerHTML elem) (str toolbar ps-html))
     (set! (.-textContent (.querySelector elem "#content")) content)
     (-> elem (.querySelector "#instarepl") .-style (aset "display" "none"))
@@ -146,18 +145,20 @@
       (clean? [this]
         (= @last-content (get-content this)))
       (init [this]
+        (when completions?
+          (com/init-completions editor-atom elem))
         (reset! editor-atom
           (ps/init (.querySelector elem "#paren-soup")
-            (clj->js {:change-callback
+            (clj->js {:before-change-callback
+                      (fn [event]
+                        (com/completion-shortcut? event))
+                      :change-callback
                       (fn [event]
                         (when (= (.-type event) "keyup")
                           (auto-save this))
                         (update-buttons this)
-                        (when (and completions (com/refresh? event))
-                          (com/refresh-completions @editor-atom completions)))})))
-        (when completions
-          (com/init-completions @editor-atom completions elem))
-        @editor-atom)
+                        (when completions?
+                          (com/refresh-completions @editor-atom)))}))))
       (set-theme [this theme]
         (change-css "#paren-soup-css" (get themes theme :dark))))))
 
