@@ -88,6 +88,7 @@
                                  (com/completions prefix)
                                  (map #(set/rename-keys % {:candidate :text}))
                                  (filter #(not= text (:text %)))
+                                 vec
                                  pr-str))}
     nil))
 

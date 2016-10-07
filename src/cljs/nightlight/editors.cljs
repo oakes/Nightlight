@@ -1,12 +1,10 @@
 (ns nightlight.editors
   (:require [paren-soup.core :as ps]
-            [paren-soup.dom :as psd]
             [clojure.string :as str]
             [nightlight.state :as s]
+            [nightlight.completions :as com]
             [goog.functions :refer [debounce]]
-            [goog.events :as events]
-            [cljsjs.codemirror]
-            [cljs.reader :refer [read-string]])
+            [cljsjs.codemirror])
   (:import goog.net.XhrIo))
 
 (def ^:const clojure-exts #{"boot" "clj" "cljc" "cljs" "cljx" "edn" "pxi" "hl"})
@@ -115,44 +113,16 @@
     (when-not (-> link (.getAttribute "href") (= css-file))
       (.setAttribute link "href" css-file))))
 
-(declare refresh-completions)
-
-(defn select-completion [editor {:keys [context-before context-after start-position]} text]
-  (when-let [top-level-elem (psd/get-focused-top-level)]
-    (set! (.-textContent top-level-elem)
-      (str context-before text context-after))
-    (let [pos (+ start-position (count text))]
-      (psd/set-cursor-position! top-level-elem [pos pos]))
-    (ps/refresh-after-cut-paste! editor)
-    (refresh-completions editor)))
-
-(defn display-completions [editor info completions]
-  (.treeview (js/$ "#completions")
-    (clj->js {:data (clj->js completions)
-              :onNodeSelected (fn [e data] (select-completion editor info (.-text data)))})))
-
-(defn refresh-completions [editor]
-  (if-let [info (psd/get-completion-info)]
-    (.send XhrIo
-      "/completions"
-      (fn [e]
-        (display-completions editor info (read-string (.. e -target getResponseText))))
-      "POST"
-      (pr-str info))
-    (display-completions editor {} [])))
-
 (defn ps-init [path content]
   (let [elem (.createElement js/document "span")
         editor-atom (atom nil)
         last-content (atom content)
         themes {:dark "paren-soup-dark.css" :light "paren-soup-light.css"}
-        completions? (completion-exts (get-extension path))]
+        completions (when (completion-exts (get-extension path))
+                      (atom []))]
     (set! (.-innerHTML elem) (str toolbar ps-html))
     (set! (.-textContent (.querySelector elem "#content")) content)
     (-> elem (.querySelector "#instarepl") .-style (aset "display" "none"))
-    (events/listen (.querySelector elem "#completions") "mousedown"
-      (fn [e]
-        (.preventDefault e)))
     (reify Editor
       (get-path [this] path)
       (get-element [this] elem)
@@ -183,8 +153,11 @@
                         (when (= (.-type event) "keyup")
                           (auto-save this))
                         (update-buttons this)
-                        (when completions?
-                          (some-> @editor-atom refresh-completions)))}))))
+                        (when (and completions (com/refresh? event))
+                          (com/refresh-completions @editor-atom completions)))})))
+        (when completions
+          (com/init-completions @editor-atom completions elem))
+        @editor-atom)
       (set-theme [this theme]
         (change-css "#paren-soup-css" (get themes theme :dark))))))
 
