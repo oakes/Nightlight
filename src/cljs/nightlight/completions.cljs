@@ -18,10 +18,7 @@
          (ps/edit-and-refresh! editor))))
 
 (defn display-completions [editor info completions]
-  (let [completions (if (seq completions)
-                      (assoc-in completions [0 :state :selected] true)
-                      completions)
-        event (fn [e data]
+  (let [event (fn [e data]
                 (select-completion editor info (.-text data))
                 (refresh-completions editor))]
     (.treeview (js/$ "#completions")

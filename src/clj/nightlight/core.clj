@@ -90,6 +90,7 @@
                                    (map #(set/rename-keys % {:candidate :text}))
                                    (filter #(not= text (:text %)))
                                    vec
+                                   (#(if (seq %) (assoc-in % [0 :state :selected] true) %)) ; select the first item
                                    pr-str)
                               (catch Exception _ "[]")))}
     nil))
