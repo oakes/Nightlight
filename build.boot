@@ -9,7 +9,7 @@
                   [ring "1.4.0"]
                   [compliment "0.3.1"]
                   [eval-soup "1.0.0"]
-                  [paren-soup "2.6.2"]
+                  [paren-soup "2.6.3"]
                   [cljsjs/bootstrap "3.3.6-1"]
                   [cljsjs/bootstrap-toggle "2.2.2-0"]
                   [cljsjs/bootstrap-treeview "1.2.0-1"]

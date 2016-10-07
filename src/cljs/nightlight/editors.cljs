@@ -4,6 +4,7 @@
             [clojure.string :as str]
             [nightlight.state :as s]
             [goog.functions :refer [debounce]]
+            [goog.events :as events]
             [cljsjs.codemirror]
             [cljs.reader :refer [read-string]])
   (:import goog.net.XhrIo))
@@ -114,20 +115,31 @@
     (when-not (-> link (.getAttribute "href") (= css-file))
       (.setAttribute link "href" css-file))))
 
-(defn display-completions [completions]
+(declare refresh-completions)
+
+(defn select-completion [editor {:keys [context-before context-after start-position]} text]
+  (when-let [top-level-elem (psd/get-focused-top-level)]
+    (set! (.-textContent top-level-elem)
+      (str context-before text context-after))
+    (let [pos (+ start-position (count text))]
+      (psd/set-cursor-position! top-level-elem [pos pos]))
+    (ps/refresh-after-cut-paste! editor)
+    (refresh-completions editor)))
+
+(defn display-completions [editor info completions]
   (.treeview (js/$ "#completions")
     (clj->js {:data (clj->js completions)
-              :onNodeSelected (fn [e data])})))
+              :onNodeSelected (fn [e data] (select-completion editor info (.-text data)))})))
 
-(defn refresh-completions []
+(defn refresh-completions [editor]
   (if-let [info (psd/get-completion-info)]
     (.send XhrIo
       "/completions"
       (fn [e]
-        (display-completions (read-string (.. e -target getResponseText))))
+        (display-completions editor info (read-string (.. e -target getResponseText))))
       "POST"
       (pr-str info))
-    (display-completions [])))
+    (display-completions editor {} [])))
 
 (defn ps-init [path content]
   (let [elem (.createElement js/document "span")
@@ -138,6 +150,9 @@
     (set! (.-innerHTML elem) (str toolbar ps-html))
     (set! (.-textContent (.querySelector elem "#content")) content)
     (-> elem (.querySelector "#instarepl") .-style (aset "display" "none"))
+    (events/listen (.querySelector elem "#completions") "mousedown"
+      (fn [e]
+        (.preventDefault e)))
     (reify Editor
       (get-path [this] path)
       (get-element [this] elem)
@@ -169,7 +184,7 @@
                           (auto-save this))
                         (update-buttons this)
                         (when completions?
-                          (refresh-completions)))}))))
+                          (some-> @editor-atom refresh-completions)))}))))
       (set-theme [this theme]
         (change-css "#paren-soup-css" (get themes theme :dark))))))
 

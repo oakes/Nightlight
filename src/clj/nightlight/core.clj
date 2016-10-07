@@ -83,8 +83,8 @@
                     :body (spit pref-file (body-string request))}
     "/completions" {:status 200
                     :headers {"Content-Type" "text/plain"}
-                    :body (let [{:keys [ns context prefix text]} (->> request body-string edn/read-string)]
-                            (->> {:ns ns :context (read-string context)}
+                    :body (let [{:keys [ns context-before context-after prefix text]} (->> request body-string edn/read-string)]
+                            (->> {:ns ns :context (read-string (str context-before "__prefix__" context-after))}
                                  (com/completions prefix)
                                  (map #(set/rename-keys % {:candidate :text}))
                                  (filter #(not= text (:text %)))
