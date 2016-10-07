@@ -157,7 +157,7 @@
                         (when (= (.-type event) "keyup")
                           (auto-save this))
                         (update-buttons this)
-                        (when completions?
+                        (when (and completions? (not= (.-type event) "keydown"))
                           (com/refresh-completions @editor-atom)))}))))
       (set-theme [this theme]
         (change-css "#paren-soup-css" (get themes theme :dark))))))
