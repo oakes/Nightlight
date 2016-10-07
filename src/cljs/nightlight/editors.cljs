@@ -44,6 +44,19 @@
 </div>
 ")
 
+(def ps-repl-html "
+<div class='toolbar'>
+  <button type='button' class='btn btn-default navbar-btn' id='undo'>Undo</button>
+  <button type='button' class='btn btn-default navbar-btn' id='redo'>Redo</button>
+</div>
+<div class='paren-soup' id='paren-soup'>
+  <div class='content' contenteditable='true' id='content'></div>
+</div>
+<div class='rightsidebar'>
+  <div id='completions'></div>
+</div>
+")
+
 (defn get-extension [path]
   (->> (.lastIndexOf path ".")
        (+ 1)
@@ -64,23 +77,26 @@
     (pr-str {:path (get-path editor) :content (get-content editor)})))
 
 (defn connect-buttons [editor]
-  (let [save-elem (-> (get-element editor) (.querySelector "#save"))
-        undo-elem (-> (get-element editor) (.querySelector "#undo"))
-        redo-elem (-> (get-element editor) (.querySelector "#redo"))]
-    (.addEventListener save-elem "click" #(write-file editor))
-    (.addEventListener undo-elem "click" #(undo editor))
-    (.addEventListener redo-elem "click" #(redo editor))))
+  (some-> (get-element editor)
+          (.querySelector "#save")
+          (.addEventListener "click" #(write-file editor)))
+  (some-> (get-element editor)
+          (.querySelector "#undo")
+          (.addEventListener "click" #(undo editor)))
+  (some-> (get-element editor)
+          (.querySelector "#redo")
+          (.addEventListener "click" #(redo editor))))
 
 (defn update-buttons [editor]
-  (let [save-css (-> (get-element editor) (.querySelector "#save") .-classList)
-        undo-css (-> (get-element editor) (.querySelector "#undo") .-classList)
-        redo-css (-> (get-element editor) (.querySelector "#redo") .-classList)]
+  (when-let [save-css (some-> (get-element editor) (.querySelector "#save") .-classList)]
     (if (clean? editor)
       (.add save-css "disabled")
-      (.remove save-css "disabled"))
+      (.remove save-css "disabled")))
+  (when-let [undo-css (some-> (get-element editor) (.querySelector "#undo") .-classList)]
     (if (can-undo? editor)
       (.remove undo-css "disabled")
-      (.add undo-css "disabled"))
+      (.add undo-css "disabled")))
+  (when-let [redo-css (some-> (get-element editor) (.querySelector "#redo") .-classList)]
     (if (can-redo? editor)
       (.remove redo-css "disabled")
       (.add redo-css "disabled"))))
@@ -147,6 +163,7 @@
       (init [this]
         (when completions?
           (com/init-completions editor-atom elem))
+        (init-instarepl this)
         (reset! editor-atom
           (ps/init (.querySelector elem "#paren-soup")
             (clj->js {:before-change-callback
@@ -159,6 +176,55 @@
                         (update-buttons this)
                         (when (and completions? (not= (.-type event) "keydown"))
                           (com/refresh-completions @editor-atom)))}))))
+      (set-theme [this theme]
+        (change-css "#paren-soup-css" (get themes theme :dark))))))
+
+(defn ps-repl-init []
+  (let [elem (.createElement js/document "span")
+        editor-atom (atom nil)
+        themes {:dark "paren-soup-dark.css" :light "paren-soup-light.css"}]
+    (set! (.-innerHTML elem) ps-repl-html)
+    (reify Editor
+      (get-path [this] "*REPL*")
+      (get-element [this] elem)
+      (get-content [this]
+        (.-textContent (.querySelector elem "#content")))
+      (can-undo? [this]
+        (some-> @editor-atom ps/can-undo?))
+      (can-redo? [this]
+        (some-> @editor-atom ps/can-redo?))
+      (undo [this]
+        (some-> @editor-atom ps/undo)
+        (update-buttons this))
+      (redo [this]
+        (some-> @editor-atom ps/redo)
+        (update-buttons this))
+      (mark-clean [this])
+      (clean? [this] true)
+      (init [this]
+        (com/init-completions editor-atom elem)
+        (reset! editor-atom
+          (ps/init (.querySelector elem "#paren-soup")
+            (clj->js {:before-change-callback
+                      (fn [event]
+                        (com/completion-shortcut? event))
+                      :change-callback
+                      (fn [event]
+                        (update-buttons this)
+                        (let [content (.querySelector elem "#content")]
+                          (set! (.-scrollTop content) (.-scrollHeight content)))
+                        (when (not= (.-type event) "keydown")
+                          (com/refresh-completions @editor-atom)))
+                      :console-callback
+                      (fn [text]
+                        (ps/eval! @editor-atom text
+                          (fn [result]
+                            (let [result (if (array? result) (aget result 0) result)]
+                              (ps/append-text! @editor-atom (str result "\n"))
+                              (ps/append-text! @editor-atom "=> "))
+                            (let [content (.querySelector elem "#content")]
+                              (set! (.-scrollTop content) (.-scrollHeight content))))))})))
+        (ps/append-text! @editor-atom "=> "))
       (set-theme [this theme]
         (change-css "#paren-soup-css" (get themes theme :dark))))))
 
@@ -212,7 +278,6 @@
   (.appendChild (clear-editor) (get-element editor))
   (doto editor
     (init)
-    (init-instarepl)
     (set-theme (:theme @s/pref-state))
     (update-buttons)
     (connect-buttons)))
@@ -220,15 +285,19 @@
 (defn read-file [path]
   (if-let [editor (get-in @s/runtime-state [:editors path])]
     (.appendChild (clear-editor) (get-element editor))
-    (.send XhrIo
-      "/read-file"
-      (fn [e]
-        (if (.isSuccess (.-target e))
-          (->> (.. e -target getResponseText)
-               (create-editor path)
-               (init-editor)
-               (swap! s/runtime-state update :editors assoc path))
-          (clear-editor)))
-      "POST"
-      path)))
+    (if (= path "*REPL*")
+      (->> (ps-repl-init)
+           (init-editor)
+           (swap! s/runtime-state update :editors assoc path))
+      (.send XhrIo
+        "/read-file"
+        (fn [e]
+          (if (.isSuccess (.-target e))
+            (->> (.. e -target getResponseText)
+                 (create-editor path)
+                 (init-editor)
+                 (swap! s/runtime-state update :editors assoc path))
+            (clear-editor)))
+        "POST"
+        path))))
 

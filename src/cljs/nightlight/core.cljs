@@ -26,10 +26,12 @@
 (defn node-collapsed [e data]
   (swap! s/pref-state update :expansions disj (.-path data)))
 
+(def repl-node {:text "REPL" :path "*REPL*" :file true})
+
 (defn init-tree [{:keys [text nodes path file?]}]
   (set! (.-title js/document) text)
   (.treeview (js/$ "#tree")
-    (clj->js {:data nodes
+    (clj->js {:data (cons repl-node nodes)
               :onNodeSelected node-selected
               :onNodeExpanded node-expanded
               :onNodeCollapsed node-collapsed}))
