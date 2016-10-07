@@ -15,7 +15,9 @@
       (str context-before text context-after))
     (let [pos (+ start-position (count text))]
       (psd/set-cursor-position! top-level-elem [pos pos]))
-    (ps/refresh-after-cut-paste! editor)))
+    (->> (ps/init-state (.querySelector js/document ".content") true false)
+         (ps/add-parinfer true -1 :paren)
+         (ps/edit-and-refresh! editor))))
 
 (defn display-completions [editor completions-atom info]
   (let [event (fn [e data]
