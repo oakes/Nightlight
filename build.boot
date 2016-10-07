@@ -4,12 +4,12 @@
   :dependencies '[[adzerk/boot-cljs "1.7.228-1" :scope "test"]
                   [adzerk/boot-reload "0.4.12" :scope "test"]
                   [org.clojure/test.check "0.9.0" :scope "test"]
-                  [org.clojure/clojure "1.9.0-alpha13"]
+                  [org.clojure/clojure "1.8.0"]
                   [org.clojure/clojurescript "1.9.227"]
                   [ring "1.4.0"]
                   [compliment "0.3.1"]
                   [eval-soup "1.0.0"]
-                  [paren-soup "2.6.4"]
+                  [paren-soup "2.6.5"]
                   [cljsjs/bootstrap "3.3.6-1"]
                   [cljsjs/bootstrap-toggle "2.2.2-0"]
                   [cljsjs/bootstrap-treeview "1.2.0-1"]
@@ -45,9 +45,7 @@
     (target)
     (with-pre-wrap fileset
       (require
-        '[clojure.spec.test :refer [instrument]]
         '[nightlight.core :refer [dev-start]])
-      ((resolve 'instrument))
       ((resolve 'dev-start) {:port 3000})
       fileset)))
 
