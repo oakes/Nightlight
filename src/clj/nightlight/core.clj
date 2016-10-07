@@ -8,7 +8,8 @@
             [ring.util.response :refer [redirect]]
             [ring.util.request :refer [body-string]]
             [clojure.spec :as s :refer [fdef]]
-            [eval-soup.core :as es])
+            [eval-soup.core :as es]
+            [compliment.core :as com])
   (:import [java.io File FilenameFilter]))
 
 (def ^:const max-file-size (* 1024 1024 2))
@@ -79,6 +80,10 @@
     "/write-state" {:status 200
                     :headers {"Content-Type" "text/plain"}
                     :body (spit pref-file (body-string request))}
+    "/completions" {:status 200
+                    :headers {"Content-Type" "text/plain"}
+                    :body (let [{:keys [ns context prefix]} (->> request body-string edn/read-string)]
+                            (pr-str (com/completions prefix {:ns ns :context (read-string context)})))}
     nil))
 
 (defn start

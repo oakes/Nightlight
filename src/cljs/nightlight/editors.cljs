@@ -1,5 +1,6 @@
 (ns nightlight.editors
   (:require [paren-soup.core :as ps]
+            [paren-soup.dom :as psd]
             [clojure.string :as str]
             [nightlight.state :as s]
             [goog.functions :refer [debounce]]
@@ -8,6 +9,7 @@
 
 (def ^:const clojure-exts #{"boot" "clj" "cljc" "cljs" "cljx" "edn" "pxi" "hl"})
 (def ^:const instarepl-exts #{"clj" "cljc"})
+(def ^:const completion-exts #{"clj"})
 
 (defprotocol Editor
   (get-path [this])
@@ -108,11 +110,21 @@
     (when-not (-> link (.getAttribute "href") (= css-file))
       (.setAttribute link "href" css-file))))
 
+(defn refresh-completions []
+  (when-let [info (psd/get-completion-info)]
+    (.send XhrIo
+      "/completions"
+      (fn [e]
+        (.log js/console (.. e -target getResponseText)))
+      "POST"
+      (pr-str info))))
+
 (defn ps-init [path content]
   (let [elem (.createElement js/document "span")
         editor-atom (atom nil)
         last-content (atom content)
-        themes {:dark "paren-soup-dark.css" :light "paren-soup-light.css"}]
+        themes {:dark "paren-soup-dark.css" :light "paren-soup-light.css"}
+        completions? (completion-exts (get-extension path))]
     (set! (.-innerHTML elem) (str toolbar ps-html))
     (set! (.-textContent (.querySelector elem "#content")) content)
     (-> elem (.querySelector "#instarepl") .-style (aset "display" "none"))
@@ -145,7 +157,9 @@
                       (fn [event]
                         (when (= (.-type event) "keyup")
                           (auto-save this))
-                        (update-buttons this))}))))
+                        (update-buttons this)
+                        (when completions?
+                          (refresh-completions)))}))))
       (set-theme [this theme]
         (change-css "#paren-soup-css" (get themes theme :dark))))))
 
