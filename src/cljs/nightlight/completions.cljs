@@ -34,8 +34,8 @@
       (fn [completions]
         (-> completions
             (assoc-in [old-id :state :selected] false)
-            (assoc-in [new-id :state :selected] true))))
-    (display-completions editor completions-atom (psd/get-completion-info))))
+            (assoc-in [new-id :state :selected] true)))))
+  (display-completions editor completions-atom (psd/get-completion-info)))
 
 (defn refresh-completions [editor completions-atom]
   (if-let [info (psd/get-completion-info)]
