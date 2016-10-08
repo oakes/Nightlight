@@ -81,10 +81,10 @@
     api-url
     (fn [e]
       (when (and (.isSuccess (.-target e))
-                 (->> (.. e -target getResponseText)
-                      (.parse js/JSON)
-                      .-latest_version
-                      (not= version)))
+                 (some->> (.. e -target getResponseText)
+                          (.parse js/JSON)
+                          .-latest_version
+                          (not= version)))
         (doto (.querySelector js/document "#update")
           (-> .-style (aset "display" "block"))
           (.addEventListener "click" #(.open js/window page-url)))))

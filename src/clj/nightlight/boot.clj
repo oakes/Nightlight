@@ -4,7 +4,7 @@
             [boot.core :as core]))
 
 (core/deftask night
-  [o opts OPTS edn "Options map."]
+  [p port PORT int "The port that Nightlight runs on."]
   (core/with-pass-thru fs
-    (start opts)))
+    (start {:port port})))
 
