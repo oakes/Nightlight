@@ -27,8 +27,9 @@
                 overflow: hidden;
             }
             .toolbar {
-                position: absolute;
+                position: fixed;
                 height: 50px;
+                top: 0px;
                 left: 300px;
             }
             .paren-soup, .CodeMirror {
@@ -44,29 +45,37 @@
                 min-height: 100%;
             }
             #update {
+                position: fixed;
+                top: 0px;
+                right: 0px;
+                margin: 5px;
                 display: none;
+            }
+            #settings {
+                position: fixed;
+                top: 0px;
+                left: 0px;
             }
             #settings > * {
                 margin: 5px;
             }
             .leftsidebar {
-                position: absolute;
+                position: fixed;
                 width: 300px;
                 left: 0px;
-                top: 0px;
+                top: 50px;
+                bottom: 0px;
                 padding: 5px;
-                height: 100%;
                 overflow: auto;
             }
             .rightsidebar {
-                position: absolute;
+                position: fixed;
                 width: 300px;
                 right: 0px;
                 top: 50px;
+                bottom: 0px;
                 padding: 5px;
-                height: 100%;
                 overflow: auto;
-                padding-bottom: 50px;
             }
             li {
                 white-space: nowrap;
@@ -75,12 +84,12 @@
         </style>
     </head>
     <body>
+        <div id="settings">
+            <input type="checkbox" data-toggle="toggle" id="toggleAutoSave" data-on=" Auto Save " data-off=" Auto Save ">
+            <input type="checkbox" data-toggle="toggle" id="toggleTheme" data-on=" Light Theme " data-off=" Dark Theme ">
+        </div>
+        <button type="button" class="btn btn-warning" id="update">Update Nightlight</button>
         <div class="leftsidebar">
-            <div id="settings">
-                <button type="button" class="btn btn-warning" id="update">Update Nightlight</button>
-                <input type="checkbox" data-toggle="toggle" id="toggleAutoSave" data-on="Auto Save" data-off="Auto Save">
-                <input type="checkbox" data-toggle="toggle" id="toggleTheme" data-on="Light Theme" data-off="Dark Theme">
-            </div>
             <div id="tree"></div>
         </div>
         <span id="editor"></span>
