@@ -119,10 +119,10 @@
     (doto (js/$ "#toggleInstaRepl")
       (.bootstrapToggle "off")
       (.change (fn [e] (toggle-instarepl editor (-> e .-target .-checked)))))
-    (-> js/document
-        (.querySelector "#toggleInstaRepl")
-        .-style
-        (aset "display" "none"))))
+    (some-> js/document
+            (.querySelector "#toggleInstaRepl")
+            .-style
+            (aset "display" "none"))))
 
 (defn change-css [sel css-file]
   (let [link (.querySelector js/document sel)]
@@ -163,7 +163,6 @@
       (init [this]
         (when completions?
           (com/init-completions editor-atom elem))
-        (init-instarepl this)
         (reset! editor-atom
           (ps/init (.querySelector elem "#paren-soup")
             (clj->js {:before-change-callback
@@ -284,6 +283,7 @@
   (doto editor
     (show-editor)
     (init)
+    (init-instarepl)
     (set-theme (:theme @s/pref-state))
     (update-buttons)
     (connect-buttons)))
