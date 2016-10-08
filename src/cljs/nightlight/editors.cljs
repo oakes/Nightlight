@@ -182,7 +182,7 @@
   (let [elem (.createElement js/document "span")
         editor-atom (atom nil)
         themes {:dark "paren-soup-dark.css" :light "paren-soup-light.css"}
-        sock (js/WebSocket. "ws://localhost:3000/repl")]
+        sock (js/WebSocket. (str "ws://" (-> js/window .-location .-host)  "/repl"))]
     (set! (.-onopen sock)
       (fn [event]
         (.send sock "")))
