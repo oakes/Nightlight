@@ -107,13 +107,20 @@
                     (.flush)))))
     nil))
 
+(defn print-server [server]
+  (println
+    (str "Started Nightlight on http://localhost:"
+      (-> server meta :local-port)))
+  server)
+
 (defn start
   ([opts]
    (start (wrap-resource handler "nightlight-public") opts))
   ([app opts]
    (->> (merge {:port 0} opts)
         (run-server (wrap-content-type app))
-        (reset! web-server))))
+        (reset! web-server)
+        print-server)))
 
 (defn dev-start [opts]
   (when-not @web-server
