@@ -87,6 +87,7 @@
 
 (defn main []
   (download-state)
+  (e/init-repl)
   #_(check-version))
 
 (main)

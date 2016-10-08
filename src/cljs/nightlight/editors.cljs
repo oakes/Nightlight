@@ -177,12 +177,21 @@
                         (when (and completions? (not= (.-type event) "keydown"))
                           (com/refresh-completions @editor-atom)))}))))
       (set-theme [this theme]
-        (change-css "#paren-soup-css" (get themes theme :dark))))))
+        (change-css "#paren-soup-css" (get themes theme "paren-soup-dark.css"))))))
 
 (defn ps-repl-init []
   (let [elem (.createElement js/document "span")
         editor-atom (atom nil)
-        themes {:dark "paren-soup-dark.css" :light "paren-soup-light.css"}]
+        themes {:dark "paren-soup-dark.css" :light "paren-soup-light.css"}
+        sock (js/WebSocket. "ws://localhost:3000/repl")]
+    (set! (.-onopen sock)
+      (fn [event]
+        (.send sock "")))
+    (set! (.-onmessage sock)
+      (fn [event]
+        (some-> @editor-atom (ps/append-text! (.-data event)))
+        (let [content (.querySelector elem "#content")]
+          (set! (.-scrollTop content) (.-scrollHeight content)))))
     (set! (.-innerHTML elem) ps-repl-html)
     (reify Editor
       (get-path [this] "*REPL*")
@@ -217,16 +226,9 @@
                           (com/refresh-completions @editor-atom)))
                       :console-callback
                       (fn [text]
-                        (ps/eval! @editor-atom text
-                          (fn [result]
-                            (let [result (if (array? result) (aget result 0) result)]
-                              (ps/append-text! @editor-atom (str result "\n"))
-                              (ps/append-text! @editor-atom "=> "))
-                            (let [content (.querySelector elem "#content")]
-                              (set! (.-scrollTop content) (.-scrollHeight content))))))})))
-        (ps/append-text! @editor-atom "=> "))
+                        (.send sock (str text "\n")))}))))
       (set-theme [this theme]
-        (change-css "#paren-soup-css" (get themes theme :dark))))))
+        (change-css "#paren-soup-css" (get themes theme "paren-soup-dark.css"))))))
 
 (defn cm-init [path content]
   (let [elem (.createElement js/document "span")
@@ -267,7 +269,7 @@
                 (auto-save this)
                 (update-buttons this))))))
       (set-theme [this theme]
-        (some-> @editor-atom (.setOption "theme" (get themes theme :dark)))))))
+        (some-> @editor-atom (.setOption "theme" (get themes theme "lesser-dark")))))))
 
 (defn create-editor [path content]
   (if (-> path get-extension clojure-exts some?)
@@ -282,22 +284,23 @@
     (update-buttons)
     (connect-buttons)))
 
+(defn init-repl []
+  (->> (ps-repl-init)
+       (init-editor)
+       (swap! s/runtime-state update :editors assoc "*REPL*")))
+
 (defn read-file [path]
   (if-let [editor (get-in @s/runtime-state [:editors path])]
     (.appendChild (clear-editor) (get-element editor))
-    (if (= path "*REPL*")
-      (->> (ps-repl-init)
-           (init-editor)
-           (swap! s/runtime-state update :editors assoc path))
-      (.send XhrIo
-        "/read-file"
-        (fn [e]
-          (if (.isSuccess (.-target e))
-            (->> (.. e -target getResponseText)
-                 (create-editor path)
-                 (init-editor)
-                 (swap! s/runtime-state update :editors assoc path))
-            (clear-editor)))
-        "POST"
-        path))))
+    (.send XhrIo
+      "/read-file"
+      (fn [e]
+        (if (.isSuccess (.-target e))
+          (->> (.. e -target getResponseText)
+               (create-editor path)
+               (init-editor)
+               (swap! s/runtime-state update :editors assoc path))
+          (clear-editor)))
+      "POST"
+      path)))
 

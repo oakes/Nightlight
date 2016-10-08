@@ -2,15 +2,15 @@
   (:require [clojure.edn :as edn]
             [clojure.java.io :as io]
             [clojure.set :as set]
-            [ring.adapter.jetty :refer [run-jetty]]
             [ring.middleware.resource :refer [wrap-resource]]
             [ring.middleware.content-type :refer [wrap-content-type]]
             [ring.middleware.file :refer [wrap-file]]
             [ring.util.response :refer [redirect]]
             [ring.util.request :refer [body-string]]
-            [clojure.spec :as s :refer [fdef]]
             [eval-soup.core :as es]
-            [compliment.core :as com])
+            [compliment.core :as com]
+            [nightlight.repl :as repl]
+            [org.httpkit.server :refer [run-server with-channel on-receive on-close]])
   (:import [java.io File FilenameFilter]))
 
 (def ^:const max-file-size (* 1024 1024 2))
@@ -93,14 +93,26 @@
                                    (#(if (seq %) (assoc-in % [0 :state :selected] true) %)) ; select the first item
                                    pr-str)
                               (catch Exception _ "[]")))}
+    "/repl" (with-channel request channel
+              (on-close channel (fn [status]
+                                  (swap! repl/state dissoc channel)))
+              (on-receive channel
+                (fn [text]
+                  (when-not (get @repl/state channel)
+                    (->> (repl/create-pipes)
+                         (repl/start-repl-thread! channel)
+                         (swap! repl/state assoc channel)))
+                  (doto (get-in @repl/state [channel :out-pipe])
+                    (.write text)
+                    (.flush)))))
     nil))
 
 (defn start
   ([opts]
    (start (wrap-resource handler "nightlight-public") opts))
   ([app opts]
-   (->> (merge {:port 0 :join? false} opts)
-        (run-jetty (wrap-content-type app))
+   (->> (merge {:port 0} opts)
+        (run-server (wrap-content-type app))
         (reset! web-server))))
 
 (defn dev-start [opts]

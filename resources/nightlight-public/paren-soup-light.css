@@ -48,6 +48,7 @@
 	padding: 0px 5px;
 	text-align: right;
 	opacity: 0.7;
+    border-right: 1px solid #ddd;
 }
 
 .paren-soup .content {
@@ -57,7 +58,6 @@
 	white-space: pre;
 	word-wrap: normal;
 	overflow: scroll;
-	border-left: 1px solid #ddd;
 	background-color: white;
 }
 
