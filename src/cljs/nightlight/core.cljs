@@ -28,7 +28,10 @@
   (swap! s/pref-state update :expansions disj (.-path data)))
 
 (defn repl-node [{:keys [path]}]
-  {:text "REPL" :path repl-path :state {:selected (= path repl-path)}})
+  {:text "REPL"
+   :path repl-path
+   :icon "glyphicon glyphicon-chevron-right"
+   :state {:selected (= path repl-path)}})
 
 (defn init-tree [{:keys [text nodes selection file?]}]
   (set! (.-title js/document) text)
