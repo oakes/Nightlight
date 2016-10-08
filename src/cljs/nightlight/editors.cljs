@@ -212,6 +212,7 @@
       (clean? [this] true)
       (init [this]
         (com/init-completions editor-atom elem)
+        (-> (.querySelector elem "#content") .-style (aset "whiteSpace" "pre-wrap"))
         (reset! editor-atom
           (ps/init (.querySelector elem "#paren-soup")
             (clj->js {:before-change-callback
