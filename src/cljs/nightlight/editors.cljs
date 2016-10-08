@@ -277,9 +277,12 @@
     (ps-init path content)
     (cm-init path content)))
 
+(defn show-editor [editor]
+  (.appendChild (clear-editor) (get-element editor)))
+
 (defn init-editor [editor]
-  (.appendChild (clear-editor) (get-element editor))
   (doto editor
+    (show-editor)
     (init)
     (set-theme (:theme @s/pref-state))
     (update-buttons)
@@ -292,7 +295,7 @@
 
 (defn read-file [path]
   (if-let [editor (get-in @s/runtime-state [:editors path])]
-    (.appendChild (clear-editor) (get-element editor))
+    (show-editor editor)
     (.send XhrIo
       "/read-file"
       (fn [e]

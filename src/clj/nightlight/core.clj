@@ -32,8 +32,8 @@
    (let [pref-state (edn/read-string (read-state))
          selection (:selection pref-state)]
      (assoc (file-node file pref-state)
-       :path selection
-       :file? (some-> selection io/file .isFile))))
+       :selection {:path selection
+                   :file? (some-> selection io/file .isFile)})))
   ([^File file {:keys [expansions selection] :as pref-state}]
    (let [path (.getCanonicalPath file)
          children (->> (reify FilenameFilter
