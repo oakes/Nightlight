@@ -24,7 +24,7 @@
 
 
 (defn nightlight
-  "A conveninent Nightlife launcher
+  "A conveninent Nightlight launcher
   Run with -u to see CLI usage."
   [project & args]
   (let [cli (cli/parse-opts args cli-options)]
