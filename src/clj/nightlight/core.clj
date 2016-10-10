@@ -107,6 +107,9 @@
                     (.flush)))))
     nil))
 
+(def app (wrap-resource handler "nightlight-public"))
+(def dev-app (wrap-file handler "target/nightlight-public"))
+
 (defn print-server [server]
   (println
     (str "Started Nightlight on http://localhost:"
@@ -115,7 +118,7 @@
 
 (defn start
   ([opts]
-   (start (wrap-resource handler "nightlight-public") opts))
+   (start app opts))
   ([app opts]
    (->> (merge {:port 0} opts)
         (run-server (wrap-content-type app))
@@ -125,5 +128,5 @@
 (defn dev-start [opts]
   (when-not @web-server
     (.mkdirs (io/file "target" "nightlight-public"))
-    (start (wrap-file handler "target/nightlight-public") opts)))
+    (start dev-app opts)))
 
