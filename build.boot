@@ -16,7 +16,7 @@
                   [ring "1.5.0"]
                   [http-kit "2.2.0"]
                   [compliment "0.3.1"]
-                  [eval-soup "1.0.1" :exclusions [org.clojure/core.async]]]
+                  [eval-soup "1.0.2" :exclusions [org.clojure/core.async]]]
   :repositories (conj (get-env :repositories)
                   ["clojars" {:url "https://clojars.org/repo/"
                               :username (System/getenv "CLOJARS_USER")
