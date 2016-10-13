@@ -10,7 +10,7 @@
             [eval-soup.core :as es]
             [compliment.core :as com]
             [nightlight.repl :as repl]
-            [org.httpkit.server :refer [run-server with-channel on-receive on-close]])
+            [org.httpkit.server :refer [run-server]])
   (:import [java.io File FilenameFilter]))
 
 (def ^:const max-file-size (* 1024 1024 2))
@@ -31,9 +31,9 @@
   ([^File file]
    (let [pref-state (edn/read-string (read-state))
          selection (:selection pref-state)]
-     (assoc (file-node file pref-state)
-       :selection {:path selection
-                   :file? (some-> selection io/file .isFile)})))
+     (-> (file-node file pref-state)
+         (assoc :selection {:path selection
+                            :file? (some-> selection io/file .isFile)}))))
   ([^File file {:keys [expansions selection] :as pref-state}]
    (let [path (.getCanonicalPath file)
          children (->> (reify FilenameFilter
@@ -93,18 +93,7 @@
                                    (#(if (seq %) (assoc-in % [0 :state :selected] true) %)) ; select the first item
                                    pr-str)
                               (catch Exception _ "[]")))}
-    "/repl" (with-channel request channel
-              (on-close channel (fn [status]
-                                  (swap! repl/state dissoc channel)))
-              (on-receive channel
-                (fn [text]
-                  (when-not (get @repl/state channel)
-                    (->> (repl/create-pipes)
-                         (repl/start-repl-thread! channel)
-                         (swap! repl/state assoc channel)))
-                  (doto (get-in @repl/state [channel :out-pipe])
-                    (.write text)
-                    (.flush)))))
+    "/repl" (repl/repl-request request)
     nil))
 
 (defn print-server [server]
@@ -117,10 +106,11 @@
   ([opts]
    (start (wrap-resource handler "nightlight-public") opts))
   ([app opts]
-   (->> (merge {:port 0} opts)
-        (run-server (wrap-content-type app))
-        (reset! web-server)
-        print-server)))
+   (when-not @web-server
+     (->> (merge {:port 0} opts)
+          (run-server (wrap-content-type app))
+          (reset! web-server)
+          print-server))))
 
 (defn dev-start [opts]
   (when-not @web-server

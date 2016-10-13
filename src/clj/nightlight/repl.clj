@@ -1,6 +1,6 @@
 (ns nightlight.repl
   (:require [clojure.string :as str]
-            [org.httpkit.server :refer [send!]])
+            [org.httpkit.server :refer [send! with-channel on-receive on-close]])
   (:import [clojure.lang LineNumberingPushbackReader]
            [java.io PipedWriter PipedReader PrintWriter]))
 
@@ -45,4 +45,18 @@
               (catch Exception e (some-> (.getMessage e) println))
               (finally (println "=== Finished ==="))))))))
   pipes)
+
+(defn repl-request [request]
+  (with-channel request channel
+    (on-close channel (fn [status]
+                        (swap! state dissoc channel)))
+    (on-receive channel
+      (fn [text]
+        (when-not (get @state channel)
+          (->> (create-pipes)
+               (start-repl-thread! channel)
+               (swap! state assoc channel)))
+        (doto (get-in @state [channel :out-pipe])
+          (.write text)
+          (.flush))))))
 

@@ -5,6 +5,6 @@
 
 (core/deftask night
   [p port PORT int "The port that Nightlight runs on."]
-  (core/with-pass-thru fs
+  (core/with-pass-thru _
     (start {:port port})))
 
