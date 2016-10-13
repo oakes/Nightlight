@@ -24,11 +24,12 @@
 
 (require
   '[adzerk.boot-cljs :refer [cljs]]
-  '[adzerk.boot-reload :refer [reload]])
+  '[adzerk.boot-reload :refer [reload]]
+  '[nightlight.core :refer [dev-start]])
 
 (task-options!
   pom {:project 'nightlight
-       :version "1.0.1-SNAPSHOT"
+       :version "1.1.0-SNAPSHOT"
        :description "An embedded Clojure editor"
        :url "https://github.com/oakes/Nightlight"
        :license {"Public Domain" "http://unlicense.org/UNLICENSE"}}
@@ -45,10 +46,7 @@
     (watch)
     (reload :asset-path "nightlight-public")
     (cljs :source-map true :optimizations :none)
-    (target)
-    (with-pre-wrap fileset
-      (require
-        '[nightlight.core :refer [dev-start]])
-      ((resolve 'dev-start) {:port 3000})
-      fileset)))
+    (with-pass-thru _
+      (dev-start {:port 3000}))
+    (target)))
 
