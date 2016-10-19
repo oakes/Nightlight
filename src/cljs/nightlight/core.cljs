@@ -7,7 +7,7 @@
             [nightlight.state :as s])
   (:import goog.net.XhrIo))
 
-(def ^:const version "1.0.0")
+(def ^:const version "1.0.1")
 (def ^:const api-url "https://clojars.org/api/artifacts/nightlight")
 (def ^:const page-url "https://clojars.org/nightlight")
 (def ^:const repl-path "*REPL*")
