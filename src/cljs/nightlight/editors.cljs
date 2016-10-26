@@ -4,7 +4,8 @@
             [nightlight.state :as s]
             [nightlight.completions :as com]
             [goog.functions :refer [debounce]]
-            [cljsjs.codemirror])
+            [cljsjs.codemirror]
+            [cljs.reader :refer [read-string]])
   (:import goog.net.XhrIo))
 
 (def ^:const clojure-exts #{"boot" "clj" "cljc" "cljs" "cljx" "edn" "pxi" "hl"})
@@ -129,6 +130,21 @@
     (when-not (-> link (.getAttribute "href") (= css-file))
       (.setAttribute link "href" css-file))))
 
+(defn compile-clj [forms cb]
+  (try
+    (.send XhrIo
+      "/eval"
+      (fn [e]
+        (if (.isSuccess (.-target e))
+          (->> (.. e -target getResponseText)
+               read-string
+               (mapv #(if (vector? %) (into-array %) %))
+               cb)
+          (cb [])))
+      "POST"
+      (pr-str (into [] forms)))
+    (catch js/Error _ (cb []))))
+
 (defn ps-init [path content]
   (let [elem (.createElement js/document "span")
         editor-atom (atom nil)
@@ -174,7 +190,8 @@
                           (auto-save this))
                         (update-buttons this)
                         (when (and completions? (not= (.-type event) "keydown"))
-                          (com/refresh-completions @editor-atom)))}))))
+                          (com/refresh-completions @editor-atom)))
+                      :compiler-fn compile-clj}))))
       (set-theme [this theme]
         (change-css "#paren-soup-css" (get themes theme "paren-soup-dark.css"))))))
 
@@ -226,7 +243,8 @@
                           (com/refresh-completions @editor-atom)))
                       :console-callback
                       (fn [text]
-                        (.send sock (str text "\n")))}))))
+                        (.send sock (str text "\n")))
+                      :compiler-fn compile-clj}))))
       (set-theme [this theme]
         (change-css "#paren-soup-css" (get themes theme "paren-soup-dark.css"))))))
 
