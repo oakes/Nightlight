@@ -9,7 +9,6 @@
   (:import goog.net.XhrIo))
 
 (def ^:const clojure-exts #{"boot" "clj" "cljc" "cljs" "cljx" "edn" "pxi" "hl"})
-(def ^:const instarepl-exts #{"clj" "cljc" "cljs"})
 (def ^:const completion-exts #{"clj"})
 
 (defprotocol Editor
@@ -115,8 +114,12 @@
       (aset "display" (if show? "list-item" "none")))
   (init editor))
 
+(defn show-instarepl? [extension]
+  (or (#{"clj" "cljc"} extension)
+      (and (= "cljs" extension) (-> @s/runtime-state :options :cljs-url))))
+
 (defn init-instarepl [editor]
-  (if (-> editor get-path get-extension instarepl-exts some?)
+  (if (-> editor get-path get-extension show-instarepl?)
     (doto (js/$ "#toggleInstaRepl")
       (.bootstrapToggle "off")
       (.change (fn [e] (toggle-instarepl editor (-> e .-target .-checked)))))

@@ -14,6 +14,7 @@
 
 (defn init-tree [{:keys [text nodes selection file? options]}]
   (set! (.-title js/document) text)
+  (swap! s/runtime-state assoc :options options)
   (some-> (:cljs-url options) repl/init-cljs)
   (let [repl-nodes (if (:cljs-url options)
                      [(repl/repl-node selection) (repl/cljs-repl-node selection)]
