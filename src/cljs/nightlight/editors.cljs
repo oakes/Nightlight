@@ -3,16 +3,14 @@
             [clojure.string :as str]
             [nightlight.state :as s]
             [nightlight.completions :as com]
+            [nightlight.repl :as repl]
             [goog.functions :refer [debounce]]
-            [cljsjs.codemirror]
-            [cljs.reader :refer [read-string]])
+            [cljsjs.codemirror])
   (:import goog.net.XhrIo))
 
 (def ^:const clojure-exts #{"boot" "clj" "cljc" "cljs" "cljx" "edn" "pxi" "hl"})
 (def ^:const instarepl-exts #{"clj" "cljc" "cljs"})
 (def ^:const completion-exts #{"clj"})
-(def ^:const repl-path "*REPL*")
-(def ^:const cljs-repl-path "*CLJS-REPL*")
 
 (defprotocol Editor
   (get-path [this])
@@ -26,10 +24,6 @@
   (clean? [this])
   (init [this])
   (set-theme [this theme]))
-
-(defprotocol ReplSender
-  (start [this])
-  (send [this text]))
 
 (def toolbar "
 <div class='toolbar'>
@@ -136,26 +130,12 @@
     (when-not (-> link (.getAttribute "href") (= css-file))
       (.setAttribute link "href" css-file))))
 
-(defn compile-clj [forms cb]
-  (try
-    (.send XhrIo
-      "/eval"
-      (fn [e]
-        (if (.isSuccess (.-target e))
-          (->> (.. e -target getResponseText)
-               read-string
-               (mapv #(if (vector? %) (into-array %) %))
-               cb)
-          (cb [])))
-      "POST"
-      (pr-str (into [] forms)))
-    (catch js/Error _ (cb []))))
-
 (defn ps-init [path content]
   (let [elem (.createElement js/document "span")
         editor-atom (atom nil)
         last-content (atom content)
         themes {:dark "paren-soup-dark.css" :light "paren-soup-light.css"}
+        compiler-fn (repl/create-compiler-fn path)
         extension (get-extension path)
         completions? (completion-exts extension)]
     (set! (.-innerHTML elem) (str toolbar ps-html))
@@ -198,48 +178,16 @@
                         (update-buttons this)
                         (when (and completions? (not= (.-type event) "keydown"))
                           (com/refresh-completions @editor-atom)))
-                      :compiler-fn compile-clj}))))
+                      :compiler-fn compiler-fn}))))
       (set-theme [this theme]
         (change-css "#paren-soup-css" (get themes theme "paren-soup-dark.css"))))))
-
-(defn clj-sender [elem editor-atom]
-  (let [sock (js/WebSocket. (str "ws://" (-> js/window .-location .-host) "/repl"))]
-    (reify ReplSender
-      (start [this]
-        (set! (.-onopen sock)
-          (fn [event]
-            (.send sock "")))
-        (set! (.-onmessage sock)
-          (fn [event]
-            (some-> @editor-atom (ps/append-text! (.-data event)))
-            (let [content (.querySelector elem "#content")]
-              (set! (.-scrollTop content) (.-scrollHeight content))))))
-      (send [this text]
-        (.send sock (str text "\n"))))))
-
-(defn cljs-sender [elem editor-atom]
-  (reify ReplSender
-    (start [this]
-      (ps/append-text! @editor-atom "=> "))
-    (send [this text]
-      (ps/eval! @editor-atom text
-        (fn [results]
-          (let [result (aget results 0)
-                result (if (array? result)
-                         (str "Error: " (aget result 0))
-                         result)]
-            (ps/append-text! @editor-atom (str result "\n"))
-            (ps/append-text! @editor-atom "=> ")
-            (let [content (.querySelector elem "#content")]
-              (set! (.-scrollTop content) (.-scrollHeight content)))))))))
 
 (defn ps-repl-init [path]
   (let [elem (.createElement js/document "span")
         editor-atom (atom nil)
         themes {:dark "paren-soup-dark.css" :light "paren-soup-light.css"}
-        sender (if (= path cljs-repl-path)
-                 (cljs-sender elem editor-atom)
-                 (clj-sender elem editor-atom))]
+        compiler-fn (repl/create-compiler-fn path)
+        sender (repl/create-repl-sender path elem editor-atom)]
     (set! (.-innerHTML elem) ps-repl-html)
     (reify Editor
       (get-path [this] path)
@@ -275,9 +223,9 @@
                           (com/refresh-completions @editor-atom)))
                       :console-callback
                       (fn [text]
-                        (send sender text))
-                      :compiler-fn compile-clj})))
-        (start sender)
+                        (repl/send sender text))
+                      :compiler-fn compiler-fn})))
+        (repl/init sender)
         @editor-atom)
       (set-theme [this theme]
         (change-css "#paren-soup-css" (get themes theme "paren-soup-dark.css"))))))
@@ -362,7 +310,7 @@
   (if-let [editor (get-in @s/runtime-state [:editors path])]
     (show-editor editor)
     (cond
-      (#{repl-path cljs-repl-path} path)
+      (repl/repl-path? path)
       (init-repl path)
       file?
       (download-file path)

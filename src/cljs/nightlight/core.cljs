@@ -4,29 +4,18 @@
             [cljsjs.bootstrap-toggle]
             [cljs.reader :refer [read-string]]
             [nightlight.editors :as e]
-            [nightlight.state :as s])
+            [nightlight.state :as s]
+            [nightlight.repl :as repl])
   (:import goog.net.XhrIo))
 
 (def ^:const version "1.0.1")
 (def ^:const api-url "https://clojars.org/api/artifacts/nightlight")
 (def ^:const page-url "https://clojars.org/nightlight")
 
-(defn repl-node [{:keys [path]}]
-  {:text "Clojure REPL"
-   :path e/repl-path
-   :icon "glyphicon glyphicon-chevron-right"
-   :state {:selected (= path e/repl-path)}})
-
-(defn cljs-repl-node [{:keys [path]}]
-  {:text "ClojureScript REPL"
-   :path e/cljs-repl-path
-   :icon "glyphicon glyphicon-chevron-right"
-   :state {:selected (= path e/cljs-repl-path)}})
-
 (defn init-tree [{:keys [text nodes selection file?]}]
   (set! (.-title js/document) text)
   (.treeview (js/$ "#tree")
-    (clj->js {:data (concat [(repl-node selection) (cljs-repl-node selection)] nodes)
+    (clj->js {:data (concat [(repl/repl-node selection) (repl/cljs-repl-node selection)] nodes)
               :onNodeSelected
               (fn [e data]
                 (swap! s/pref-state assoc :selection (.-path data))
