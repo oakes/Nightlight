@@ -39,31 +39,19 @@
         (es/code->results
           (.-forms (.-data e))
           (fn [results]
-            (.postMessage (.-top js/window)
+            (.postMessage (.-parent js/window)
               (clj->js {:type (.-type (.-data e))
                         :results (into-array (mapv form->serializable results))})
               "*")))))))
 
-(defonce last-instarepl-cb (atom nil))
+(defonce repl-callbacks (atom {}))
 
-(defn init-cljs-client [elem editor-atom]
+(defn init-cljs-client []
   (when (nil? (.-frameElement js/window))
-    (let [iframe (.querySelector js/document "#cljsapp")]
-      (set! (.-onmessage js/window)
-        (fn [e]
-          (case (.-type (.-data e))
-            "repl"
-            (let [result (.-results (.-data e))
-                  result (aget result 0)
-                  result (if (array? result)
-                           (str "Error: " (aget result 0))
-                           result)]
-              (ps/append-text! @editor-atom (str result "\n"))
-              (ps/append-text! @editor-atom "=> ")
-              (let [content (.querySelector elem "#content")]
-                (set! (.-scrollTop content) (.-scrollHeight content))))
-            "instarepl"
-            (@last-instarepl-cb (.-results (.-data e)))))))))
+    (set! (.-onmessage js/window)
+      (fn [e]
+        ((get @repl-callbacks (.-type (.-data e)))
+         (.-results (.-data e)))))))
 
 (defprotocol ReplSender
   (init [this])
@@ -85,7 +73,16 @@
         (.send sock (str text "\n"))))))
 
 (defn cljs-sender [elem editor-atom]
-  (init-cljs-client elem editor-atom)
+  (swap! repl-callbacks assoc "repl"
+    (fn [results]
+      (let [result (aget results 0)
+            result (if (array? result)
+                     (str "Error: " (aget result 0))
+                     result)]
+        (ps/append-text! @editor-atom (str result "\n"))
+        (ps/append-text! @editor-atom "=> ")
+        (let [content (.querySelector elem "#content")]
+          (set! (.-scrollTop content) (.-scrollHeight content))))))
   (let [iframe (.querySelector js/document "#cljsapp")]
     (reify ReplSender
       (init [this]
@@ -116,7 +113,7 @@
     (catch js/Error _ (cb []))))
 
 (defn compile-cljs [forms cb]
-  (reset! last-instarepl-cb cb)
+  (swap! repl-callbacks assoc "instarepl" cb)
   (let [iframe (.querySelector js/document "#cljsapp")]
     (.postMessage (.-contentWindow iframe)
       (clj->js {:type "instarepl" :forms (into-array forms)})
