@@ -1,7 +1,8 @@
 (ns nightlight.repl
   (:require [paren-soup.core :as ps]
             [cljs.reader :refer [read-string]]
-            [eval-soup.core :as es])
+            [eval-soup.core :as es]
+            [nightlight.state :as s])
   (:import goog.net.XhrIo))
 
 (def ^:const repl-path "*REPL*")
@@ -44,13 +45,11 @@
                         :results (into-array (mapv form->serializable results))})
               "*")))))))
 
-(defonce repl-callbacks (atom {}))
-
 (defn init-cljs-client []
   (when (nil? (.-frameElement js/window))
     (set! (.-onmessage js/window)
       (fn [e]
-        ((get @repl-callbacks (.-type (.-data e)))
+        ((get-in @s/runtime-state [:callbacks (.-type (.-data e))])
          (.-results (.-data e)))))))
 
 (defprotocol ReplSender
@@ -73,7 +72,7 @@
         (.send sock (str text "\n"))))))
 
 (defn cljs-sender [elem editor-atom]
-  (swap! repl-callbacks assoc "repl"
+  (swap! s/runtime-state update :callbacks assoc "repl"
     (fn [results]
       (let [result (aget results 0)
             result (if (array? result)
@@ -113,7 +112,7 @@
     (catch js/Error _ (cb []))))
 
 (defn compile-cljs [forms cb]
-  (swap! repl-callbacks assoc "instarepl" cb)
+  (swap! s/runtime-state update :callbacks assoc "instarepl" cb)
   (let [iframe (.querySelector js/document "#cljsapp")]
     (.postMessage (.-contentWindow iframe)
       (clj->js {:type "instarepl" :forms (into-array forms)})
