@@ -211,6 +211,8 @@
       (init [this]
         (com/init-completions editor-atom elem)
         (-> (.querySelector elem "#content") .-style (aset "whiteSpace" "pre-wrap"))
+        (when (= path repl/cljs-repl-path)
+          (-> (.querySelector elem "#paren-soup") .-style (aset "height" "50%")))
         (reset! editor-atom
           (ps/init (.querySelector elem "#paren-soup")
             (clj->js {:before-change-callback
@@ -309,6 +311,9 @@
     path))
 
 (defn select-node [{:keys [path file?]}]
+  (-> (.querySelector js/document "#cljsapp")
+      .-style
+      (aset "display" (if (= path repl/cljs-repl-path) "block" "none")))
   (if-let [editor (get-in @s/runtime-state [:editors path])]
     (show-editor editor)
     (cond
