@@ -16,7 +16,7 @@
                   [ring "1.5.0"]
                   [http-kit "2.2.0"]
                   [compliment "0.3.1"]
-                  [eval-soup "1.0.2" :exclusions [org.clojure/core.async]]]
+                  [eval-soup "1.0.3"]]
   :repositories (conj (get-env :repositories)
                   ["clojars" {:url "https://clojars.org/repo/"
                               :username (System/getenv "CLOJARS_USER")
@@ -47,6 +47,6 @@
     (reload :asset-path "nightlight-public")
     (cljs :source-map true :optimizations :none)
     (with-pass-thru _
-      (dev-start {:port 3000}))
+      (dev-start {:port 3000 :cljs-url "http://localhost:3000/index.html"}))
     (target)))
 

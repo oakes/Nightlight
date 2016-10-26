@@ -135,8 +135,8 @@
         editor-atom (atom nil)
         last-content (atom content)
         themes {:dark "paren-soup-dark.css" :light "paren-soup-light.css"}
-        compiler-fn (repl/create-compiler-fn path)
         extension (get-extension path)
+        compiler-fn (if (= extension "cljs") repl/compile-cljs repl/compile-clj)
         completions? (completion-exts extension)]
     (set! (.-innerHTML elem) (str toolbar ps-html))
     (set! (.-textContent (.querySelector elem "#content")) content)
@@ -186,7 +186,6 @@
   (let [elem (.createElement js/document "span")
         editor-atom (atom nil)
         themes {:dark "paren-soup-dark.css" :light "paren-soup-light.css"}
-        compiler-fn (repl/create-compiler-fn path)
         sender (repl/create-repl-sender path elem editor-atom)]
     (set! (.-innerHTML elem) ps-repl-html)
     (reify Editor
@@ -224,7 +223,7 @@
                       :console-callback
                       (fn [text]
                         (repl/send sender text))
-                      :compiler-fn compiler-fn})))
+                      :compiler-fn (fn [_ _])})))
         (repl/init sender)
         @editor-atom)
       (set-theme [this theme]

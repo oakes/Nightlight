@@ -17,6 +17,7 @@
 (def ^:const pref-file ".nightlight.edn")
 
 (defonce web-server (atom nil))
+(defonce options (atom nil))
 
 (defn form->serializable [form]
   (if (instance? Exception form)
@@ -33,7 +34,8 @@
          selection (:selection pref-state)]
      (-> (file-node file pref-state)
          (assoc :selection {:path selection
-                            :file? (some-> selection io/file .isFile)}))))
+                            :file? (some-> selection io/file .isFile)})
+         (assoc :options @options))))
   ([^File file {:keys [expansions selection] :as pref-state}]
    (let [path (.getCanonicalPath file)
          children (->> (reify FilenameFilter
@@ -108,6 +110,7 @@
   ([app opts]
    (when-not @web-server
      (->> (merge {:port 0} opts)
+          (reset! options)
           (run-server (wrap-content-type app))
           (reset! web-server)
           print-server))))

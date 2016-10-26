@@ -1,6 +1,7 @@
 (ns nightlight.repl
   (:require [paren-soup.core :as ps]
-            [cljs.reader :refer [read-string]])
+            [cljs.reader :refer [read-string]]
+            [eval-soup.core :as es])
   (:import goog.net.XhrIo))
 
 (def ^:const repl-path "*REPL*")
@@ -19,6 +20,50 @@
    :path cljs-repl-path
    :icon "glyphicon glyphicon-chevron-right"
    :state {:selected (= path cljs-repl-path)}})
+
+(defn init-cljs [url]
+  (when (nil? (.-frameElement js/window))
+    (let [iframe (.querySelector js/document "#cljsapp")]
+      (set! (.-src iframe) url))))
+
+(defn form->serializable [form]
+  (if (instance? js/Error form)
+    (array (or (some-> form .-cause .-message) (.-message form))
+      (.-fileName form) (.-lineNumber form))
+    (pr-str form)))
+
+(defn init-cljs-server []
+  (when (.-frameElement js/window)
+    (set! (.-onmessage js/window)
+      (fn [e]
+        (es/code->results
+          (.-forms (.-data e))
+          (fn [results]
+            (.postMessage (.-top js/window)
+              (clj->js {:type (.-type (.-data e))
+                        :results (into-array (mapv form->serializable results))})
+              "*")))))))
+
+(defonce last-instarepl-cb (atom nil))
+
+(defn init-cljs-client [elem editor-atom]
+  (when (nil? (.-frameElement js/window))
+    (let [iframe (.querySelector js/document "#cljsapp")]
+      (set! (.-onmessage js/window)
+        (fn [e]
+          (case (.-type (.-data e))
+            "repl"
+            (let [result (.-results (.-data e))
+                  result (aget result 0)
+                  result (if (array? result)
+                           (str "Error: " (aget result 0))
+                           result)]
+              (ps/append-text! @editor-atom (str result "\n"))
+              (ps/append-text! @editor-atom "=> ")
+              (let [content (.querySelector elem "#content")]
+                (set! (.-scrollTop content) (.-scrollHeight content))))
+            "instarepl"
+            (@last-instarepl-cb (.-results (.-data e)))))))))
 
 (defprotocol ReplSender
   (init [this])
@@ -40,19 +85,15 @@
         (.send sock (str text "\n"))))))
 
 (defn cljs-sender [elem editor-atom]
-  (reify ReplSender
-    (init [this]
-      (ps/append-text! @editor-atom "=> "))
-    (send [this text]
-      (ps/eval! @editor-atom text
-        (fn [result]
-          (let [result (if (array? result)
-                         (str "Error: " (aget result 0))
-                         result)]
-            (ps/append-text! @editor-atom (str result "\n"))
-            (ps/append-text! @editor-atom "=> ")
-            (let [content (.querySelector elem "#content")]
-              (set! (.-scrollTop content) (.-scrollHeight content)))))))))
+  (init-cljs-client elem editor-atom)
+  (let [iframe (.querySelector js/document "#cljsapp")]
+    (reify ReplSender
+      (init [this]
+        (ps/append-text! @editor-atom "=> "))
+      (send [this text]
+        (.postMessage (.-contentWindow iframe)
+          (clj->js {:type "repl" :forms (array text)})
+          "*")))))
 
 (defn create-repl-sender [path elem editor-atom]
   (if (= path cljs-repl-path)
@@ -75,8 +116,9 @@
     (catch js/Error _ (cb []))))
 
 (defn compile-cljs [forms cb]
-  (cb forms))
-
-(defn create-compiler-fn [path]
-  (if (= path cljs-repl-path) compile-cljs compile-clj))
+  (reset! last-instarepl-cb cb)
+  (let [iframe (.querySelector js/document "#cljsapp")]
+    (.postMessage (.-contentWindow iframe)
+      (clj->js {:type "instarepl" :forms (into-array forms)})
+      "*")))
 

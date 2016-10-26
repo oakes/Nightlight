@@ -12,20 +12,24 @@
 (def ^:const api-url "https://clojars.org/api/artifacts/nightlight")
 (def ^:const page-url "https://clojars.org/nightlight")
 
-(defn init-tree [{:keys [text nodes selection file?]}]
+(defn init-tree [{:keys [text nodes selection file? options]}]
   (set! (.-title js/document) text)
-  (.treeview (js/$ "#tree")
-    (clj->js {:data (concat [(repl/repl-node selection) (repl/cljs-repl-node selection)] nodes)
-              :onNodeSelected
-              (fn [e data]
-                (swap! s/pref-state assoc :selection (.-path data))
-                (e/select-node {:path (.-path data) :file? (.-file data)}))
-              :onNodeExpanded
-              (fn [e data]
-                (swap! s/pref-state update :expansions #(conj (or % #{}) (.-path data))))
-              :onNodeCollapsed
-              (fn [e data]
-                (swap! s/pref-state update :expansions disj (.-path data)))}))
+  (some-> (:cljs-url options) repl/init-cljs)
+  (let [repl-nodes (if (:cljs-url options)
+                     [(repl/repl-node selection) (repl/cljs-repl-node selection)]
+                     [(repl/repl-node selection)])]
+    (.treeview (js/$ "#tree")
+      (clj->js {:data (concat repl-nodes nodes)
+                :onNodeSelected
+                (fn [e data]
+                  (swap! s/pref-state assoc :selection (.-path data))
+                  (e/select-node {:path (.-path data) :file? (.-file data)}))
+                :onNodeExpanded
+                (fn [e data]
+                  (swap! s/pref-state update :expansions #(conj (or % #{}) (.-path data))))
+                :onNodeCollapsed
+                (fn [e data]
+                  (swap! s/pref-state update :expansions disj (.-path data)))})))
   (e/select-node selection))
 
 (defn download-tree []
@@ -77,6 +81,7 @@
     "GET"))
 
 (defn main []
+  (repl/init-cljs-server)
   (download-state)
   (check-version))
 
