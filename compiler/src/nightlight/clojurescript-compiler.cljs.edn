@@ -1,5 +1,0 @@
-{:require  [nightlight.clojurescript-compiler]
- :init-fns []
- :compiler-options {:optimizations :simple
-                    :static-fns true
-                    :optimize-constants true}}

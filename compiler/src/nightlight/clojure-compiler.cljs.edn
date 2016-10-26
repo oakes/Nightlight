@@ -1,3 +1,0 @@
-{:require  [nightlight.clojure-compiler]
- :init-fns []
- :compiler-options {:optimizations :advanced}}
