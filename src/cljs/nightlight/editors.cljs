@@ -4,7 +4,8 @@
             [nightlight.state :as s]
             [nightlight.completions :as com]
             [goog.functions :refer [debounce]]
-            [cljsjs.codemirror])
+            [cljsjs.codemirror]
+            [cljs.reader :refer [read-string]])
   (:import goog.net.XhrIo))
 
 (def ^:const clojure-exts #{"boot" "clj" "cljc" "cljs" "cljx" "edn" "pxi" "hl"})
@@ -135,13 +136,27 @@
     (when-not (-> link (.getAttribute "href") (= css-file))
       (.setAttribute link "href" css-file))))
 
+(defn compile-clj [forms cb]
+  (try
+    (.send XhrIo
+      "/eval"
+      (fn [e]
+        (if (.isSuccess (.-target e))
+          (->> (.. e -target getResponseText)
+               read-string
+               (mapv #(if (vector? %) (into-array %) %))
+               cb)
+          (cb [])))
+      "POST"
+      (pr-str (into [] forms)))
+    (catch js/Error _ (cb []))))
+
 (defn ps-init [path content]
   (let [elem (.createElement js/document "span")
         editor-atom (atom nil)
         last-content (atom content)
         themes {:dark "paren-soup-dark.css" :light "paren-soup-light.css"}
         extension (get-extension path)
-        compiler-file (if (= extension "cljs") "clojurescript-compiler.js" "clojure-compiler.js")
         completions? (completion-exts extension)]
     (set! (.-innerHTML elem) (str toolbar ps-html))
     (set! (.-textContent (.querySelector elem "#content")) content)
@@ -183,7 +198,7 @@
                         (update-buttons this)
                         (when (and completions? (not= (.-type event) "keydown"))
                           (com/refresh-completions @editor-atom)))
-                      :compiler-file compiler-file}))))
+                      :compiler-fn compile-clj}))))
       (set-theme [this theme]
         (change-css "#paren-soup-css" (get themes theme "paren-soup-dark.css"))))))
 
@@ -222,7 +237,6 @@
   (let [elem (.createElement js/document "span")
         editor-atom (atom nil)
         themes {:dark "paren-soup-dark.css" :light "paren-soup-light.css"}
-        compiler-file (if (= path cljs-repl-path) "clojurescript-compiler.js" "clojure-compiler.js")
         sender (if (= path cljs-repl-path)
                  (cljs-sender elem editor-atom)
                  (clj-sender elem editor-atom))]
@@ -262,7 +276,7 @@
                       :console-callback
                       (fn [text]
                         (send sender text))
-                      :compiler-file compiler-file})))
+                      :compiler-fn compile-clj})))
         (start sender)
         @editor-atom)
       (set-theme [this theme]
