@@ -24,7 +24,10 @@
     (.treeview (js/$ "#completions")
       (clj->js {:data (clj->js completions)
                 :onNodeSelected event
-                :onNodeUnselected event}))))
+                :onNodeUnselected event}))
+    (if (seq completions)
+      (.show (js/$ ".rightsidebar"))
+      (.hide (js/$ ".rightsidebar")))))
 
 (defn refresh-completions [editor]
   (if-let [info (psd/get-completion-info)]
