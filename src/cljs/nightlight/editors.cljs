@@ -221,8 +221,7 @@
                       :change-callback
                       (fn [event]
                         (update-buttons this)
-                        (let [content (.querySelector elem "#content")]
-                          (set! (.-scrollTop content) (.-scrollHeight content)))
+                        (repl/scroll-to-bottom elem)
                         (when (not= (.-type event) "keydown")
                           (com/refresh-completions @editor-atom)))
                       :console-callback

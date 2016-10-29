@@ -52,6 +52,10 @@
         ((get-in @s/runtime-state [:callbacks (.-type (.-data e))])
          (.-results (.-data e)))))))
 
+(defn scroll-to-bottom [elem]
+  (let [ps (.querySelector elem "#paren-soup")]
+    (set! (.-scrollTop ps) (.-scrollHeight ps))))
+
 (defprotocol ReplSender
   (init [this])
   (send [this text]))
@@ -66,8 +70,7 @@
         (set! (.-onmessage sock)
           (fn [event]
             (some-> @editor-atom (ps/append-text! (.-data event)))
-            (let [content (.querySelector elem "#content")]
-              (set! (.-scrollTop content) (.-scrollHeight content))))))
+            (scroll-to-bottom elem))))
       (send [this text]
         (.send sock (str text "\n"))))))
 
@@ -80,8 +83,7 @@
                      result)]
         (ps/append-text! @editor-atom (str result "\n"))
         (ps/append-text! @editor-atom "=> ")
-        (let [content (.querySelector elem "#content")]
-          (set! (.-scrollTop content) (.-scrollHeight content))))))
+        (scroll-to-bottom elem))))
   (let [iframe (.querySelector js/document "#cljsapp")]
     (reify ReplSender
       (init [this]
