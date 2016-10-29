@@ -47,6 +47,6 @@
     (reload :asset-path "nightlight-public")
     (cljs :source-map true :optimizations :none)
     (with-pass-thru _
-      (dev-start {:port 3000 :cljs-url "http://localhost:3000/index.html"}))
+      (dev-start {:port 3000 :url "http://localhost:3000/index.html"}))
     (target)))
 

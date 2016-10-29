@@ -116,7 +116,7 @@
 
 (defn show-instarepl? [extension]
   (or (#{"clj" "cljc"} extension)
-      (and (= "cljs" extension) (-> @s/runtime-state :options :cljs-url))))
+      (and (= "cljs" extension) (-> @s/runtime-state :options :url))))
 
 (defn init-instarepl [editor]
   (if (-> editor get-path get-extension show-instarepl?)
