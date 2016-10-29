@@ -7,6 +7,7 @@
 
 (def ^:const repl-path "*REPL*")
 (def ^:const cljs-repl-path "*CLJS-REPL*")
+(def ^:const cljs-start-ns 'cljs.user)
 
 (def repl-path? #{repl-path cljs-repl-path})
 
@@ -35,7 +36,7 @@
 
 (defn init-cljs-server []
   (when (.-frameElement js/window)
-    (let [current-ns (atom 'cljs.user)]
+    (let [current-ns (atom cljs-start-ns)]
       (set! (.-onmessage js/window)
         (fn [e]
           (es/code->results
@@ -90,7 +91,7 @@
   (let [iframe (.querySelector js/document "#cljsapp")]
     (reify ReplSender
       (init [this]
-        (ps/append-text! @editor-atom "cljs.user=> "))
+        (ps/append-text! @editor-atom (str cljs-start-ns "=> ")))
       (send [this text]
         (.postMessage (.-contentWindow iframe)
           (clj->js {:type "repl" :forms (array text)})
