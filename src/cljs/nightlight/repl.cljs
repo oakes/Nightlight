@@ -35,22 +35,25 @@
 
 (defn init-cljs-server []
   (when (.-frameElement js/window)
-    (set! (.-onmessage js/window)
-      (fn [e]
-        (es/code->results
-          (.-forms (.-data e))
-          (fn [results]
-            (.postMessage (.-parent js/window)
-              (clj->js {:type (.-type (.-data e))
-                        :results (into-array (mapv form->serializable results))})
-              "*")))))))
+    (let [current-ns (atom 'cljs.user)]
+      (set! (.-onmessage js/window)
+        (fn [e]
+          (es/code->results
+            (.-forms (.-data e))
+            (fn [results]
+              (.postMessage (.-parent js/window)
+                (clj->js {:type (.-type (.-data e))
+                          :results (into-array (mapv form->serializable results))
+                          :ns (str @current-ns)})
+                "*"))
+            {:current-ns current-ns}))))))
 
 (defn init-cljs-client []
   (when (nil? (.-frameElement js/window))
     (set! (.-onmessage js/window)
       (fn [e]
-        ((get-in @s/runtime-state [:callbacks (.-type (.-data e))])
-         (.-results (.-data e)))))))
+        (let [callback (get-in @s/runtime-state [:callbacks (.-type (.-data e))])]
+          (callback (.-results (.-data e)) (.-ns (.-data e))))))))
 
 (defn scroll-to-bottom [elem]
   (let [ps (.querySelector elem "#paren-soup")]
@@ -76,18 +79,18 @@
 
 (defn cljs-sender [elem editor-atom]
   (swap! s/runtime-state update :callbacks assoc "repl"
-    (fn [results]
+    (fn [results current-ns]
       (let [result (aget results 0)
             result (if (array? result)
                      (str "Error: " (aget result 0))
                      result)]
         (ps/append-text! @editor-atom (str result "\n"))
-        (ps/append-text! @editor-atom "=> ")
+        (ps/append-text! @editor-atom (str current-ns "=> "))
         (scroll-to-bottom elem))))
   (let [iframe (.querySelector js/document "#cljsapp")]
     (reify ReplSender
       (init [this]
-        (ps/append-text! @editor-atom "=> "))
+        (ps/append-text! @editor-atom "cljs.user=> "))
       (send [this text]
         (.postMessage (.-contentWindow iframe)
           (clj->js {:type "repl" :forms (array text)})
