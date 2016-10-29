@@ -1,12 +1,12 @@
 (ns nightlight.repl
   (:require [cljs.reader :refer [read-string]]
-            [eval-soup.core :as es]
-            [nightlight.state :as s])
+            [nightlight.state :as s]
+            [paren-soup.core :as ps]
+            [nightlight.repl-server :as rs])
   (:import goog.net.XhrIo))
 
 (def ^:const repl-path "*REPL*")
 (def ^:const cljs-repl-path "*CLJS-REPL*")
-(def ^:const cljs-start-ns 'cljs.user)
 
 (def repl-path? #{repl-path cljs-repl-path})
 
@@ -27,37 +27,12 @@
     (let [iframe (.querySelector js/document "#cljsapp")]
       (set! (.-src iframe) url))))
 
-(defn form->serializable [form]
-  (if (instance? js/Error form)
-    (array (or (some-> form .-cause .-message) (.-message form))
-      (.-fileName form) (.-lineNumber form))
-    (pr-str form)))
-
-(defn init-cljs-server []
-  (when (.-frameElement js/window)
-    (let [current-ns (atom cljs-start-ns)]
-      (set! (.-onmessage js/window)
-        (fn [e]
-          (es/code->results
-            (.-forms (.-data e))
-            (fn [results]
-              (.postMessage (.-parent js/window)
-                (clj->js {:type (.-type (.-data e))
-                          :results (into-array (mapv form->serializable results))
-                          :ns (str @current-ns)})
-                "*"))
-            {:current-ns current-ns}))))))
-
 (defn init-cljs-client []
   (when (nil? (.-frameElement js/window))
     (set! (.-onmessage js/window)
       (fn [e]
         (let [callback (get-in @s/runtime-state [:callbacks (.-type (.-data e))])]
           (callback (.-results (.-data e)) (.-ns (.-data e))))))))
-
-; initialize the REPL client or server immediately
-(init-cljs-server)
-(init-cljs-client)
 
 (defn scroll-to-bottom [elem]
   (let [ps (.querySelector elem "#paren-soup")]
@@ -67,7 +42,7 @@
   (init [this])
   (send [this text]))
 
-(defn clj-sender [elem editor-atom append-text]
+(defn clj-sender [elem editor-atom]
   (let [protocol (if (= (.-protocol js/location) "https:") "wss:" "ws:")
         host (-> js/window .-location .-host)
         sock (js/WebSocket. (str protocol "//" host "/repl"))]
@@ -78,34 +53,34 @@
             (.send sock "")))
         (set! (.-onmessage sock)
           (fn [event]
-            (some-> @editor-atom (append-text (.-data event)))
+            (some-> @editor-atom (ps/append-text! (.-data event)))
             (scroll-to-bottom elem))))
       (send [this text]
         (.send sock (str text "\n"))))))
 
-(defn cljs-sender [elem editor-atom append-text]
+(defn cljs-sender [elem editor-atom]
   (swap! s/runtime-state update :callbacks assoc "repl"
     (fn [results current-ns]
       (let [result (aget results 0)
             result (if (array? result)
                      (str "Error: " (aget result 0))
                      result)]
-        (append-text @editor-atom (str result "\n"))
-        (append-text @editor-atom (str current-ns "=> "))
+        (ps/append-text! @editor-atom (str result "\n"))
+        (ps/append-text! @editor-atom (str current-ns "=> "))
         (scroll-to-bottom elem))))
   (let [iframe (.querySelector js/document "#cljsapp")]
     (reify ReplSender
       (init [this]
-        (append-text @editor-atom (str cljs-start-ns "=> ")))
+        (ps/append-text! @editor-atom (str rs/cljs-start-ns "=> ")))
       (send [this text]
         (.postMessage (.-contentWindow iframe)
           (clj->js {:type "repl" :forms (array text)})
           "*")))))
 
-(defn create-repl-sender [path elem editor-atom append-text]
+(defn create-repl-sender [path elem editor-atom]
   (if (= path cljs-repl-path)
-    (cljs-sender elem editor-atom append-text)
-    (clj-sender elem editor-atom append-text)))
+    (cljs-sender elem editor-atom)
+    (clj-sender elem editor-atom)))
 
 (defn compile-clj [forms cb]
   (try
