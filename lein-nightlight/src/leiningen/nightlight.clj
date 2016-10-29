@@ -10,16 +10,17 @@
     :default 4000
     :parse-fn #(Integer/parseInt %)
     :validate [#(< 0 % 0x10000) "Must be an integer between 0 and 65536"]]
+   ["-a" "--url URL" "The URL that the ClojureScript app is being served on"]
    ["-u" "--usage" "Show CLI usage options"]])
 
 
 (defn start-nightlight
-  [project port]
+  [project {:keys [port url]}]
   (eval/eval-in-project
     (deps/add-if-missing
       project
-      '[nightlight/lein-nightlight "1.0.0"])
-    `(nightlight.core/start {:port ~port})
+      '[nightlight/lein-nightlight "1.1.0"])
+    `(nightlight.core/start {:port ~port :url ~url})
     `(require 'nightlight.core)))
 
 
@@ -37,5 +38,5 @@
       (println (:summary cli))
       ;; in other cases start Nightlight
       :otherwise
-      (start-nightlight project (get-in cli [:options :port])))))
+      (start-nightlight project (:options cli)))))
 
