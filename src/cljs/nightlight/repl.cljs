@@ -65,7 +65,9 @@
   (send [this text]))
 
 (defn clj-sender [elem editor-atom]
-  (let [sock (js/WebSocket. (str "ws://" (-> js/window .-location .-host) "/repl"))]
+  (let [protocol (if (= (.-protocol js/location) "https:") "wss:" "ws:")
+        host (-> js/window .-location .-host)
+        sock (js/WebSocket. (str protocol "//" host "/repl"))]
     (reify ReplSender
       (init [this]
         (set! (.-onopen sock)
