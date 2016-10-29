@@ -23,12 +23,12 @@
    :state {:selected (= path cljs-repl-path)}})
 
 (defn init-cljs [url]
-  (when (nil? (.-frameElement js/window))
+  (when (= js/window.self js/window.top)
     (let [iframe (.querySelector js/document "#cljsapp")]
       (set! (.-src iframe) url))))
 
 (defn init-cljs-client []
-  (when (nil? (.-frameElement js/window))
+  (when (= js/window.self js/window.top)
     (set! (.-onmessage js/window)
       (fn [e]
         (let [callback (get-in @s/runtime-state [:callbacks (.-type (.-data e))])]

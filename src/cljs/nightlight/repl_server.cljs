@@ -10,7 +10,7 @@
     (pr-str form)))
 
 (defn init-cljs-server []
-  (when (.-frameElement js/window)
+  (when (not= js/window.self js/window.top)
     (let [current-ns (atom cljs-start-ns)]
       (set! (.-onmessage js/window)
         (fn [e]
