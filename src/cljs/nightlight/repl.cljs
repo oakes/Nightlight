@@ -31,8 +31,9 @@
   (when (= js/window.self js/window.top)
     (set! (.-onmessage js/window)
       (fn [e]
-        (let [callback (get-in @s/runtime-state [:callbacks (.-type (.-data e))])]
-          (callback (.-results (.-data e)) (.-ns (.-data e))))))))
+        (let [data (.-data e)
+              callback (get-in @s/runtime-state [:callbacks (aget data "type")])]
+          (callback (aget data "results") (aget data "ns")))))))
 
 (defn scroll-to-bottom [elem]
   (let [ps (.querySelector elem "#paren-soup")]
