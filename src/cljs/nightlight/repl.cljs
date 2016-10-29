@@ -1,6 +1,5 @@
 (ns nightlight.repl
-  (:require [paren-soup.core :as ps]
-            [cljs.reader :refer [read-string]]
+  (:require [cljs.reader :refer [read-string]]
             [eval-soup.core :as es]
             [nightlight.state :as s])
   (:import goog.net.XhrIo))
@@ -56,6 +55,10 @@
         (let [callback (get-in @s/runtime-state [:callbacks (.-type (.-data e))])]
           (callback (.-results (.-data e)) (.-ns (.-data e))))))))
 
+; initialize the REPL client or server immediately
+(init-cljs-server)
+(init-cljs-client)
+
 (defn scroll-to-bottom [elem]
   (let [ps (.querySelector elem "#paren-soup")]
     (set! (.-scrollTop ps) (.-scrollHeight ps))))
@@ -64,7 +67,7 @@
   (init [this])
   (send [this text]))
 
-(defn clj-sender [elem editor-atom]
+(defn clj-sender [elem editor-atom append-text]
   (let [protocol (if (= (.-protocol js/location) "https:") "wss:" "ws:")
         host (-> js/window .-location .-host)
         sock (js/WebSocket. (str protocol "//" host "/repl"))]
@@ -75,34 +78,34 @@
             (.send sock "")))
         (set! (.-onmessage sock)
           (fn [event]
-            (some-> @editor-atom (ps/append-text! (.-data event)))
+            (some-> @editor-atom (append-text (.-data event)))
             (scroll-to-bottom elem))))
       (send [this text]
         (.send sock (str text "\n"))))))
 
-(defn cljs-sender [elem editor-atom]
+(defn cljs-sender [elem editor-atom append-text]
   (swap! s/runtime-state update :callbacks assoc "repl"
     (fn [results current-ns]
       (let [result (aget results 0)
             result (if (array? result)
                      (str "Error: " (aget result 0))
                      result)]
-        (ps/append-text! @editor-atom (str result "\n"))
-        (ps/append-text! @editor-atom (str current-ns "=> "))
+        (append-text @editor-atom (str result "\n"))
+        (append-text @editor-atom (str current-ns "=> "))
         (scroll-to-bottom elem))))
   (let [iframe (.querySelector js/document "#cljsapp")]
     (reify ReplSender
       (init [this]
-        (ps/append-text! @editor-atom (str cljs-start-ns "=> ")))
+        (append-text @editor-atom (str cljs-start-ns "=> ")))
       (send [this text]
         (.postMessage (.-contentWindow iframe)
           (clj->js {:type "repl" :forms (array text)})
           "*")))))
 
-(defn create-repl-sender [path elem editor-atom]
+(defn create-repl-sender [path elem editor-atom append-text]
   (if (= path cljs-repl-path)
-    (cljs-sender elem editor-atom)
-    (clj-sender elem editor-atom)))
+    (cljs-sender elem editor-atom append-text)
+    (clj-sender elem editor-atom append-text)))
 
 (defn compile-clj [forms cb]
   (try

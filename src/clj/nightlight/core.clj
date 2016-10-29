@@ -3,7 +3,6 @@
             [clojure.java.io :as io]
             [clojure.set :as set]
             [ring.middleware.resource :refer [wrap-resource]]
-            [ring.middleware.content-type :refer [wrap-content-type]]
             [ring.middleware.file :refer [wrap-file]]
             [ring.util.response :refer [redirect]]
             [ring.util.request :refer [body-string]]
@@ -54,7 +53,9 @@
 
 (defn handler [request]
   (case (:uri request)
-    "/" (redirect "/index.html")
+    "/" {:status 200
+         :headers {"Content-Type" "text/html"}
+         :body (-> "nightlight-public/index.html" io/resource slurp)}
     "/eval" {:status 200
              :headers {"Content-Type" "text/plain"}
              :body (->> request
@@ -111,7 +112,7 @@
    (when-not @web-server
      (->> (merge {:port 0} opts)
           (reset! options)
-          (run-server (wrap-content-type app))
+          (run-server app)
           (reset! web-server)
           print-server))))
 

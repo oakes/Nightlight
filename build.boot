@@ -1,6 +1,6 @@
 (set-env!
   :source-paths #{"src/clj" "src/cljs"}
-  :resource-paths #{"src/clj" "resources"}
+  :resource-paths #{"src/clj" "src/cljs" "resources"}
   :dependencies '[[adzerk/boot-cljs "1.7.228-1" :scope "test"]
                   [adzerk/boot-reload "0.4.12" :scope "test"]
                   [org.clojure/test.check "0.9.0" :scope "test"]
@@ -29,7 +29,7 @@
 
 (task-options!
   pom {:project 'nightlight
-       :version "1.0.2-SNAPSHOT"
+       :version "1.1.0-SNAPSHOT"
        :description "An embedded Clojure editor"
        :url "https://github.com/oakes/Nightlight"
        :license {"Public Domain" "http://unlicense.org/UNLICENSE"}}
@@ -47,6 +47,6 @@
     (reload :asset-path "nightlight-public")
     (cljs :source-map true :optimizations :none)
     (with-pass-thru _
-      (dev-start {:port 3000 :url "http://localhost:3000/index.html"}))
+      (dev-start {:port 4000 :url "http://localhost:4000"}))
     (target)))
 

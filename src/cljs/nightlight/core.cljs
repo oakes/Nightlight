@@ -82,8 +82,6 @@
     "GET"))
 
 (defn main []
-  (repl/init-cljs-client)
-  (repl/init-cljs-server)
   (download-state)
   (check-version))
 

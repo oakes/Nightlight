@@ -189,7 +189,7 @@
   (let [elem (.createElement js/document "span")
         editor-atom (atom nil)
         themes {:dark "paren-soup-dark.css" :light "paren-soup-light.css"}
-        sender (repl/create-repl-sender path elem editor-atom)]
+        sender (repl/create-repl-sender path elem editor-atom ps/append-text!)]
     (set! (.-innerHTML elem) ps-repl-html)
     (reify Editor
       (get-path [this] path)
