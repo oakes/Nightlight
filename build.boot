@@ -6,7 +6,7 @@
                   [org.clojure/test.check "0.9.0" :scope "test"]
                   ; cljs deps
                   [org.clojure/clojurescript "1.9.227" :scope "test"]
-                  [paren-soup "2.6.10" :scope "test"]
+                  [paren-soup "2.6.11" :scope "test"]
                   [cljsjs/bootstrap "3.3.6-1" :scope "test"]
                   [cljsjs/bootstrap-toggle "2.2.2-1" :scope "test"]
                   [cljsjs/bootstrap-treeview "1.2.0-1" :scope "test"]
