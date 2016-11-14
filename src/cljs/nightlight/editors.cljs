@@ -238,7 +238,8 @@
         (when (= path repl/cljs-repl-path)
           (-> (.querySelector js/document "#cljsapp")
               .-style
-              (aset "display" "block"))))
+              (aset "display" "block")))
+        (repl/scroll-to-bottom elem))
       (hide [this]
         (when (= path repl/cljs-repl-path)
           (-> (.querySelector js/document "#cljsapp")
