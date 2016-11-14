@@ -22,6 +22,8 @@
   (mark-clean [this])
   (clean? [this])
   (init [this])
+  (show [this])
+  (hide [this])
   (set-theme [this theme]))
 
 (def toolbar "
@@ -182,6 +184,8 @@
                         (when (and completions? (not= (.-type event) "keydown"))
                           (com/refresh-completions @editor-atom)))
                       :compiler-fn compiler-fn}))))
+      (show [this])
+      (hide [this])
       (set-theme [this theme]
         (change-css "#paren-soup-css" (get themes theme "paren-soup-dark.css"))))))
 
@@ -230,6 +234,16 @@
                       :compiler-fn (fn [_ _])})))
         (repl/init sender)
         @editor-atom)
+      (show [this]
+        (when (= path repl/cljs-repl-path)
+          (-> (.querySelector js/document "#cljsapp")
+              .-style
+              (aset "display" "block"))))
+      (hide [this]
+        (when (= path repl/cljs-repl-path)
+          (-> (.querySelector js/document "#cljsapp")
+              .-style
+              (aset "display" "none"))))
       (set-theme [this theme]
         (change-css "#paren-soup-css" (get themes theme "paren-soup-dark.css"))))))
 
@@ -271,6 +285,8 @@
               (fn [editor-object change]
                 (auto-save this)
                 (update-buttons this))))))
+      (show [this])
+      (hide [this])
       (set-theme [this theme]
         (some-> @editor-atom (.setOption "theme" (get themes theme "lesser-dark")))))))
 
@@ -280,7 +296,8 @@
     (cm-init path content)))
 
 (defn show-editor [editor]
-  (.appendChild (clear-editor) (get-element editor)))
+  (.appendChild (clear-editor) (get-element editor))
+  (show editor))
 
 (defn init-editor [editor]
   (doto editor
@@ -310,9 +327,9 @@
     path))
 
 (defn select-node [{:keys [path file?]}]
-  (-> (.querySelector js/document "#cljsapp")
-      .-style
-      (aset "display" (if (= path repl/cljs-repl-path) "block" "none")))
+  (when-let [old-path (:selection @s/pref-state)]
+    (when-let [old-editor (get-in @s/runtime-state [:editors old-path])]
+      (hide old-editor)))
   (if-let [editor (get-in @s/runtime-state [:editors path])]
     (show-editor editor)
     (cond
