@@ -23,7 +23,6 @@
       (clj->js {:data (concat repl-nodes nodes)
                 :onNodeSelected
                 (fn [e data]
-                  (swap! s/pref-state assoc :selection (.-path data))
                   (e/select-node {:path (.-path data) :file? (.-file data)}))
                 :onNodeExpanded
                 (fn [e data]

@@ -331,6 +331,7 @@
   (when-let [old-path (:selection @s/pref-state)]
     (when-let [old-editor (get-in @s/runtime-state [:editors old-path])]
       (hide old-editor)))
+  (swap! s/pref-state assoc :selection path)
   (if-let [editor (get-in @s/runtime-state [:editors path])]
     (show-editor editor)
     (cond
