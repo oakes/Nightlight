@@ -73,7 +73,7 @@
       (when (and (.isSuccess (.-target e))
                  (some->> (.. e -target getResponseText)
                           (.parse js/JSON)
-                          .-latest_version
+                          (#(aget % "latest_version"))
                           (not= version)))
         (doto (.querySelector js/document "#update")
           (-> .-style (aset "display" "block"))
