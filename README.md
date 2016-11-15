@@ -1,3 +1,5 @@
+[![Clojars Project](https://img.shields.io/clojars/v/nightlight.svg)](https://clojars.org/nightlight)
+
 ![screenshot](screenshot.png)
 
 ## Introduction
