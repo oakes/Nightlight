@@ -24,15 +24,15 @@
                :id "toggleTheme"
                :data-on "Light Theme"
                :data-off "Dark Theme"}]]
+     [:div {:class "leftsidebar"}
+      [:div {:id "tree"}]]
+     [:span {:id "editor"}]
      [:button {:type "button"
                :class "btn btn-warning"
                :id "update"
                :style {:display (if update? "block" "none")}
                :on-click #(.open js/window page-url)}
       "Update Nightlight"]
-     [:div {:class "leftsidebar"}
-      [:div {:id "tree"}]]
-     [:span {:id "editor"}]
      [:iframe {:id "cljsapp"
                :style {:display (if (= selection repl/cljs-repl-path) "block" "none")}}]]))
 
