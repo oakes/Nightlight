@@ -2,26 +2,16 @@
 <html>
     <head>
         <meta charset="UTF-8">
-        <title>Nightlight</title>
         <link rel="stylesheet" type="text/css" href="bootstrap-treeview.min.css">
         <link rel="stylesheet" type="text/css" href="bootstrap-toggle.min.css">
-        <link rel="stylesheet" type="text/css" href="bootstrap-dark.min.css" id="bootstrap-css">
-        <link rel="stylesheet" type="text/css" href="paren-soup-dark.css" id="paren-soup-css">
+        <link rel="stylesheet" type="text/css" href="bootstrap-dark.min.css">
+        <link rel="stylesheet" type="text/css" href="paren-soup-dark.css">
         <link rel="stylesheet" type="text/css" href="codemirror.css">
         <link rel="stylesheet" type="text/css" href="codemirror-dark.css">
         <link rel="stylesheet" type="text/css" href="style.css">
     </head>
     <body>
-        <div id="settings">
-            <input type="checkbox" data-toggle="toggle" id="toggleAutoSave" data-on=" Auto Save " data-off=" Auto Save ">
-            <input type="checkbox" data-toggle="toggle" id="toggleTheme" data-on=" Light Theme " data-off=" Dark Theme ">
-        </div>
-        <button type="button" class="btn btn-warning" id="update">Update Nightlight</button>
-        <div class="leftsidebar">
-            <div id="tree"></div>
-        </div>
-        <span id="editor"></span>
-        <iframe id="cljsapp"></iframe>
+        <span id="app"></span>
         <script type="text/javascript" src="main.js"></script>
     </body>
 </html>

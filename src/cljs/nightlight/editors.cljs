@@ -10,6 +10,8 @@
 
 (def ^:const clojure-exts #{"boot" "clj" "cljc" "cljs" "cljx" "edn" "pxi" "hl"})
 (def ^:const completion-exts #{"clj"})
+(def ^:const paren-soup-themes {:dark "paren-soup-dark.css" :light "paren-soup-light.css"})
+(def ^:const codemirror-themes {:dark "lesser-dark" :light "default"})
 
 (defprotocol Editor
   (get-path [this])
@@ -130,16 +132,10 @@
             .-style
             (aset "display" "none"))))
 
-(defn change-css [sel css-file]
-  (let [link (.querySelector js/document sel)]
-    (when-not (-> link (.getAttribute "href") (= css-file))
-      (.setAttribute link "href" css-file))))
-
 (defn ps-init [path content]
   (let [elem (.createElement js/document "span")
         editor-atom (atom nil)
         last-content (atom content)
-        themes {:dark "paren-soup-dark.css" :light "paren-soup-light.css"}
         extension (get-extension path)
         compiler-fn (if (= extension "cljs") repl/compile-cljs repl/compile-clj)
         completions? (completion-exts extension)]
@@ -187,12 +183,11 @@
       (show [this])
       (hide [this])
       (set-theme [this theme]
-        (change-css "#paren-soup-css" (get themes theme "paren-soup-dark.css"))))))
+        (swap! s/runtime-state assoc :paren-soup-css (paren-soup-themes theme))))))
 
 (defn ps-repl-init [path]
   (let [elem (.createElement js/document "span")
         editor-atom (atom nil)
-        themes {:dark "paren-soup-dark.css" :light "paren-soup-light.css"}
         sender (repl/create-repl-sender path elem editor-atom)]
     (set! (.-innerHTML elem) ps-repl-html)
     (reify Editor
@@ -246,13 +241,12 @@
               .-style
               (aset "display" "none"))))
       (set-theme [this theme]
-        (change-css "#paren-soup-css" (get themes theme "paren-soup-dark.css"))))))
+        (swap! s/runtime-state assoc :paren-soup-css (paren-soup-themes theme))))))
 
 (defn cm-init [path content]
   (let [elem (.createElement js/document "span")
         editor-atom (atom nil)
-        last-content (atom content)
-        themes {:dark "lesser-dark" :light "default"}]
+        last-content (atom content)]
     (set! (.-innerHTML elem) toolbar)
     (reify Editor
       (get-path [this] path)
@@ -281,7 +275,7 @@
           (doto
             (.CodeMirror js/window
               elem
-              (clj->js {:value content :lineNumbers true :theme (:dark themes)}))
+              (clj->js {:value content :lineNumbers true :theme (:dark codemirror-themes)}))
             (.on "change"
               (fn [editor-object change]
                 (auto-save this)
@@ -289,7 +283,7 @@
       (show [this])
       (hide [this])
       (set-theme [this theme]
-        (some-> @editor-atom (.setOption "theme" (get themes theme "lesser-dark")))))))
+        (some-> @editor-atom (.setOption "theme" (codemirror-themes theme)))))))
 
 (defn create-editor [path content]
   (if (-> path get-extension clojure-exts some?)
