@@ -1,0 +1,82 @@
+@font-face {
+    font-family: 'Fira Code';
+    src: url('fonts/FiraCode-Regular.otf') format('opentype');
+}
+html, body, .paren-soup, .CodeMirror {
+    -webkit-font-feature-settings: "liga" on, "calt" on;
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+    font-family: 'Fira Code';
+    font-size: 16px;
+    height: 100%;
+    margin: 0;
+}
+html, body {
+    overflow: hidden;
+}
+.toolbar {
+    position: fixed;
+    height: 50px;
+    top: 0px;
+    left: 300px;
+    z-index: 100;
+}
+.paren-soup, .CodeMirror {
+    padding-top: 50px;
+    margin-left: 300px;
+}
+.paren-soup {
+    overflow: auto;
+}
+.paren-soup .content {
+    min-height: 100%;
+    padding-right: 300px;
+}
+#update {
+    position: fixed;
+    top: 0px;
+    right: 0px;
+    margin: 5px;
+    display: none;
+}
+#settings {
+    position: fixed;
+    top: 0px;
+    left: 0px;
+}
+#settings > * {
+    margin: 5px;
+}
+.leftsidebar {
+    position: fixed;
+    width: 300px;
+    left: 0px;
+    top: 50px;
+    bottom: 0px;
+    padding: 5px;
+    overflow: auto;
+}
+.rightsidebar {
+    display: none;
+    margin: 5px;
+    position: fixed;
+    width: 300px;
+    right: 0px;
+    top: 50px;
+    bottom: 0px;
+    padding: 5px;
+    overflow: auto;
+}
+li {
+    white-space: nowrap;
+    overflow: hidden;
+}
+#cljsapp {
+    background-color: white;
+    display: none;
+    border: none;
+    margin-left: 300px;
+    padding-right: 300px;
+    height: 50%;
+    width: 100%;
+}
