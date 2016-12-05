@@ -4,6 +4,7 @@
             [nightlight.state :as s]
             [nightlight.completions :as com]
             [nightlight.repl :as repl]
+            [nightlight.markup :as markup]
             [goog.functions :refer [debounce]]
             [cljsjs.codemirror])
   (:import goog.net.XhrIo))
@@ -27,39 +28,6 @@
   (show [this])
   (hide [this])
   (set-theme [this theme]))
-
-(def toolbar "
-<div class='toolbar'>
-  <button type='button' class='btn btn-default navbar-btn' id='save'>Save</button>
-  <button type='button' class='btn btn-default navbar-btn' id='undo'>Undo</button>
-  <button type='button' class='btn btn-default navbar-btn' id='redo'>Redo</button>
-  <input type='checkbox' data-toggle='toggle' id='toggleInstaRepl' data-on='InstaREPL' data-off='InstaREPL'>
-</div>
-")
-
-(def ps-html "
-<div class='paren-soup' id='paren-soup'>
-  <div class='instarepl' id='instarepl'></div>
-  <div class='numbers' id='numbers'></div>
-  <div class='content' contenteditable='true' id='content'></div>
-</div>
-<div class='rightsidebar'>
-  <div id='completions'></div>
-</div>
-")
-
-(def ps-repl-html "
-<div class='toolbar'>
-  <button type='button' class='btn btn-default navbar-btn' id='undo'>Undo</button>
-  <button type='button' class='btn btn-default navbar-btn' id='redo'>Redo</button>
-</div>
-<div class='paren-soup' id='paren-soup'>
-  <div class='content' contenteditable='true' id='content'></div>
-</div>
-<div class='rightsidebar'>
-  <div id='completions'></div>
-</div>
-")
 
 (defn get-extension [path]
   (->> (.lastIndexOf path ".")
@@ -139,7 +107,7 @@
         extension (get-extension path)
         compiler-fn (if (= extension "cljs") repl/compile-cljs repl/compile-clj)
         completions? (completion-exts extension)]
-    (set! (.-innerHTML elem) (str toolbar ps-html))
+    (set! (.-innerHTML elem) (str markup/toolbar markup/ps-html))
     (set! (.-textContent (.querySelector elem "#content")) content)
     (-> elem (.querySelector "#instarepl") .-style (aset "display" "none"))
     (reify Editor
@@ -189,7 +157,7 @@
   (let [elem (.createElement js/document "span")
         editor-atom (atom nil)
         sender (repl/create-repl-sender path elem editor-atom)]
-    (set! (.-innerHTML elem) ps-repl-html)
+    (set! (.-innerHTML elem) markup/ps-repl-html)
     (reify Editor
       (get-path [this] path)
       (get-element [this] elem)
@@ -247,7 +215,7 @@
   (let [elem (.createElement js/document "span")
         editor-atom (atom nil)
         last-content (atom content)]
-    (set! (.-innerHTML elem) toolbar)
+    (set! (.-innerHTML elem) markup/toolbar)
     (reify Editor
       (get-path [this] path)
       (get-element [this] elem)

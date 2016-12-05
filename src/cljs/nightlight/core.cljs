@@ -6,12 +6,12 @@
             [nightlight.editors :as e]
             [nightlight.state :as s]
             [nightlight.repl :as repl]
+            [nightlight.markup :as markup]
             [reagent.core :as r])
   (:import goog.net.XhrIo))
 
 (def ^:const version "1.2.1")
 (def ^:const api-url "https://clojars.org/api/artifacts/nightlight")
-(def ^:const page-url "https://clojars.org/nightlight")
 (def ^:const bootstrap-themes {:dark "bootstrap-dark.min.css" :light "bootstrap-light.min.css"})
 
 (defn init-tree [{:keys [text nodes selection file? options]}]
@@ -77,37 +77,8 @@
         (swap! s/runtime-state assoc :update? true)))
     "GET"))
 
-(defn app []
-  (let [{:keys [title bootstrap-css paren-soup-css update?]} @s/runtime-state]
-    [:span
-     [:title title]
-     [:link {:rel "stylesheet" :type "text/css" :href bootstrap-css}]
-     [:link {:rel "stylesheet" :type "text/css" :href paren-soup-css}]
-     [:link {:rel "stylesheet" :type "text/css" :href "style.css"}]
-     [:div {:id "settings"}
-      [:input {:type "checkbox"
-               :data-toggle "toggle"
-               :id "toggleAutoSave"
-               :data-on "Auto Save"
-               :data-off "Auto Save"}]
-      [:input {:type "checkbox"
-               :data-toggle "toggle"
-               :id "toggleTheme"
-               :data-on "Light Theme"
-               :data-off "Light Theme"}]]
-     [:button {:type "button"
-               :class "btn btn-warning"
-               :id "update"
-               :style {:display (if update? "block" "none")}
-               :on-click #(.open js/window page-url)}
-      "Update Nightlight"]
-     [:div {:class "leftsidebar"}
-      [:div {:id "tree"}]]
-     [:span {:id "editor"}]
-     [:iframe {:id "cljsapp"}]]))
-
 (def app-with-init
-  (with-meta app
+  (with-meta markup/app
     {:component-did-mount (fn [this]
                             (repl/init-cljs-client)
                             (download-state)
