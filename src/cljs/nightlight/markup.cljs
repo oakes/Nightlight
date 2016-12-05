@@ -1,11 +1,13 @@
 (ns nightlight.markup
   (:require [nightlight.state :as s]
+            [nightlight.repl :as repl]
             [reagent.dom.server :refer [render-to-static-markup]]))
 
 (def ^:const page-url "https://clojars.org/nightlight")
 
 (defn app []
-  (let [{:keys [title bootstrap-css paren-soup-css update?]} @s/runtime-state]
+  (let [{:keys [title bootstrap-css paren-soup-css update?]} @s/runtime-state
+        {:keys [selection]} @s/pref-state]
     [:span
      [:title title]
      [:link {:rel "stylesheet" :type "text/css" :href bootstrap-css}]
@@ -31,7 +33,8 @@
      [:div {:class "leftsidebar"}
       [:div {:id "tree"}]]
      [:span {:id "editor"}]
-     [:iframe {:id "cljsapp"}]]))
+     [:iframe {:id "cljsapp"
+               :style {:display (if (= selection repl/cljs-repl-path) "block" "none")}}]]))
 
 (def ^:const toolbar
   (render-to-static-markup

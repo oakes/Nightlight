@@ -25,8 +25,6 @@
   (mark-clean [this])
   (clean? [this])
   (init [this])
-  (show [this])
-  (hide [this])
   (set-theme [this theme]))
 
 (defn get-extension [path]
@@ -148,8 +146,6 @@
                         (when (and completions? (not= (.-type event) "keydown"))
                           (com/refresh-completions @editor-atom)))
                       :compiler-fn compiler-fn}))))
-      (show [this])
-      (hide [this])
       (set-theme [this theme]
         (swap! s/runtime-state assoc :paren-soup-css (paren-soup-themes theme))))))
 
@@ -197,17 +193,6 @@
                       :compiler-fn (fn [_ _])})))
         (repl/init sender)
         @editor-atom)
-      (show [this]
-        (when (= path repl/cljs-repl-path)
-          (-> (.querySelector js/document "#cljsapp")
-              .-style
-              (aset "display" "block")))
-        (repl/scroll-to-bottom elem))
-      (hide [this]
-        (when (= path repl/cljs-repl-path)
-          (-> (.querySelector js/document "#cljsapp")
-              .-style
-              (aset "display" "none"))))
       (set-theme [this theme]
         (swap! s/runtime-state assoc :paren-soup-css (paren-soup-themes theme))))))
 
@@ -248,8 +233,6 @@
               (fn [editor-object change]
                 (auto-save this)
                 (update-buttons this))))))
-      (show [this])
-      (hide [this])
       (set-theme [this theme]
         (some-> @editor-atom (.setOption "theme" (codemirror-themes theme)))))))
 
@@ -259,8 +242,7 @@
     (cm-init path content)))
 
 (defn show-editor [editor]
-  (.appendChild (clear-editor) (get-element editor))
-  (show editor))
+  (.appendChild (clear-editor) (get-element editor)))
 
 (defn init-editor [editor]
   (doto editor
@@ -290,9 +272,6 @@
     path))
 
 (defn select-node [{:keys [path file?]}]
-  (when-let [old-path (:selection @s/pref-state)]
-    (when-let [old-editor (get-in @s/runtime-state [:editors old-path])]
-      (hide old-editor)))
   (swap! s/pref-state assoc :selection path)
   (if-let [editor (get-in @s/runtime-state [:editors path])]
     (show-editor editor)

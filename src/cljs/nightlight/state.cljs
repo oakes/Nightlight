@@ -2,7 +2,7 @@
   (:require [reagent.core :as r])
   (:import goog.net.XhrIo))
 
-(defonce pref-state (atom {}))
+(defonce pref-state (r/atom {}))
 
 (defonce runtime-state (r/atom {:bootstrap-css "bootstrap-dark.min.css"
                                 :paren-soup-css "paren-soup-dark.css"
