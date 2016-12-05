@@ -21,7 +21,7 @@
                :data-toggle "toggle"
                :id "toggleTheme"
                :data-on "Light Theme"
-               :data-off "Light Theme"}]]
+               :data-off "Dark Theme"}]]
      [:button {:type "button"
                :class "btn btn-warning"
                :id "update"
