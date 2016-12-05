@@ -15,7 +15,7 @@
 (def ^:const bootstrap-themes {:dark "bootstrap-dark.min.css" :light "bootstrap-light.min.css"})
 
 (defn init-tree [{:keys [text nodes selection file? options]}]
-  (swap! s/runtime-state #(assoc % :options options :title text))
+  (swap! s/runtime-state assoc :options options :title text)
   (some-> (:url options) repl/init-cljs)
   (let [repl-nodes (if (:url options)
                      [(repl/repl-node selection) (repl/cljs-repl-node selection)]
@@ -111,7 +111,7 @@
     {:component-did-mount (fn [this]
                             (repl/init-cljs-client)
                             (download-state)
-                            #_(check-version))}))
+                            (check-version))}))
 
 (r/render-component [app-with-init] (.querySelector js/document "#app"))
 
