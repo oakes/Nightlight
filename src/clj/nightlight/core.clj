@@ -98,6 +98,7 @@
                                           {:primary-text candidate
                                            :value candidate}))
                                    (filter #(not= text (:primary-text %)))
+                                   (take 50)
                                    vec
                                    pr-str)
                               (catch Exception _ "[]")))}
