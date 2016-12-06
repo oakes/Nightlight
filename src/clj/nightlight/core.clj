@@ -94,10 +94,11 @@
                               (->> {:ns ns
                                     :context (read-string (str context-before "__prefix__" context-after))}
                                    (com/completions prefix)
-                                   (map #(set/rename-keys % {:candidate :text}))
-                                   (filter #(not= text (:text %)))
+                                   (map (fn [{:keys [candidate]}]
+                                          {:primary-text candidate
+                                           :value candidate}))
+                                   (filter #(not= text (:primary-text %)))
                                    vec
-                                   (#(if (seq %) (assoc-in % [0 :state :selected] true) %)) ; select the first item
                                    pr-str)
                               (catch Exception _ "[]")))}
     "/repl" (repl/repl-request request)

@@ -38,7 +38,6 @@ html, body {
     top: 0px;
     right: 0px;
     margin: 5px;
-    display: none;
 }
 .leftsidebar {
     position: fixed;
@@ -50,7 +49,6 @@ html, body {
     overflow: auto;
 }
 .rightsidebar {
-    display: none;
     margin: 5px;
     position: fixed;
     width: 300px;
@@ -66,7 +64,6 @@ li {
 }
 #cljsapp {
     background-color: white;
-    display: none;
     border: none;
     margin-left: 300px;
     padding-right: 300px;

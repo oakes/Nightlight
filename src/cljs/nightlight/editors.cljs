@@ -17,26 +17,21 @@
 
 (def ^:const ps-html
   (render-to-static-markup
-    [:span
-     [:div {:class "paren-soup" :id "paren-soup"}
-      [:div {:class "instarepl" :id "instarepl"}]
-      [:div {:class "numbers" :id "numbers"}]
-      [:div {:class "content" :id "content" :contentEditable true}]]
-     [:div {:class "rightsidebar"}
-      [:div {:id "completions"}]]]))
+    [:div {:class "paren-soup" :id "paren-soup"}
+     [:div {:class "instarepl" :id "instarepl"}]
+     [:div {:class "numbers" :id "numbers"}]
+     [:div {:class "content" :id "content" :contentEditable true}]]))
 
 (def ^:const ps-repl-html
   (render-to-static-markup
-    [:span
-     [:div {:class "paren-soup" :id "paren-soup"}
-      [:div {:class "content" :id "content" :contentEditable true}]]
-     [:div {:class "rightsidebar"}
-      [:div {:id "completions"}]]]))
+    [:div {:class "paren-soup" :id "paren-soup"}
+     [:div {:class "content" :id "content" :contentEditable true}]]))
 
 (defprotocol Editor
   (get-path [this])
   (get-element [this])
   (get-content [this])
+  (get-object [this])
   (can-undo? [this])
   (can-redo? [this])
   (undo [this])
@@ -97,6 +92,8 @@
       (get-element [this] elem)
       (get-content [this]
         (.-textContent (.querySelector elem "#content")))
+      (get-object [this]
+        @editor-atom)
       (can-undo? [this]
         (some-> @editor-atom ps/can-undo?))
       (can-redo? [this]
@@ -118,7 +115,7 @@
            (get-in @s/runtime-state [:current-content path])))
       (init [this]
         (when completions?
-          (com/init-completions editor-atom elem))
+          (com/init-completions path editor-atom elem))
         (reset! editor-atom
           (ps/init (.querySelector elem "#paren-soup")
             (clj->js {:before-change-callback
@@ -130,7 +127,7 @@
                           (update-content this)
                           (auto-save this))
                         (when (and completions? (not= (.-type event) "keydown"))
-                          (com/refresh-completions @editor-atom)))
+                          (com/refresh-completions path)))
                       :compiler-fn compiler-fn}))))
       (set-theme [this theme]
         (swap! s/runtime-state assoc :paren-soup-css (paren-soup-themes theme))))))
@@ -145,6 +142,8 @@
       (get-element [this] elem)
       (get-content [this]
         (.-textContent (.querySelector elem "#content")))
+      (get-object [this]
+        @editor-atom)
       (can-undo? [this]
         (some-> @editor-atom ps/can-undo?))
       (can-redo? [this]
@@ -159,7 +158,7 @@
       (mark-clean [this])
       (clean? [this] true)
       (init [this]
-        (com/init-completions editor-atom elem)
+        (com/init-completions path editor-atom elem)
         (-> (.querySelector elem "#content") .-style (aset "whiteSpace" "pre-wrap"))
         (when (= path repl/cljs-repl-path)
           (-> (.querySelector elem "#paren-soup") .-style (aset "height" "50%")))
@@ -172,7 +171,7 @@
                       (fn [event]
                         (repl/scroll-to-bottom elem)
                         (when (not= (.-type event) "keydown")
-                          (com/refresh-completions @editor-atom)))
+                          (com/refresh-completions path)))
                       :console-callback
                       (fn [text]
                         (repl/send sender text))
@@ -190,6 +189,8 @@
       (get-element [this] elem)
       (get-content [this]
         (some-> @editor-atom .getValue))
+      (get-object [this]
+        @editor-atom)
       (can-undo? [this]
         (some-> @editor-atom .historySize .-undo (> 0)))
       (can-redo? [this]

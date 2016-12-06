@@ -2,7 +2,8 @@
   (:require [goog.events :as events]
             [cljs.reader :refer [read-string]]
             [paren-soup.core :as ps]
-            [paren-soup.dom :as psd])
+            [paren-soup.dom :as psd]
+            [nightlight.state :as s])
   (:import goog.net.XhrIo))
 
 (declare refresh-completions)
@@ -17,27 +18,16 @@
          (ps/add-parinfer true -1 :paren)
          (ps/edit-and-refresh! editor))))
 
-(defn display-completions [editor info completions]
-  (let [event (fn [e data]
-                (select-completion editor info (.-text data))
-                (refresh-completions editor))]
-    (.treeview (js/$ "#completions")
-      (clj->js {:data (clj->js completions)
-                :onNodeSelected event
-                :onNodeUnselected event}))
-    (if (seq completions)
-      (.show (js/$ ".rightsidebar"))
-      (.hide (js/$ ".rightsidebar")))))
-
-(defn refresh-completions [editor]
+(defn refresh-completions [path]
   (if-let [info (psd/get-completion-info)]
     (.send XhrIo
       "/completions"
       (fn [e]
-        (display-completions editor info (read-string (.. e -target getResponseText))))
+        (swap! s/runtime-state update :completions assoc path
+          (read-string (.. e -target getResponseText))))
       "POST"
       (pr-str info))
-    (display-completions editor {} [])))
+    (swap! s/runtime-state update :completions assoc path [])))
 
 (defn completion-shortcut? [e]
   (and (= 9 (.-keyCode e))
@@ -49,15 +39,12 @@
                count
                (= 1))))
 
-(defn init-completions [editor-atom elem]
-  (events/listen (.querySelector elem "#completions") "mousedown"
-    (fn [e]
-      (.preventDefault e)))
+(defn init-completions [path editor-atom elem]
   (events/listen elem "keyup"
     (fn [e]
       (when (completion-shortcut? e)
-        (when-let [node (some-> (.treeview (js/$ "#completions") "getSelected") (aget 0))]
+        (when-let [comps (get-in @s/runtime-state [:completions path])]
           (when-let [info (psd/get-completion-info)]
-            (select-completion @editor-atom info (.-text node))
-            (refresh-completions @editor-atom)))))))
+            (select-completion @editor-atom info (:value (first comps)))
+            (refresh-completions path)))))))
 

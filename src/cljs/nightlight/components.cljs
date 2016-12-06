@@ -2,6 +2,8 @@
   (:require [nightlight.state :as s]
             [nightlight.repl :as repl]
             [nightlight.editors :as e]
+            [nightlight.completions :refer [select-completion refresh-completions]]
+            [paren-soup.dom :as psd]
             [reagent.core :as r]
             [cljs-react-material-ui.core :refer [get-mui-theme color]]
             [cljs-react-material-ui.reagent :as ui]
@@ -56,6 +58,27 @@
                                  (e/set-theme editor theme))))}]]
    [tree mui-theme runtime-state]
    [:div {:id "tree" :style {:display "none"}}]])
+
+(defn right-sidebar [mui-theme
+                     {:keys [editors completions] :as runtime-state}
+                     {:keys [selection theme] :as pref-state}]
+  (when-let [editor (get editors selection)]
+    (when-let [comps (get completions selection)]
+      (when (seq comps)
+        [:div {:class "rightsidebar"
+               :on-mouse-down #(.preventDefault %)
+               :style {:background-color (if (= :light theme) "#f7f7f7" "#272b30")}}
+         [ui/mui-theme-provider
+          {:mui-theme mui-theme}
+          (vec
+            (concat
+              [ui/selectable-list
+               {:on-change (fn [event value]
+                             (when-let [info (psd/get-completion-info)]
+                               (select-completion (e/get-object editor) info value)
+                               (refresh-completions selection)))}]
+              (let [bg-color (if (= :light theme) "rgba(0, 0, 0, 0.2)" "rgba(255, 255, 255, 0.2)")]
+                (map node->element (assoc-in comps [0 :style :background-color] bg-color)))))]]))))
 
 (defn toolbar [mui-theme
                {:keys [update? editors] :as runtime-state}
@@ -114,6 +137,7 @@
       [left-sidebar mui-theme runtime-state pref-state]
       [toolbar mui-theme runtime-state pref-state]
       [:span {:id "editor"}]
+      [right-sidebar mui-theme runtime-state pref-state]
       [:iframe {:id "cljsapp"
                 :style {:display (if (= selection repl/cljs-repl-path) "block" "none")}}]]]))
 

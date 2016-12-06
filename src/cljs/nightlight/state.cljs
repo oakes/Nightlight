@@ -3,7 +3,6 @@
   (:import goog.net.XhrIo))
 
 (defonce pref-state (r/atom {}))
-
 (defonce runtime-state (r/atom {:title "Nightlight"}))
 
 (add-watch pref-state :write-prefs
