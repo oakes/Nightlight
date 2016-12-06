@@ -154,7 +154,8 @@
       (redo [this]
         (some-> @editor-atom ps/redo)
         (update-content this))
-      (update-content [this])
+      (update-content [this]
+        (swap! s/runtime-state update :current-content assoc path (get-content this)))
       (mark-clean [this])
       (clean? [this] true)
       (init [this]
@@ -171,7 +172,8 @@
                       (fn [event]
                         (repl/scroll-to-bottom elem)
                         (when (not= (.-type event) "keydown")
-                          (com/refresh-completions path)))
+                          (com/refresh-completions path)
+                          (update-content this)))
                       :console-callback
                       (fn [text]
                         (repl/send sender text))
