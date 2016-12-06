@@ -7,9 +7,6 @@
                   ; cljs deps
                   [org.clojure/clojurescript "1.9.227" :scope "test"]
                   [paren-soup "2.6.11" :scope "test"]
-                  [cljsjs/bootstrap "3.3.6-1" :scope "test"]
-                  [cljsjs/bootstrap-toggle "2.2.2-1" :scope "test"]
-                  [cljsjs/bootstrap-treeview "1.2.0-1" :scope "test"]
                   [cljsjs/codemirror "5.19.0-0" :scope "test"]
                   [reagent "0.6.0" :exclusions [cljsjs/react]]
                   [cljs-react-material-ui "0.2.30"]
@@ -31,7 +28,7 @@
 
 (task-options!
   pom {:project 'nightlight
-       :version "1.2.2-SNAPSHOT"
+       :version "1.3.0-SNAPSHOT"
        :description "An embedded Clojure editor"
        :url "https://github.com/oakes/Nightlight"
        :license {"Public Domain" "http://unlicense.org/UNLICENSE"}}

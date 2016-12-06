@@ -1,8 +1,5 @@
 (ns nightlight.core
-  (:require [cljsjs.bootstrap]
-            [cljsjs.bootstrap-treeview]
-            [cljsjs.bootstrap-toggle]
-            [cljs.reader :refer [read-string]]
+  (:require [cljs.reader :refer [read-string]]
             [nightlight.editors :as e]
             [nightlight.state :as s]
             [nightlight.repl :as repl]
