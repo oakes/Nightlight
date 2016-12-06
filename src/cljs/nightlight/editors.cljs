@@ -4,15 +4,62 @@
             [nightlight.state :as s]
             [nightlight.completions :as com]
             [nightlight.repl :as repl]
-            [nightlight.markup :as markup]
             [goog.functions :refer [debounce]]
-            [cljsjs.codemirror])
+            [cljsjs.codemirror]
+            [reagent.dom.server :refer [render-to-static-markup]])
   (:import goog.net.XhrIo))
 
 (def ^:const clojure-exts #{"boot" "clj" "cljc" "cljs" "cljx" "edn" "pxi" "hl"})
 (def ^:const completion-exts #{"clj"})
 (def ^:const paren-soup-themes {:dark "paren-soup-dark.css" :light "paren-soup-light.css"})
 (def ^:const codemirror-themes {:dark "lesser-dark" :light "default"})
+
+(def ^:const toolbar
+  (render-to-static-markup
+    [:div {:class "toolbar"}
+     (for [[id text] [["save" "Save"]
+                      ["undo" "Undo"]
+                      ["redo" "Redo"]]]
+       (list
+         ^{:key id}
+         [:button {:type "button"
+                   :class "btn btn-default navbar-btn"
+                   :id id}
+          text]
+         " "))
+     [:input {:type "checkbox"
+              :data-toggle "toggle"
+              :id "toggleInstaRepl"
+              :data-on "InstaREPL"
+              :data-off "InstaREPL"}]]))
+
+(def ^:const ps-html
+  (render-to-static-markup
+    [:span
+     [:div {:class "paren-soup" :id "paren-soup"}
+      [:div {:class "instarepl" :id "instarepl"}]
+      [:div {:class "numbers" :id "numbers"}]
+      [:div {:class "content" :id "content" :contentEditable true}]]
+     [:div {:class "rightsidebar"}
+      [:div {:id "completions"}]]]))
+
+(def ^:const ps-repl-html
+  (render-to-static-markup
+    [:span
+     [:div {:class "toolbar"}
+      (for [[id text] [["undo" "Undo"]
+                       ["redo" "Redo"]]]
+        (list
+          ^{:key id}
+          [:button {:type "button"
+                    :class "btn btn-default navbar-btn"
+                    :id id}
+           text]
+          " "))]
+     [:div {:class "paren-soup" :id "paren-soup"}
+      [:div {:class "content" :id "content" :contentEditable true}]]
+     [:div {:class "rightsidebar"}
+      [:div {:id "completions"}]]]))
 
 (defprotocol Editor
   (get-path [this])
@@ -105,7 +152,7 @@
         extension (get-extension path)
         compiler-fn (if (= extension "cljs") repl/compile-cljs repl/compile-clj)
         completions? (completion-exts extension)]
-    (set! (.-innerHTML elem) (str markup/toolbar markup/ps-html))
+    (set! (.-innerHTML elem) (str toolbar ps-html))
     (set! (.-textContent (.querySelector elem "#content")) content)
     (-> elem (.querySelector "#instarepl") .-style (aset "display" "none"))
     (reify Editor
@@ -153,7 +200,7 @@
   (let [elem (.createElement js/document "span")
         editor-atom (atom nil)
         sender (repl/create-repl-sender path elem editor-atom)]
-    (set! (.-innerHTML elem) markup/ps-repl-html)
+    (set! (.-innerHTML elem) ps-repl-html)
     (reify Editor
       (get-path [this] path)
       (get-element [this] elem)
@@ -200,7 +247,7 @@
   (let [elem (.createElement js/document "span")
         editor-atom (atom nil)
         last-content (atom content)]
-    (set! (.-innerHTML elem) markup/toolbar)
+    (set! (.-innerHTML elem) toolbar)
     (reify Editor
       (get-path [this] path)
       (get-element [this] elem)
@@ -271,15 +318,10 @@
     "POST"
     path))
 
-(defn select-node [{:keys [path file?]}]
-  (swap! s/pref-state assoc :selection path)
+(defn select-node [path]
   (if-let [editor (get-in @s/runtime-state [:editors path])]
     (show-editor editor)
-    (cond
-      (repl/repl-path? path)
+    (if (repl/repl-path? path)
       (init-repl path)
-      file?
-      (download-file path)
-      :else
-      (clear-editor))))
+      (download-file path))))
 

@@ -11,7 +11,8 @@
                   [cljsjs/bootstrap-toggle "2.2.2-1" :scope "test"]
                   [cljsjs/bootstrap-treeview "1.2.0-1" :scope "test"]
                   [cljsjs/codemirror "5.19.0-0" :scope "test"]
-                  [reagent "0.6.0"]
+                  [reagent "0.6.0" :exclusions [cljsjs/react]]
+                  [cljs-react-material-ui "0.2.30"]
                   ; clj deps
                   [org.clojure/clojure "1.8.0"]
                   [ring "1.5.0"]
