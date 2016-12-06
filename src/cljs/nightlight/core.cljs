@@ -9,7 +9,6 @@
 
 (def ^:const version "1.2.1")
 (def ^:const api-url "https://clojars.org/api/artifacts/nightlight")
-(def ^:const bootstrap-themes {:dark "bootstrap-dark.min.css" :light "bootstrap-light.min.css"})
 
 (defn init-tree [{:keys [primary-text nested-items selection options]}]
   (swap! s/runtime-state assoc :options options :title primary-text :nodes nested-items)
