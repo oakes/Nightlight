@@ -16,13 +16,14 @@ html, body {
 }
 .toolbar {
     position: fixed;
-    height: 50px;
+    height: 60px;
     top: 0px;
     left: 300px;
+    right: 0px;
     z-index: 100;
 }
 .paren-soup, .CodeMirror {
-    padding-top: 50px;
+    padding-top: 60px;
     margin-left: 300px;
 }
 .paren-soup {

@@ -14,25 +14,6 @@
 (def ^:const paren-soup-themes {:dark "paren-soup-dark.css" :light "paren-soup-light.css"})
 (def ^:const codemirror-themes {:dark "lesser-dark" :light "default"})
 
-(def ^:const toolbar
-  (render-to-static-markup
-    [:div {:class "toolbar"}
-     (for [[id text] [["save" "Save"]
-                      ["undo" "Undo"]
-                      ["redo" "Redo"]]]
-       (list
-         ^{:key id}
-         [:button {:type "button"
-                   :class "btn btn-default navbar-btn"
-                   :id id}
-          text]
-         " "))
-     [:input {:type "checkbox"
-              :data-toggle "toggle"
-              :id "toggleInstaRepl"
-              :data-on "InstaREPL"
-              :data-off "InstaREPL"}]]))
-
 (def ^:const ps-html
   (render-to-static-markup
     [:span
@@ -46,16 +27,6 @@
 (def ^:const ps-repl-html
   (render-to-static-markup
     [:span
-     [:div {:class "toolbar"}
-      (for [[id text] [["undo" "Undo"]
-                       ["redo" "Redo"]]]
-        (list
-          ^{:key id}
-          [:button {:type "button"
-                    :class "btn btn-default navbar-btn"
-                    :id id}
-           text]
-          " "))]
      [:div {:class "paren-soup" :id "paren-soup"}
       [:div {:class "content" :id "content" :contentEditable true}]]
      [:div {:class "rightsidebar"}
@@ -152,7 +123,7 @@
         extension (get-extension path)
         compiler-fn (if (= extension "cljs") repl/compile-cljs repl/compile-clj)
         completions? (completion-exts extension)]
-    (set! (.-innerHTML elem) (str toolbar ps-html))
+    (set! (.-innerHTML elem) ps-html)
     (set! (.-textContent (.querySelector elem "#content")) content)
     (-> elem (.querySelector "#instarepl") .-style (aset "display" "none"))
     (reify Editor
@@ -247,7 +218,6 @@
   (let [elem (.createElement js/document "span")
         editor-atom (atom nil)
         last-content (atom content)]
-    (set! (.-innerHTML elem) toolbar)
     (reify Editor
       (get-path [this] path)
       (get-element [this] elem)
