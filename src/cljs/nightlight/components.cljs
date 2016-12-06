@@ -15,19 +15,30 @@
                node)]
     (r/as-element [ui/list-item node])))
 
-(defn tree [mui-theme nodes]
+(defn tree [mui-theme {:keys [nodes options] :as runtime-state}]
   [ui/mui-theme-provider
    {:mui-theme mui-theme}
-   (vec
-     (concat
-       [ui/selectable-list
-        {:value (:selection @s/pref-state)
-         :on-change (fn [event value]
-                      (swap! s/pref-state assoc :selection value)
-                      (e/select-node value))}]
-       (map node->element nodes)))])
+   (let [nodes (if (:url options)
+                 (cons {:primary-text "ClojureScript REPL"
+                        :value repl/cljs-repl-path}
+                   nodes)
+                 nodes)
+         nodes (cons {:primary-text "Clojure REPL"
+                      :value repl/repl-path}
+                 nodes)
+         nodes (map node->element nodes)]
+     (vec
+       (concat
+         [ui/selectable-list
+          {:value (:selection @s/pref-state)
+           :on-change (fn [event value]
+                        (swap! s/pref-state assoc :selection value)
+                        (e/select-node value))}]
+         nodes)))])
 
-(defn left-sidebar [auto-save? theme mui-theme nodes]
+(defn left-sidebar [mui-theme
+                    {:keys [nodes] :as runtime-state}
+                    {:keys [auto-save? theme] :as pref-state}]
   [:div {:class "leftsidebar"}
    [:div {:style {:padding-left "10px"}}
     [ui/toggle {:label "Auto Save"
@@ -43,24 +54,36 @@
                                (swap! s/pref-state assoc :theme theme)
                                (doseq [editor (-> @s/runtime-state :editors vals)]
                                  (e/set-theme editor theme))))}]]
-   [tree mui-theme nodes]
+   [tree mui-theme runtime-state]
    [:div {:id "tree" :style {:display "none"}}]])
 
-(defn toolbar [mui-theme update?]
+(defn toolbar [mui-theme
+               {:keys [update? editors] :as runtime-state}
+               {:keys [selection] :as pref-state}]
   [:div {:class "toolbar"}
    [ui/mui-theme-provider
     {:mui-theme mui-theme}
     [ui/toolbar
      {:style {:background-color "transparent"}}
-     [ui/toolbar-group
-      [ui/raised-button {} "Save"]
-      [ui/raised-button {} "Undo"]
-      [ui/raised-button {} "Redo"]
-      [ui/toggle {:label "InstaREPL"
-                  :label-position "right"
-                  :default-toggled false
-                  :on-toggle (fn [event value])
-                  :style {:margin-top "16px"}}]]
+     (when-let [editor (get editors selection)]
+       [ui/toolbar-group
+        (when-not (repl/repl-path? selection)
+          [ui/raised-button {:disabled (e/clean? editor)
+                             :on-click #(e/write-file editor)}
+           "Save"])
+        [ui/raised-button {:disabled (not (e/can-undo? editor))
+                           :on-click #(e/undo editor)}
+         "Undo"]
+        [ui/raised-button {:disabled (not (e/can-redo? editor))
+                           :on-click #(e/redo editor)}
+         "Redo"]
+        (when (-> selection e/get-extension e/show-instarepl?)
+          [ui/toggle {:label "InstaREPL"
+                      :label-position "right"
+                      :default-toggled false
+                      :on-toggle (fn [event value]
+                                   (e/toggle-instarepl editor value))
+                      :style {:margin-top "16px"}}])])
      [ui/toolbar-group
       {:style {:z-index 100}}
       [ui/raised-button {:background-color "#FF6F00"
@@ -69,8 +92,8 @@
        "Update"]]]]])
 
 (defn app []
-  (let [{:keys [title update? nodes]} @s/runtime-state
-        {:keys [selection auto-save? theme]} @s/pref-state
+  (let [{:keys [title nodes] :as runtime-state} @s/runtime-state
+        {:keys [theme selection] :as pref-state} @s/pref-state
         bootstrap-css (if (= :light theme) "bootstrap-light.min.css" "bootstrap-dark.min.css")
         paren-soup-css (if (= :light theme) "paren-soup-light.css" "paren-soup-dark.css")
         text-color (if (= :light theme) (color :black) (color :white))
@@ -88,8 +111,8 @@
       [:link {:rel "stylesheet" :type "text/css" :href bootstrap-css}]
       [:link {:rel "stylesheet" :type "text/css" :href paren-soup-css}]
       [:link {:rel "stylesheet" :type "text/css" :href "style.css"}]
-      [left-sidebar auto-save? theme mui-theme nodes]
-      [toolbar mui-theme update?]
+      [left-sidebar mui-theme runtime-state pref-state]
+      [toolbar mui-theme runtime-state pref-state]
       [:span {:id "editor"}]
       [:iframe {:id "cljsapp"
                 :style {:display (if (= selection repl/cljs-repl-path) "block" "none")}}]]]))

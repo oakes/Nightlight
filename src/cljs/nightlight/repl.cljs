@@ -7,20 +7,7 @@
 
 (def ^:const repl-path "*REPL*")
 (def ^:const cljs-repl-path "*CLJS-REPL*")
-
-(def repl-path? #{repl-path cljs-repl-path})
-
-(defn repl-node [{:keys [path]}]
-  {:text "Clojure REPL"
-   :path repl-path
-   :icon "glyphicon glyphicon-chevron-right"
-   :state {:selected (= path repl-path)}})
-
-(defn cljs-repl-node [{:keys [path]}]
-  {:text "ClojureScript REPL"
-   :path cljs-repl-path
-   :icon "glyphicon glyphicon-chevron-right"
-   :state {:selected (= path cljs-repl-path)}})
+(def ^:const repl-path? #{repl-path cljs-repl-path})
 
 (defn init-cljs [url]
   (when (= js/window.self js/window.top)

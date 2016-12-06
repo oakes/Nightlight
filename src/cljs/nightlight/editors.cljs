@@ -6,6 +6,7 @@
             [nightlight.repl :as repl]
             [goog.functions :refer [debounce]]
             [cljsjs.codemirror]
+            [reagent.core :as r]
             [reagent.dom.server :refer [render-to-static-markup]])
   (:import goog.net.XhrIo))
 
@@ -40,6 +41,7 @@
   (can-redo? [this])
   (undo [this])
   (redo [this])
+  (update-content [this])
   (mark-clean [this])
   (clean? [this])
   (init [this])
@@ -64,31 +66,6 @@
     "POST"
     (pr-str {:path (get-path editor) :content (get-content editor)})))
 
-(defn connect-buttons [editor]
-  (some-> (get-element editor)
-          (.querySelector "#save")
-          (.addEventListener "click" #(write-file editor)))
-  (some-> (get-element editor)
-          (.querySelector "#undo")
-          (.addEventListener "click" #(undo editor)))
-  (some-> (get-element editor)
-          (.querySelector "#redo")
-          (.addEventListener "click" #(redo editor))))
-
-(defn update-buttons [editor]
-  (when-let [save-css (some-> (get-element editor) (.querySelector "#save") .-classList)]
-    (if (clean? editor)
-      (.add save-css "disabled")
-      (.remove save-css "disabled")))
-  (when-let [undo-css (some-> (get-element editor) (.querySelector "#undo") .-classList)]
-    (if (can-undo? editor)
-      (.remove undo-css "disabled")
-      (.add undo-css "disabled")))
-  (when-let [redo-css (some-> (get-element editor) (.querySelector "#redo") .-classList)]
-    (if (can-redo? editor)
-      (.remove redo-css "disabled")
-      (.add redo-css "disabled"))))
-
 (def auto-save
   (debounce
     (fn [editor]
@@ -106,20 +83,9 @@
   (or (#{"clj" "cljc"} extension)
       (and (= "cljs" extension) (-> @s/runtime-state :options :url))))
 
-(defn init-instarepl [editor]
-  (if (-> editor get-path get-extension show-instarepl?)
-    (doto (js/$ "#toggleInstaRepl")
-      (.bootstrapToggle "off")
-      (.change (fn [e] (toggle-instarepl editor (-> e .-target .-checked)))))
-    (some-> js/document
-            (.querySelector "#toggleInstaRepl")
-            .-style
-            (aset "display" "none"))))
-
 (defn ps-init [path content]
   (let [elem (.createElement js/document "span")
         editor-atom (atom nil)
-        last-content (atom content)
         extension (get-extension path)
         compiler-fn (if (= extension "cljs") repl/compile-cljs repl/compile-clj)
         completions? (completion-exts extension)]
@@ -137,17 +103,19 @@
         (some-> @editor-atom ps/can-redo?))
       (undo [this]
         (some-> @editor-atom ps/undo)
-        (auto-save this)
-        (update-buttons this))
+        (update-content this)
+        (auto-save this))
       (redo [this]
         (some-> @editor-atom ps/redo)
-        (auto-save this)
-        (update-buttons this))
+        (update-content this)
+        (auto-save this))
+      (update-content [this]
+        (swap! s/runtime-state update :current-content assoc path (get-content this)))
       (mark-clean [this]
-        (reset! last-content (get-content this))
-        (update-buttons this))
+        (swap! s/runtime-state update :saved-content assoc path (get-content this)))
       (clean? [this]
-        (= @last-content (get-content this)))
+        (= (get-in @s/runtime-state [:saved-content path])
+           (get-in @s/runtime-state [:current-content path])))
       (init [this]
         (when completions?
           (com/init-completions editor-atom elem))
@@ -159,8 +127,8 @@
                       :change-callback
                       (fn [event]
                         (when (= (.-type event) "keyup")
+                          (update-content this)
                           (auto-save this))
-                        (update-buttons this)
                         (when (and completions? (not= (.-type event) "keydown"))
                           (com/refresh-completions @editor-atom)))
                       :compiler-fn compiler-fn}))))
@@ -183,10 +151,11 @@
         (some-> @editor-atom ps/can-redo?))
       (undo [this]
         (some-> @editor-atom ps/undo)
-        (update-buttons this))
+        (update-content this))
       (redo [this]
         (some-> @editor-atom ps/redo)
-        (update-buttons this))
+        (update-content this))
+      (update-content [this])
       (mark-clean [this])
       (clean? [this] true)
       (init [this]
@@ -201,7 +170,6 @@
                         (com/completion-shortcut? event))
                       :change-callback
                       (fn [event]
-                        (update-buttons this)
                         (repl/scroll-to-bottom elem)
                         (when (not= (.-type event) "keydown")
                           (com/refresh-completions @editor-atom)))
@@ -216,8 +184,7 @@
 
 (defn cm-init [path content]
   (let [elem (.createElement js/document "span")
-        editor-atom (atom nil)
-        last-content (atom content)]
+        editor-atom (atom nil)]
     (reify Editor
       (get-path [this] path)
       (get-element [this] elem)
@@ -229,17 +196,19 @@
         (some-> @editor-atom .historySize .-redo (> 0)))
       (undo [this]
         (some-> @editor-atom .undo)
-        (auto-save this)
-        (update-buttons this))
+        (update-content this)
+        (auto-save this))
       (redo [this]
         (some-> @editor-atom .redo)
-        (auto-save this)
-        (update-buttons this))
+        (update-content this)
+        (auto-save this))
+      (update-content [this]
+        (swap! s/runtime-state update :current-content assoc path (get-content this)))
       (mark-clean [this]
-        (reset! last-content (get-content this))
-        (update-buttons this))
+        (swap! s/runtime-state update :saved-content assoc path (get-content this)))
       (clean? [this]
-        (= @last-content (get-content this)))
+        (= (get-in @s/runtime-state [:saved-content path])
+           (get-in @s/runtime-state [:current-content path])))
       (init [this]
         (reset! editor-atom
           (doto
@@ -248,8 +217,8 @@
               (clj->js {:value content :lineNumbers true :theme (:dark codemirror-themes)}))
             (.on "change"
               (fn [editor-object change]
-                (auto-save this)
-                (update-buttons this))))))
+                (update-content this)
+                (auto-save this))))))
       (set-theme [this theme]
         (some-> @editor-atom (.setOption "theme" (codemirror-themes theme)))))))
 
@@ -265,10 +234,7 @@
   (doto editor
     (show-editor)
     (init)
-    (init-instarepl)
-    (set-theme (:theme @s/pref-state))
-    (update-buttons)
-    (connect-buttons)))
+    (set-theme (:theme @s/pref-state))))
 
 (defn init-repl [path]
   (->> (ps-repl-init path)
@@ -280,10 +246,14 @@
     "/read-file"
     (fn [e]
       (if (.isSuccess (.-target e))
-        (->> (.. e -target getResponseText)
-             (create-editor path)
-             (init-editor)
-             (swap! s/runtime-state update :editors assoc path))
+        (let [editor (->> (.. e -target getResponseText) (create-editor path) (init-editor))
+              content (get-content editor)]
+          (swap! s/runtime-state
+            (fn [state]
+              (-> state
+                  (assoc-in [:editors path] editor)
+                  (assoc-in [:saved-content path] content)
+                  (assoc-in [:current-content path] content)))))
         (clear-editor)))
     "POST"
     path))
