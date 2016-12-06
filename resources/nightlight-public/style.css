@@ -33,17 +33,18 @@ html, body {
     min-height: 100%;
     padding-right: 300px;
 }
-#update {
+.settings {
     position: fixed;
-    top: 0px;
+    left: 0px;
     right: 0px;
-    margin: 5px;
+    height: 60px;
+    padding: 5px;
 }
 .leftsidebar {
     position: fixed;
     width: 300px;
     left: 0px;
-    top: 0px;
+    top: 60px;
     bottom: 0px;
     padding: 5px;
     overflow: auto;

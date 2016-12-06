@@ -22,11 +22,13 @@
    {:mui-theme mui-theme}
    (let [nodes (if (:url options)
                  (cons {:primary-text "ClojureScript REPL"
-                        :value repl/cljs-repl-path}
+                        :value repl/cljs-repl-path
+                        :style {:font-weight "bold"}}
                    nodes)
                  nodes)
          nodes (cons {:primary-text "Clojure REPL"
-                      :value repl/repl-path}
+                      :value repl/repl-path
+                      :style {:font-weight "bold"}}
                  nodes)
          nodes (map node->element nodes)]
      (vec
@@ -41,8 +43,8 @@
 (defn left-sidebar [mui-theme
                     {:keys [nodes] :as runtime-state}
                     {:keys [auto-save? theme] :as pref-state}]
-  [:div {:class "leftsidebar"}
-   [:div {:style {:padding-left "10px"}}
+  [:span
+   [:div {:class "settings" :style {:padding-left "10px"}}
     [ui/toggle {:label "Auto Save"
                 :label-position "right"
                 :default-toggled auto-save?
@@ -56,8 +58,9 @@
                                (swap! s/pref-state assoc :theme theme)
                                (doseq [editor (-> @s/runtime-state :editors vals)]
                                  (e/set-theme editor theme))))}]]
-   [tree mui-theme runtime-state]
-   [:div {:id "tree" :style {:display "none"}}]])
+   [:div {:class "leftsidebar"}
+    [tree mui-theme runtime-state]
+    [:div {:id "tree" :style {:display "none"}}]]])
 
 (defn right-sidebar [mui-theme
                      {:keys [editors completions] :as runtime-state}
