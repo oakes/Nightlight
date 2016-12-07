@@ -6,8 +6,6 @@
             [nightlight.state :as s])
   (:import goog.net.XhrIo))
 
-(declare refresh-completions)
-
 (defn select-completion [editor {:keys [context-before context-after start-position]} text]
   (when-let [top-level-elem (psd/get-focused-top-level)]
     (set! (.-textContent top-level-elem)
