@@ -6,8 +6,7 @@
             [paren-soup.dom :as psd]
             [reagent.core :as r]
             [cljs-react-material-ui.core :refer [get-mui-theme color]]
-            [cljs-react-material-ui.reagent :as ui]
-            [cljs-react-material-ui.icons :as ic]))
+            [cljs-react-material-ui.reagent :as ui]))
 
 (def ^:const page-url "https://clojars.org/nightlight")
 
