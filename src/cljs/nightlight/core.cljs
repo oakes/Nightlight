@@ -7,7 +7,7 @@
             [reagent.core :as r])
   (:import goog.net.XhrIo))
 
-(def ^:const version "1.2.1")
+(def ^:const version "1.3.0")
 (def ^:const api-url "https://clojars.org/api/artifacts/nightlight")
 
 (defn init-tree [{:keys [primary-text nested-items selection options]}]
@@ -49,7 +49,7 @@
     {:component-did-mount (fn [this]
                             (repl/init-cljs-client)
                             (download-state)
-                            #_(check-version))}))
+                            (check-version))}))
 
 (r/render-component [app-with-init] (.querySelector js/document "#app"))
 
