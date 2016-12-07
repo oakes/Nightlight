@@ -8,8 +8,8 @@
                   [org.clojure/clojurescript "1.9.227" :scope "test"]
                   [paren-soup "2.6.11" :scope "test"]
                   [cljsjs/codemirror "5.19.0-0" :scope "test"]
-                  [reagent "0.6.0" :exclusions [cljsjs/react]]
-                  [cljs-react-material-ui "0.2.30"]
+                  [reagent "0.6.0" :exclusions [cljsjs/react] :scope "test"]
+                  [cljs-react-material-ui "0.2.30" :scope "test"]
                   ; clj deps
                   [org.clojure/clojure "1.8.0"]
                   [ring "1.5.0"]
