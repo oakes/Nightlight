@@ -69,6 +69,7 @@
     1000))
 
 (defn toggle-instarepl [editor show?]
+  (swap! s/runtime-state update :instarepls assoc (get-path editor) show?)
   (-> (.querySelector (get-element editor) ".instarepl")
       .-style
       (aset "display" (if show? "list-item" "none")))

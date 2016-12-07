@@ -106,7 +106,7 @@
         (when (-> selection e/get-extension e/show-instarepl?)
           [ui/toggle {:label "InstaREPL"
                       :label-position "right"
-                      :default-toggled false
+                      :default-toggled (get-in @s/runtime-state [:instarepls selection])
                       :on-toggle (fn [event value]
                                    (e/toggle-instarepl editor value))
                       :style {:margin-top "16px"}}])])
