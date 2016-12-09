@@ -15,12 +15,14 @@
 
 
 (defn start-nightlight
-  [project {:keys [port url]}]
+  [{:keys [main] :as project} {:keys [port url] :as options}]
   (eval/eval-in-project
     (deps/add-if-missing
       project
       '[nightlight/lein-nightlight "1.3.0"])
-    `(nightlight.core/start {:port ~port :url ~url})
+    `(do
+       (nightlight.core/start {:port ~port :url ~url})
+       (when '~main (require '~main)))
     `(require 'nightlight.core)))
 
 
