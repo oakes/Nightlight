@@ -41,15 +41,23 @@
                     *err* out
                     *in* in]
             (try
-              (clojure.main/repl)
+              (clojure.main/repl
+                :read
+                (fn [request-prompt request-exit]
+                  (let [form (clojure.main/repl-read request-prompt request-exit)]
+                    (if (= 'nightlight.repl/exit form) request-exit form))))
               (catch Exception e (some-> (.getMessage e) println))
               (finally (println "=== Finished ==="))))))))
   pipes)
 
 (defn repl-request [request]
   (with-channel request channel
-    (on-close channel (fn [status]
-                        (swap! state dissoc channel)))
+    (on-close channel
+      (fn [status]
+        (when-let [{:keys [in-pipe out-pipe]} (get @state channel)]
+          (doto out-pipe (.write "nightlight.repl/exit\n") (.flush))
+          (.close in-pipe))
+        (swap! state dissoc channel)))
     (on-receive channel
       (fn [text]
         (when-not (get @state channel)
