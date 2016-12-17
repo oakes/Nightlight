@@ -5,15 +5,32 @@
             [nightlight.completions :as com]
             [nightlight.repl :as repl]
             [goog.functions :refer [debounce]]
-            [cljsjs.codemirror]
             [reagent.core :as r]
-            [reagent.dom.server :refer [render-to-static-markup]])
+            [reagent.dom.server :refer [render-to-static-markup]]
+            [cljsjs.codemirror]
+            [cljsjs.codemirror.mode.css]
+            [cljsjs.codemirror.mode.javascript]
+            [cljsjs.codemirror.mode.markdown]
+            [cljsjs.codemirror.mode.sass]
+            [cljsjs.codemirror.mode.shell]
+            [cljsjs.codemirror.mode.sql]
+            [cljsjs.codemirror.mode.xml])
   (:import goog.net.XhrIo))
 
 (def ^:const clojure-exts #{"boot" "clj" "cljc" "cljs" "cljx" "edn" "pxi" "hl"})
 (def ^:const completion-exts #{"clj"})
 (def ^:const paren-soup-themes {:dark "paren-soup-dark.css" :light "paren-soup-light.css"})
 (def ^:const codemirror-themes {:dark "lesser-dark" :light "default"})
+(def ^:const extension->mode
+  {"css" "css"
+   "js" "javascript"
+   "md" "markdown"
+   "markdown" "markdown"
+   "sass" "sass"
+   "sh" "shell"
+   "sql" "sql"
+   "html" "xml"
+   "xml" "xml"})
 
 (def ^:const ps-html
   (render-to-static-markup
@@ -186,7 +203,8 @@
 
 (defn cm-init [path content]
   (let [elem (.createElement js/document "span")
-        editor-atom (atom nil)]
+        editor-atom (atom nil)
+        extension (get-extension path)]
     (reify Editor
       (get-path [this] path)
       (get-element [this] elem)
@@ -218,7 +236,10 @@
           (doto
             (.CodeMirror js/window
               elem
-              (clj->js {:value content :lineNumbers true :theme (:dark codemirror-themes)}))
+              (clj->js {:value content
+                        :lineNumbers true
+                        :theme (:dark codemirror-themes)
+                        :mode (extension->mode extension)}))
             (.on "change"
               (fn [editor-object change]
                 (update-content this)
