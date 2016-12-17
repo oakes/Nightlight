@@ -7,7 +7,7 @@
             [reagent.core :as r])
   (:import goog.net.XhrIo))
 
-(def ^:const version "1.3.1")
+(def ^:const version "1.3.2")
 (def ^:const api-url "https://clojars.org/api/artifacts/nightlight")
 
 (defn init-tree [{:keys [primary-text nested-items selection options]}]
