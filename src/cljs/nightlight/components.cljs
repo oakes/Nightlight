@@ -132,8 +132,8 @@
      {:mui-theme mui-theme}
      [:span
       [:title title]
-      [:link {:rel "stylesheet" :type "text/css" :href "style.css"}]
       [:link {:rel "stylesheet" :type "text/css" :href paren-soup-css}]
+      [:link {:rel "stylesheet" :type "text/css" :href "style.css"}]
       [left-sidebar mui-theme runtime-state pref-state]
       [toolbar mui-theme runtime-state pref-state]
       [:span {:id "editor"}]
