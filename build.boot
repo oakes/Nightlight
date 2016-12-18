@@ -32,13 +32,15 @@
        :description "An embedded Clojure editor"
        :url "https://github.com/oakes/Nightlight"
        :license {"Public Domain" "http://unlicense.org/UNLICENSE"}}
-  push {:repo "clojars"})
+  push {:repo "clojars"}
+  sift {:include #{#"nightlight-public/main.out"}
+        :invert true})
 
 (deftask local []
-  (comp (cljs :optimizations :advanced) (pom) (jar) (install)))
+  (comp (cljs :optimizations :advanced) (sift) (pom) (jar) (install)))
 
 (deftask deploy []
-  (comp (cljs :optimizations :advanced) (pom) (jar) (push)))
+  (comp (cljs :optimizations :advanced) (sift) (pom) (jar) (push)))
 
 (deftask run []
   (comp
