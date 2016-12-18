@@ -1,7 +1,10 @@
+html, body, .paren-soup {
+    background-color: #272b30;
+}
+
 .paren-soup {
 	font-family: monospace;
 	color: lightgray;
-	background-color: #272b30;
 }
 
 .paren-soup .error-text {

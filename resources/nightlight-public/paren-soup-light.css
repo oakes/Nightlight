@@ -1,9 +1,11 @@
+html, body, .paren-soup {
+    background-color: #f7f7f7;
+}
+
 .paren-soup {
 	font-size: 16px;
 	font-family: monospace;
 	color: gray;
-	background-color: #f7f7f7;
-	outline: 1px solid;
 }
 
 .paren-soup .error-text {

@@ -119,7 +119,6 @@
 (defn app []
   (let [{:keys [title nodes] :as runtime-state} @s/runtime-state
         {:keys [theme selection] :as pref-state} @s/pref-state
-        bootstrap-css (if (= :light theme) "bootstrap-light.min.css" "bootstrap-dark.min.css")
         paren-soup-css (if (= :light theme) "paren-soup-light.css" "paren-soup-dark.css")
         text-color (if (= :light theme) (color :black) (color :white))
         mui-theme (if (= :light theme)
@@ -133,9 +132,8 @@
      {:mui-theme mui-theme}
      [:span
       [:title title]
-      [:link {:rel "stylesheet" :type "text/css" :href bootstrap-css}]
-      [:link {:rel "stylesheet" :type "text/css" :href paren-soup-css}]
       [:link {:rel "stylesheet" :type "text/css" :href "style.css"}]
+      [:link {:rel "stylesheet" :type "text/css" :href paren-soup-css}]
       [left-sidebar mui-theme runtime-state pref-state]
       [toolbar mui-theme runtime-state pref-state]
       [:span {:id "editor"}]
