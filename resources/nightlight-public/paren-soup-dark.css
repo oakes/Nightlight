@@ -2,6 +2,10 @@ html, body, .paren-soup {
     background-color: #272b30;
 }
 
+button {
+	color: white;
+}
+
 .paren-soup {
 	font-family: monospace;
 	color: lightgray;
