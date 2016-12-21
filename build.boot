@@ -1,6 +1,5 @@
 (set-env!
   :source-paths #{"src/clj" "src/cljs"}
-  :resource-paths #{"src/clj" "src/cljs" "resources"}
   :dependencies '[[adzerk/boot-cljs "1.7.228-1" :scope "test"]
                   [adzerk/boot-reload "0.4.12" :scope "test"]
                   [org.clojure/test.check "0.9.0" :scope "test"]
@@ -37,12 +36,15 @@
         :invert true})
 
 (deftask local []
+  (set-env! :resource-paths #{"src/clj" "src/cljs" "resources" "prod-resources"})
   (comp (cljs :optimizations :advanced) (sift) (pom) (jar) (install)))
 
 (deftask deploy []
+  (set-env! :resource-paths #{"src/clj" "src/cljs" "resources" "prod-resources"})
   (comp (cljs :optimizations :advanced) (sift) (pom) (jar) (push)))
 
 (deftask run []
+  (set-env! :resource-paths #{"src/clj" "src/cljs" "resources" "dev-resources"})
   (comp
     (watch)
     (reload :asset-path "nightlight-public")

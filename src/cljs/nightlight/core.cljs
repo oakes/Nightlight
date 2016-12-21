@@ -4,7 +4,8 @@
             [nightlight.state :as s]
             [nightlight.repl :as repl]
             [nightlight.components :refer [app]]
-            [reagent.core :as r])
+            [reagent.core :as r]
+            [paren-soup.core-spec])
   (:import goog.net.XhrIo))
 
 (def ^:const version "1.3.2")
