@@ -23,7 +23,8 @@
 (require
   '[adzerk.boot-cljs :refer [cljs]]
   '[adzerk.boot-reload :refer [reload]]
-  '[nightlight.core :refer [dev-start]])
+  '[nightlight.core :refer [dev-start]]
+  '[clojure.spec.test :refer [instrument]])
 
 (task-options!
   pom {:project 'nightlight
@@ -50,6 +51,7 @@
     (reload :asset-path "nightlight-public")
     (cljs :source-map true :optimizations :none)
     (with-pass-thru _
+      (instrument)
       (dev-start {:port 4000 :url "http://localhost:4000"}))
     (target)))
 
