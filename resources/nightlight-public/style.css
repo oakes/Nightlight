@@ -14,17 +14,19 @@ html, body, .paren-soup, .CodeMirror {
 html, body {
     overflow: hidden;
 }
-.toolbar {
+.outer-editor {
     position: fixed;
-    height: 60px;
     top: 0px;
     left: 300px;
     right: 0px;
+    bottom: 0px;
+}
+.toolbar {
+    height: 60px;
     z-index: 100;
 }
 .paren-soup, .CodeMirror {
-    padding-top: 60px;
-    margin-left: 305px;
+    height: calc(100% - 60px);
 }
 .paren-soup {
     overflow: auto;
@@ -64,9 +66,11 @@ li {
     overflow: hidden;
 }
 #cljsapp {
+    position: fixed;
+    left: 300px;
+    top: 50%;
     background-color: white;
     border: none;
-    margin-left: 300px;
     padding-right: 300px;
     height: 50%;
     width: 100%;

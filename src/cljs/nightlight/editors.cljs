@@ -190,8 +190,6 @@
       (init [this]
         (com/init-completions path editor-atom elem)
         (-> (.querySelector elem "#content") .-style (aset "whiteSpace" "pre-wrap"))
-        (when (= path repl/cljs-repl-path)
-          (-> (.querySelector elem "#paren-soup") .-style (aset "height" "50%")))
         (reset! editor-atom
           (ps/init (.querySelector elem "#paren-soup")
             (clj->js {:before-change-callback
@@ -278,6 +276,9 @@
 
 (defn show-editor [editor]
   (.appendChild (clear-editor) (get-element editor))
+  (when-let [outer-editor (.querySelector js/document ".outer-editor")]
+    (set! (.-bottom (.-style outer-editor))
+      (if (= (get-path editor) repl/cljs-repl-path) "50%" "0%")))
   (update-scroll-position editor))
 
 (defn init-editor [editor]

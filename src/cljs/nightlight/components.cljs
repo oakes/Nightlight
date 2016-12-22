@@ -139,8 +139,9 @@
       [:link {:rel "stylesheet" :type "text/css" :href paren-soup-css}]
       [:link {:rel "stylesheet" :type "text/css" :href "style.css"}]
       [left-sidebar mui-theme runtime-state pref-state]
-      [toolbar mui-theme runtime-state pref-state]
-      [:span {:id "editor"}]
+      [:span {:class "outer-editor"}
+       [toolbar mui-theme runtime-state pref-state]
+       [:span {:id "editor"}]]
       [right-sidebar mui-theme runtime-state pref-state]
       [:iframe {:id "cljsapp"
                 :style {:display (if (= selection repl/cljs-repl-path) "block" "none")}}]]]))
