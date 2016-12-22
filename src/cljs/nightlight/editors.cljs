@@ -58,7 +58,9 @@
   (mark-clean [this])
   (clean? [this])
   (init [this])
-  (set-theme [this theme]))
+  (set-theme [this theme])
+  (save-scroll-position [this])
+  (update-scroll-position [this]))
 
 (defn get-extension [path]
   (->> (.lastIndexOf path ".")
@@ -102,7 +104,8 @@
         editor-atom (atom nil)
         extension (get-extension path)
         compiler-fn (if (= extension "cljs") repl/compile-cljs repl/compile-clj)
-        completions? (completion-exts extension)]
+        completions? (completion-exts extension)
+        scroll-top (atom 0)]
     (set! (.-innerHTML elem) ps-html)
     (set! (.-textContent (.querySelector elem "#content")) content)
     (-> elem (.querySelector "#instarepl") .-style (aset "display" "none"))
@@ -149,12 +152,19 @@
                           (com/refresh-completions path)))
                       :compiler-fn compiler-fn}))))
       (set-theme [this theme]
-        (swap! s/runtime-state assoc :paren-soup-css (paren-soup-themes theme))))))
+        (swap! s/runtime-state assoc :paren-soup-css (paren-soup-themes theme)))
+      (save-scroll-position [this]
+        (when-let [ps (.querySelector elem "#paren-soup")]
+          (reset! scroll-top (.-scrollTop ps))))
+      (update-scroll-position [this]
+        (when-let [ps (.querySelector elem "#paren-soup")]
+          (set! (.-scrollTop ps) @scroll-top))))))
 
 (defn ps-repl-init [path]
   (let [elem (.createElement js/document "span")
         editor-atom (atom nil)
-        sender (repl/create-repl-sender path elem editor-atom)]
+        sender (repl/create-repl-sender path elem editor-atom)
+        scroll-top (atom 0)]
     (set! (.-innerHTML elem) ps-repl-html)
     (reify Editor
       (get-path [this] path)
@@ -200,12 +210,19 @@
         (repl/init sender)
         @editor-atom)
       (set-theme [this theme]
-        (swap! s/runtime-state assoc :paren-soup-css (paren-soup-themes theme))))))
+        (swap! s/runtime-state assoc :paren-soup-css (paren-soup-themes theme)))
+      (save-scroll-position [this]
+        (when-let [ps (.querySelector elem "#paren-soup")]
+          (reset! scroll-top (.-scrollTop ps))))
+      (update-scroll-position [this]
+        (when-let [ps (.querySelector elem "#paren-soup")]
+          (set! (.-scrollTop ps) @scroll-top))))))
 
 (defn cm-init [path content]
   (let [elem (.createElement js/document "span")
         editor-atom (atom nil)
-        extension (get-extension path)]
+        extension (get-extension path)
+        scroll-top (atom 0)]
     (reify Editor
       (get-path [this] path)
       (get-element [this] elem)
@@ -246,7 +263,13 @@
                 (update-content this)
                 (auto-save this))))))
       (set-theme [this theme]
-        (some-> @editor-atom (.setOption "theme" (codemirror-themes theme)))))))
+        (some-> @editor-atom (.setOption "theme" (codemirror-themes theme))))
+      (save-scroll-position [this]
+        (when-let [editor @editor-atom]
+          (reset! scroll-top (-> editor .getScrollInfo .-top))))
+      (update-scroll-position [this]
+        (when-let [editor @editor-atom]
+          (.scrollTo editor nil @scroll-top))))))
 
 (defn create-editor [path content]
   (if (-> path get-extension clojure-exts some?)
@@ -254,7 +277,8 @@
     (cm-init path content)))
 
 (defn show-editor [editor]
-  (.appendChild (clear-editor) (get-element editor)))
+  (.appendChild (clear-editor) (get-element editor))
+  (update-scroll-position editor))
 
 (defn init-editor [editor]
   (doto editor
@@ -290,4 +314,8 @@
     (if (repl/repl-path? path)
       (init-repl path)
       (download-file path))))
+
+(defn unselect-node [path]
+  (when-let [old-editor (get-in @s/runtime-state [:editors path])]
+    (save-scroll-position old-editor)))
 

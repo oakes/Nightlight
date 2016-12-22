@@ -35,6 +35,7 @@
          [ui/selectable-list
           {:value (:selection @s/pref-state)
            :on-change (fn [event value]
+                        (some-> @s/pref-state :selection e/unselect-node)
                         (swap! s/pref-state assoc :selection value)
                         (e/select-node value))}]
          nodes)))])
