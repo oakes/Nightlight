@@ -6,7 +6,6 @@
             [nightlight.repl :as repl]
             [goog.functions :refer [debounce]]
             [reagent.core :as r]
-            [reagent.dom.server :refer [render-to-static-markup]]
             [cljsjs.codemirror]
             [cljsjs.codemirror.mode.css]
             [cljsjs.codemirror.mode.javascript]
@@ -32,17 +31,19 @@
    "html" "xml"
    "xml" "xml"})
 
-(def ^:const ps-html
-  (render-to-static-markup
-    [:div {:class "paren-soup" :id "paren-soup"}
-     [:div {:class "instarepl" :id "instarepl"}]
-     [:div {:class "numbers" :id "numbers"}]
-     [:div {:class "content" :id "content" :contentEditable true}]]))
+(def ^:const ps-html "
+  <div class='paren-soup' id='paren-soup'>
+    <div class='instarepl' id='instarepl'></div>
+    <div class='numbers' id='numbers'></div>
+    <div class='content' id='content' contenteditable=true></div>
+  </div>
+")
 
-(def ^:const ps-repl-html
-  (render-to-static-markup
-    [:div {:class "paren-soup" :id "paren-soup"}
-     [:div {:class "content" :id "content" :contentEditable true}]]))
+(def ^:const ps-repl-html "
+  <div class='paren-soup' id='paren-soup'>
+    <div class='content' id='content' contenteditable=true></div>
+  </div>
+")
 
 (defprotocol Editor
   (get-path [this])
