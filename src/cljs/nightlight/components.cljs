@@ -16,7 +16,9 @@
                node)]
     (r/as-element [ui/list-item node])))
 
-(defn tree [mui-theme {:keys [nodes options] :as runtime-state}]
+(defn tree [mui-theme
+            {:keys [nodes options] :as runtime-state}
+            {:keys [selection] :as pref-state}]
   [ui/mui-theme-provider
    {:mui-theme mui-theme}
    (let [nodes (if (:url options)
@@ -33,9 +35,10 @@
      (vec
        (concat
          [ui/selectable-list
-          {:value (:selection @s/pref-state)
+          {:value selection
            :on-change (fn [event value]
-                        (some-> @s/pref-state :selection e/unselect-node)
+                        (when selection
+                          (e/unselect-node selection))
                         (swap! s/pref-state assoc :selection value)
                         (e/select-node value))}]
          nodes)))])
@@ -56,10 +59,10 @@
                 :on-toggle (fn [event value]
                              (let [theme (if value :light :dark)]
                                (swap! s/pref-state assoc :theme theme)
-                               (doseq [editor (-> @s/runtime-state :editors vals)]
+                               (doseq [editor (-> runtime-state :editors vals)]
                                  (e/set-theme editor theme))))}]]
    [:div {:class "leftsidebar"}
-    [tree mui-theme runtime-state]
+    [tree mui-theme runtime-state pref-state]
     [:div {:id "tree" :style {:display "none"}}]]])
 
 (defn right-sidebar [mui-theme
@@ -106,7 +109,7 @@
         (when (-> selection e/get-extension e/show-instarepl?)
           [ui/toggle {:label "InstaREPL"
                       :label-position "right"
-                      :default-toggled (get-in @s/runtime-state [:instarepls selection])
+                      :default-toggled (get-in runtime-state [:instarepls selection])
                       :on-toggle (fn [event value]
                                    (e/toggle-instarepl editor value))
                       :style {:margin-top "16px"}}])])
