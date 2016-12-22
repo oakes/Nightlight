@@ -33,7 +33,7 @@ html, body {
 }
 .paren-soup .content {
     min-height: 100%;
-    padding-right: 300px;
+    padding-right: 150px;
 }
 .settings {
     position: fixed;
@@ -54,7 +54,7 @@ html, body {
 .rightsidebar {
     margin: 5px;
     position: fixed;
-    width: 300px;
+    width: 150px;
     right: 0px;
     top: 50px;
     bottom: 0px;
