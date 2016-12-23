@@ -111,8 +111,7 @@
                       :label-position "right"
                       :default-toggled (get-in runtime-state [:instarepls selection])
                       :on-toggle (fn [event value]
-                                   (e/toggle-instarepl editor value))
-                      :style {:margin-top "16px"}}])])
+                                   (e/toggle-instarepl editor value))}])])
      [ui/toolbar-group
       {:style {:z-index 100}}
       [ui/raised-button {:background-color "#FF6F00"
