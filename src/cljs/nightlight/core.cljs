@@ -17,7 +17,7 @@
 
 (defn download-tree []
   (.send XhrIo
-    "/tree"
+    "tree"
     (fn [e]
       (when (.isSuccess (.-target e))
         (init-tree (read-string (.. e -target getResponseText)))))
@@ -25,7 +25,7 @@
 
 (defn download-state []
   (.send XhrIo
-    "/read-state"
+    "read-state"
     (fn [e]
       (when (.isSuccess (.-target e))
         (reset! s/pref-state (read-string (.. e -target getResponseText))))

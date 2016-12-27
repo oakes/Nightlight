@@ -75,7 +75,7 @@
 
 (defn write-file [editor]
   (.send XhrIo
-    "/write-file"
+    "write-file"
     (fn [e]
       (mark-clean editor))
     "POST"
@@ -294,7 +294,7 @@
 
 (defn download-file [path]
   (.send XhrIo
-    "/read-file"
+    "read-file"
     (fn [e]
       (if (.isSuccess (.-target e))
         (let [editor (->> (.. e -target getResponseText) (create-editor path) (init-editor))
