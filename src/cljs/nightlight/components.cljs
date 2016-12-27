@@ -100,16 +100,17 @@
      (when-let [editor (get editors selection)]
        [ui/toolbar-group
         (when-not (:read-only? options)
-          (when-not (repl/repl-path? selection)
-            [ui/raised-button {:disabled (e/clean? editor)
-                               :on-click #(e/write-file editor)}
-             "Save"])
-          [ui/raised-button {:disabled (not (e/can-undo? editor))
-                             :on-click #(e/undo editor)}
-           "Undo"]
-          [ui/raised-button {:disabled (not (e/can-redo? editor))
-                             :on-click #(e/redo editor)}
-           "Redo"])
+          (list
+            (when-not (repl/repl-path? selection)
+              [ui/raised-button {:disabled (e/clean? editor)
+                                 :on-click #(e/write-file editor)}
+               "Save"])
+            [ui/raised-button {:disabled (not (e/can-undo? editor))
+                               :on-click #(e/undo editor)}
+             "Undo"]
+            [ui/raised-button {:disabled (not (e/can-redo? editor))
+                               :on-click #(e/redo editor)}
+             "Redo"]))
         (when (-> selection e/get-extension e/show-instarepl?)
           [ui/toggle {:label "InstaREPL"
                       :label-position "right"
