@@ -46,15 +46,16 @@
          nodes)))])
 
 (defn left-sidebar [mui-theme
-                    {:keys [nodes] :as runtime-state}
+                    {:keys [nodes options] :as runtime-state}
                     {:keys [auto-save? theme] :as pref-state}]
   [:span
    [:div {:class "settings" :style {:padding-left "10px"}}
-    [ui/toggle {:label "Auto Save"
-                :label-position "right"
-                :default-toggled auto-save?
-                :on-toggle (fn [event value]
-                             (swap! s/pref-state assoc :auto-save? value))}]
+    (when-not (:read-only? options)
+      [ui/toggle {:label "Auto Save"
+                  :label-position "right"
+                  :default-toggled auto-save?
+                  :on-toggle (fn [event value]
+                               (swap! s/pref-state assoc :auto-save? value))}])
     [ui/toggle {:label "Theme"
                 :label-position "right"
                 :default-toggled (= :light theme)
@@ -89,7 +90,7 @@
                 (map node->element (assoc-in comps [0 :style :background-color] bg-color)))))]]))))
 
 (defn toolbar [mui-theme
-               {:keys [update? editors hosted?] :as runtime-state}
+               {:keys [update? editors] :as runtime-state}
                {:keys [selection] :as pref-state}]
   [:div {:class "toolbar"}
    [ui/mui-theme-provider
