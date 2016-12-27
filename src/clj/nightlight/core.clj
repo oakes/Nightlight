@@ -76,7 +76,7 @@
                      :else
                      {:status 200
                       :headers {"Content-Type" "text/plain"}
-                      :body (slurp f)}))
+                      :body f}))
     "/write-file" (let [{:keys [path content]} (-> request body-string edn/read-string)]
                     (spit path content)
                     {:status 200})
