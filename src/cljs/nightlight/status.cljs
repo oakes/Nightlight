@@ -19,6 +19,9 @@
         host (-> js/window .-location .-host)
         path (-> js/window .-location .-pathname)
         sock (js/WebSocket. (str protocol "//" host path "status"))]
+    (set! (.-onopen sock)
+      (fn [event]
+        (.send sock "")))
     (set! (.-onmessage sock)
       (fn [event]
         (some-> @editor-atom (ps/append-text! (.-data event)))
