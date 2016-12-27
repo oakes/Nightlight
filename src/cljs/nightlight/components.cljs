@@ -27,10 +27,12 @@
                         :style {:font-weight "bold"}}
                    nodes)
                  nodes)
-         nodes (cons {:primary-text "Clojure REPL"
-                      :value repl/repl-path
-                      :style {:font-weight "bold"}}
-                 nodes)
+         nodes (if-let [custom-nodes (:custom-nodes options)]
+                 (concat custom-nodes nodes)
+                 (cons {:primary-text "Clojure REPL"
+                        :value repl/repl-path
+                        :style {:font-weight "bold"}}
+                   nodes))
          nodes (map node->element nodes)]
      (vec
        (concat
@@ -87,7 +89,7 @@
                 (map node->element (assoc-in comps [0 :style :background-color] bg-color)))))]]))))
 
 (defn toolbar [mui-theme
-               {:keys [update? editors] :as runtime-state}
+               {:keys [update? editors hosted?] :as runtime-state}
                {:keys [selection] :as pref-state}]
   [:div {:class "toolbar"}
    [ui/mui-theme-provider

@@ -10,7 +10,21 @@
 (def ^:const version "1.3.3")
 (def ^:const api-url "https://clojars.org/api/artifacts/nightlight")
 
+(defn check-version []
+  (.send XhrIo
+    api-url
+    (fn [e]
+      (when (and (.isSuccess (.-target e))
+                 (some->> (.. e -target getResponseText)
+                          (.parse js/JSON)
+                          (#(aget % "latest_version"))
+                          (not= version)))
+        (swap! s/runtime-state assoc :update? true)))
+    "GET"))
+
 (defn init-tree [{:keys [primary-text nested-items selection options]}]
+  (when-not (:hosted? options)
+    (check-version))
   (swap! s/runtime-state assoc :options options :title primary-text :nodes nested-items)
   (some-> (:url options) repl/init-cljs)
   (e/select-node selection))
@@ -32,24 +46,11 @@
       (download-tree))
     "GET"))
 
-(defn check-version []
-  (.send XhrIo
-    api-url
-    (fn [e]
-      (when (and (.isSuccess (.-target e))
-                 (some->> (.. e -target getResponseText)
-                          (.parse js/JSON)
-                          (#(aget % "latest_version"))
-                          (not= version)))
-        (swap! s/runtime-state assoc :update? true)))
-    "GET"))
-
 (def app-with-init
   (with-meta app
     {:component-did-mount (fn [this]
                             (repl/init-cljs-client)
-                            (download-state)
-                            (check-version))}))
+                            (download-state))}))
 
 (r/render-component [app-with-init] (.querySelector js/document "#app"))
 

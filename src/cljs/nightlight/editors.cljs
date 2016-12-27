@@ -13,7 +13,9 @@
             [cljsjs.codemirror.mode.sass]
             [cljsjs.codemirror.mode.shell]
             [cljsjs.codemirror.mode.sql]
-            [cljsjs.codemirror.mode.xml])
+            [cljsjs.codemirror.mode.xml]
+            [goog.string :refer [format]]
+            [goog.string.format])
   (:import goog.net.XhrIo))
 
 (def ^:const clojure-exts #{"boot" "clj" "cljc" "cljs" "cljx" "edn" "pxi" "hl"})
@@ -35,7 +37,7 @@
   <div class='paren-soup' id='paren-soup'>
     <div class='instarepl' id='instarepl'></div>
     <div class='numbers' id='numbers'></div>
-    <div class='content' id='content' contenteditable=true></div>
+    <div class='content' id='content' contenteditable=%s></div>
   </div>
 ")
 
@@ -74,12 +76,13 @@
     editor))
 
 (defn write-file [editor]
-  (.send XhrIo
-    "write-file"
-    (fn [e]
-      (mark-clean editor))
-    "POST"
-    (pr-str {:path (get-path editor) :content (get-content editor)})))
+  (when-not (-> @s/runtime-state :options :read-only?)
+    (.send XhrIo
+      "write-file"
+      (fn [e]
+        (mark-clean editor))
+      "POST"
+      (pr-str {:path (get-path editor) :content (get-content editor)}))))
 
 (def auto-save
   (debounce
@@ -96,8 +99,10 @@
   (init editor))
 
 (defn show-instarepl? [extension]
-  (or (#{"clj" "cljc"} extension)
-      (and (= "cljs" extension) (-> @s/runtime-state :options :url))))
+  (or (and (#{"clj" "cljc"} extension)
+           (not (-> @s/runtime-state :options :hosted?)))
+      (and (= "cljs" extension)
+           (-> @s/runtime-state :options :url))))
 
 (defn ps-init [path content]
   (let [elem (.createElement js/document "span")
@@ -106,7 +111,8 @@
         compiler-fn (if (= extension "cljs") repl/compile-cljs repl/compile-clj)
         completions? (completion-exts extension)
         scroll-top (atom 0)]
-    (set! (.-innerHTML elem) ps-html)
+    (set! (.-innerHTML elem) (format ps-html (if (-> @s/runtime-state :options :read-only?)
+                                               "false" "true")))
     (set! (.-textContent (.querySelector elem "#content")) content)
     (-> elem (.querySelector "#instarepl") .-style (aset "display" "none"))
     (reify Editor
@@ -145,11 +151,12 @@
                         (com/completion-shortcut? event))
                       :change-callback
                       (fn [event]
-                        (when (= (.-type event) "keyup")
-                          (update-content this)
-                          (auto-save this))
-                        (when (and completions? (not= (.-type event) "keydown"))
-                          (com/refresh-completions path)))
+                        (when-not (-> @s/runtime-state :options :read-only?)
+                          (when (= (.-type event) "keyup")
+                            (update-content this)
+                            (auto-save this))
+                          (when (and completions? (not= (.-type event) "keydown"))
+                            (com/refresh-completions path))))
                       :compiler-fn compiler-fn}))))
       (set-theme [this theme]
         (swap! s/runtime-state assoc :paren-soup-css (paren-soup-themes theme)))
@@ -255,7 +262,10 @@
               (clj->js {:value content
                         :lineNumbers true
                         :theme (:dark codemirror-themes)
-                        :mode (extension->mode extension)}))
+                        :mode (extension->mode extension)
+                        :readOnly (if (-> @s/runtime-state :options :read-only?)
+                                    "nocursor"
+                                    false)}))
             (.on "change"
               (fn [editor-object change]
                 (update-content this)
