@@ -50,12 +50,12 @@
                     {:keys [auto-save? theme] :as pref-state}]
   [:span
    [:div {:class "settings" :style {:padding-left "10px"}}
-    (when-not (:read-only? options)
-      [ui/toggle {:label "Auto Save"
-                  :label-position "right"
-                  :default-toggled auto-save?
-                  :on-toggle (fn [event value]
-                               (swap! s/pref-state assoc :auto-save? value))}])
+    [ui/toggle {:label "Auto Save"
+                :label-position "right"
+                :default-toggled auto-save?
+                :on-toggle (fn [event value]
+                             (swap! s/pref-state assoc :auto-save? value))
+                :disabled (:read-only? options)}]
     [ui/toggle {:label "Theme"
                 :label-position "right"
                 :default-toggled (= :light theme)
@@ -99,18 +99,19 @@
      {:style {:background-color "transparent"}}
      (when-let [editor (get editors selection)]
        [ui/toolbar-group
-        (when-not (:read-only? options)
-          (list
-            (when-not (repl/repl-path? selection)
-              [ui/raised-button {:disabled (e/clean? editor)
-                                 :on-click #(e/write-file editor)}
-               "Save"])
-            [ui/raised-button {:disabled (not (e/can-undo? editor))
-                               :on-click #(e/undo editor)}
-             "Undo"]
-            [ui/raised-button {:disabled (not (e/can-redo? editor))
-                               :on-click #(e/redo editor)}
-             "Redo"]))
+        (when-not (repl/repl-path? selection)
+          [ui/raised-button {:disabled (or (:read-only? options)
+                                           (e/clean? editor))
+                             :on-click #(e/write-file editor)}
+           "Save"])
+        [ui/raised-button {:disabled (or (:read-only? options)
+                                         (not (e/can-undo? editor)))
+                           :on-click #(e/undo editor)}
+         "Undo"]
+        [ui/raised-button {:disabled (or (:read-only? options)
+                                         (not (e/can-redo? editor)))
+                           :on-click #(e/redo editor)}
+         "Redo"]
         (when (-> selection e/get-extension e/show-instarepl?)
           [ui/toggle {:label "InstaREPL"
                       :label-position "right"
