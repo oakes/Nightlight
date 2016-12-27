@@ -2,7 +2,9 @@
   (:require [nightlight.state :as s]
             [nightlight.repl :as repl]
             [nightlight.editors :as e]
+            [nightlight.editor-utils :as eu]
             [nightlight.completions :refer [select-completion refresh-completions]]
+            [nightlight.status :as status]
             [paren-soup.dom :as psd]
             [reagent.core :as r]
             [cljs-react-material-ui.core :refer [get-mui-theme color]]
@@ -27,12 +29,16 @@
                         :style {:font-weight "bold"}}
                    nodes)
                  nodes)
-         nodes (if-let [custom-nodes (:custom-nodes options)]
-                 (concat custom-nodes nodes)
+         nodes (cond
+                 (not (:hosted? options))
                  (cons {:primary-text "Clojure REPL"
                         :value repl/repl-path
                         :style {:font-weight "bold"}}
-                   nodes))
+                   nodes)
+                 (not (:read-only? options))
+                 (cons status/status-item nodes)
+                 :else
+                 nodes)
          nodes (map node->element nodes)]
      (vec
        (concat
@@ -63,7 +69,7 @@
                              (let [theme (if value :light :dark)]
                                (swap! s/pref-state assoc :theme theme)
                                (doseq [editor (-> runtime-state :editors vals)]
-                                 (e/set-theme editor theme))))}]]
+                                 (eu/set-theme editor theme))))}]]
    [:div {:class "leftsidebar"}
     [tree mui-theme runtime-state pref-state]
     [:div {:id "tree" :style {:display "none"}}]]])
@@ -84,7 +90,7 @@
               [ui/selectable-list
                {:on-change (fn [event value]
                              (when-let [info (psd/get-completion-info)]
-                               (select-completion (e/get-object editor) info value)
+                               (select-completion (eu/get-object editor) info value)
                                (refresh-completions selection)))}]
               (let [bg-color (if (= :light theme) "rgba(0, 0, 0, 0.2)" "rgba(255, 255, 255, 0.2)")]
                 (map node->element (assoc-in comps [0 :style :background-color] bg-color)))))]]))))
@@ -99,19 +105,25 @@
      {:style {:background-color "transparent"}}
      (when-let [editor (get editors selection)]
        [ui/toolbar-group
-        (when-not (repl/repl-path? selection)
-          [ui/raised-button {:disabled (or (:read-only? options)
-                                           (e/clean? editor))
-                             :on-click #(e/write-file editor)}
-           "Save"])
-        [ui/raised-button {:disabled (or (:read-only? options)
-                                         (not (e/can-undo? editor)))
-                           :on-click #(e/undo editor)}
-         "Undo"]
-        [ui/raised-button {:disabled (or (:read-only? options)
-                                         (not (e/can-redo? editor)))
-                           :on-click #(e/redo editor)}
-         "Redo"]
+        (if (= selection status/status-path)
+          (status/restart-button)
+          (list
+            (when-not (repl/repl-path? selection)
+              [ui/raised-button {:disabled (or (:read-only? options)
+                                               (eu/clean? editor))
+                                 :on-click #(e/write-file editor)
+                                 :key :save}
+               "Save"])
+            [ui/raised-button {:disabled (or (:read-only? options)
+                                             (not (eu/can-undo? editor)))
+                               :on-click #(eu/undo editor)
+                               :key :undo}
+             "Undo"]
+            [ui/raised-button {:disabled (or (:read-only? options)
+                                             (not (eu/can-redo? editor)))
+                               :on-click #(eu/redo editor)
+                               :key :redo}
+             "Redo"]))
         (when (-> selection e/get-extension e/show-instarepl?)
           [ui/toggle {:label "InstaREPL"
                       :label-position "right"
