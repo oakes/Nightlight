@@ -11,18 +11,21 @@
   (let [protocol (if (= (.-protocol js/location) "https:") "wss:" "ws:")
         host (-> js/window .-location .-host)
         path (-> js/window .-location .-pathname)
-        sock (js/WebSocket. (str protocol "//" host path "status"))]
+        sock (js/WebSocket. (str protocol "//" host path "status"))
+        text (atom nil)]
+    (swap! s/runtime-state assoc :status-text text)
     (set! (.-onopen sock)
       (fn [event]
         (.send sock "")))
-    (swap! s/runtime-state assoc :status-socket sock)))
+    (set! (.-onmessage sock)
+          (fn [event]
+            (swap! text str (.-data event))))))
 
 (defn status-init []
   (let [elem (.createElement js/document "span")
         editor-atom (atom nil)
         scroll-top (atom 0)
-        text (atom nil)
-        sock (:status-socket @s/runtime-state)]
+        text (:status-text @s/runtime-state)]
     (add-watch text :append
       (fn [_ _ _ new-text]
         (when new-text
@@ -58,23 +61,20 @@
                       :console-callback
                       (fn [text])
                       :compiler-fn (fn [_ _])
-                      :disable-clj? true})))
-        (set! (.-onmessage sock)
-          (fn [event]
-            (swap! text str (.-data event))))
-        @editor-atom)
+                      :disable-clj? true}))))
       (set-theme [this theme]
         (swap! s/runtime-state assoc :paren-soup-css (c/paren-soup-themes theme)))
       (hide [this]
         (when-let [ps (.querySelector elem "#paren-soup")]
           (reset! scroll-top (.-scrollTop ps))))
       (show [this]
+        (when-let [ps (.querySelector elem "#paren-soup")]
+          (set! (.-scrollTop ps) @scroll-top))
         (when-let [s @text]
           (when-let [editor @editor-atom]
             (ps/append-text! editor s)
-            (reset! text nil)))
-        (when-let [ps (.querySelector elem "#paren-soup")]
-          (set! (.-scrollTop ps) @scroll-top))))))
+            (repl/scroll-to-bottom elem)
+            (reset! text nil)))))))
 
 (defn buttons []
   (list
