@@ -117,18 +117,27 @@
                       :compiler-fn compiler-fn}))))
       (set-theme [this theme]
         (swap! s/runtime-state assoc :paren-soup-css (eu/paren-soup-themes theme)))
-      (save-scroll-position [this]
+      (hide [this]
         (when-let [ps (.querySelector elem "#paren-soup")]
           (reset! scroll-top (.-scrollTop ps))))
-      (update-scroll-position [this]
+      (show [this]
         (when-let [ps (.querySelector elem "#paren-soup")]
           (set! (.-scrollTop ps) @scroll-top))))))
 
 (defn ps-repl-init [path]
   (let [elem (.createElement js/document "span")
         editor-atom (atom nil)
-        sender (repl/create-repl-sender path elem editor-atom)
+        text (atom nil)
+        sender (repl/create-repl-sender path text)
         scroll-top (atom 0)]
+    (add-watch text :append
+      (fn [_ _ _ new-text]
+        (when new-text
+          (when-let [editor @editor-atom]
+            (when (.-parentNode elem)
+              (ps/append-text! editor new-text)
+              (repl/scroll-to-bottom elem)
+              (reset! text nil))))))
     (set! (.-innerHTML elem) (format eu/ps-repl-html "true"))
     (reify eu/Editor
       (get-path [this] path)
@@ -173,10 +182,14 @@
         @editor-atom)
       (set-theme [this theme]
         (swap! s/runtime-state assoc :paren-soup-css (eu/paren-soup-themes theme)))
-      (save-scroll-position [this]
+      (hide [this]
         (when-let [ps (.querySelector elem "#paren-soup")]
           (reset! scroll-top (.-scrollTop ps))))
-      (update-scroll-position [this]
+      (show [this]
+        (when-let [s @text]
+          (when-let [editor @editor-atom]
+            (ps/append-text! editor s)
+            (reset! text nil)))
         (when-let [ps (.querySelector elem "#paren-soup")]
           (set! (.-scrollTop ps) @scroll-top))))))
 
@@ -229,10 +242,10 @@
                 (auto-save this))))))
       (set-theme [this theme]
         (some-> @editor-atom (.setOption "theme" (eu/codemirror-themes theme))))
-      (save-scroll-position [this]
+      (hide [this]
         (when-let [editor @editor-atom]
           (reset! scroll-top (-> editor .getScrollInfo .-top))))
-      (update-scroll-position [this]
+      (show [this]
         (when-let [editor @editor-atom]
           (.scrollTo editor nil @scroll-top))))))
 
@@ -248,7 +261,7 @@
       (if (#{repl/cljs-repl-path status/status-path}
             (eu/get-path editor))
         "50%" "0%")))
-  (eu/update-scroll-position editor))
+  (eu/show editor))
 
 (defn init-editor [editor]
   (doto editor
@@ -291,5 +304,5 @@
 
 (defn unselect-node [path]
   (when-let [old-editor (get-in @s/runtime-state [:editors path])]
-    (eu/save-scroll-position old-editor)))
+    (eu/hide old-editor)))
 

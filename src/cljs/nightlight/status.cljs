@@ -28,7 +28,16 @@
   (let [elem (.createElement js/document "span")
         editor-atom (atom nil)
         scroll-top (atom 0)
+        text (atom nil)
         sock (:status-socket @s/runtime-state)]
+    (add-watch text :append
+      (fn [_ _ _ new-text]
+        (when new-text
+          (when-let [editor @editor-atom]
+            (when (.-parentNode elem)
+              (ps/append-text! editor new-text)
+              (repl/scroll-to-bottom elem)
+              (reset! text nil))))))
     (set! (.-innerHTML elem) (format eu/ps-repl-html "false"))
     (reify eu/Editor
       (get-path [this] status-path)
@@ -59,15 +68,18 @@
                       :disable-clj? true})))
         (set! (.-onmessage sock)
           (fn [event]
-            (some-> @editor-atom (ps/append-text! (.-data event)))
-            (repl/scroll-to-bottom elem)))
+            (swap! text str (.-data event))))
         @editor-atom)
       (set-theme [this theme]
         (swap! s/runtime-state assoc :paren-soup-css (eu/paren-soup-themes theme)))
-      (save-scroll-position [this]
+      (hide [this]
         (when-let [ps (.querySelector elem "#paren-soup")]
           (reset! scroll-top (.-scrollTop ps))))
-      (update-scroll-position [this]
+      (show [this]
+        (when-let [s @text]
+          (when-let [editor @editor-atom]
+            (ps/append-text! editor s)
+            (reset! text nil)))
         (when-let [ps (.querySelector elem "#paren-soup")]
           (set! (.-scrollTop ps) @scroll-top))))))
 

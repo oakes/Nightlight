@@ -1,7 +1,6 @@
 (ns nightlight.repl
   (:require [cljs.reader :refer [read-string]]
             [nightlight.state :as s]
-            [paren-soup.core :as ps]
             [nightlight.repl-server :as rs])
   (:import goog.net.XhrIo))
 
@@ -30,7 +29,7 @@
   (init [this])
   (send [this text]))
 
-(defn clj-sender [elem editor-atom]
+(defn clj-sender [text-atom]
   (let [protocol (if (= (.-protocol js/location) "https:") "wss:" "ws:")
         host (-> js/window .-location .-host)
         sock (js/WebSocket. (str protocol "//" host "/repl"))]
@@ -41,34 +40,31 @@
             (.send sock "")))
         (set! (.-onmessage sock)
           (fn [event]
-            (some-> @editor-atom (ps/append-text! (.-data event)))
-            (scroll-to-bottom elem))))
+            (swap! text-atom str (.-data event)))))
       (send [this text]
         (.send sock (str text "\n"))))))
 
-(defn cljs-sender [elem editor-atom]
+(defn cljs-sender [text-atom]
   (swap! s/runtime-state update :callbacks assoc "repl"
     (fn [results current-ns]
       (let [result (aget results 0)
             result (if (array? result)
                      (str "Error: " (aget result 0))
                      result)]
-        (ps/append-text! @editor-atom (str result "\n"))
-        (ps/append-text! @editor-atom (str current-ns "=> "))
-        (scroll-to-bottom elem))))
+        (swap! text-atom str result "\n" current-ns "=> "))))
   (let [iframe (.querySelector js/document "#cljsapp")]
     (reify ReplSender
       (init [this]
-        (ps/append-text! @editor-atom (str rs/cljs-start-ns "=> ")))
+        (swap! text-atom str rs/cljs-start-ns "=> "))
       (send [this text]
         (.postMessage (.-contentWindow iframe)
           (clj->js {:type "repl" :forms (array text)})
           "*")))))
 
-(defn create-repl-sender [path elem editor-atom]
+(defn create-repl-sender [path text-atom]
   (if (= path cljs-repl-path)
-    (cljs-sender elem editor-atom)
-    (clj-sender elem editor-atom)))
+    (cljs-sender text-atom)
+    (clj-sender text-atom)))
 
 (defn compile-clj [forms cb]
   (try

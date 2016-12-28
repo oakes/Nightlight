@@ -43,6 +43,6 @@
   (clean? [this])
   (init [this])
   (set-theme [this theme])
-  (save-scroll-position [this])
-  (update-scroll-position [this]))
+  (hide [this])
+  (show [this]))
 
