@@ -19,7 +19,7 @@
 (defn refresh-completions [path]
   (if-let [info (psd/get-completion-info)]
     (.send XhrIo
-      "/completions"
+      "completions"
       (fn [e]
         (swap! s/runtime-state update :completions assoc path
           (read-string (.. e -target getResponseText))))
