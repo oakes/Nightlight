@@ -5,21 +5,19 @@
             [nightlight.repl :as repl]
             [nightlight.components :refer [app]]
             [nightlight.status :as status]
+            [nightlight.constants :as c]
             [reagent.core :as r])
   (:import goog.net.XhrIo))
 
-(def ^:const version "1.3.3")
-(def ^:const api-url "https://clojars.org/api/artifacts/nightlight")
-
 (defn check-version []
   (.send XhrIo
-    api-url
+    c/api-url
     (fn [e]
       (when (and (.isSuccess (.-target e))
                  (some->> (.. e -target getResponseText)
                           (.parse js/JSON)
                           (#(aget % "latest_version"))
-                          (not= version)))
+                          (not= c/version)))
         (swap! s/runtime-state assoc :update? true)))
     "GET"))
 

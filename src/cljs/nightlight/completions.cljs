@@ -3,7 +3,8 @@
             [cljs.reader :refer [read-string]]
             [paren-soup.core :as ps]
             [paren-soup.dom :as psd]
-            [nightlight.state :as s])
+            [nightlight.state :as s]
+            [nightlight.constants :as c])
   (:import goog.net.XhrIo))
 
 (defn select-completion [editor {:keys [context-before context-after start-position]} text]
@@ -17,15 +18,16 @@
          (ps/edit-and-refresh! editor))))
 
 (defn refresh-completions [path]
-  (if-let [info (psd/get-completion-info)]
-    (.send XhrIo
-      "completions"
-      (fn [e]
-        (swap! s/runtime-state update :completions assoc path
-          (read-string (.. e -target getResponseText))))
-      "POST"
-      (pr-str info))
-    (swap! s/runtime-state update :completions assoc path [])))
+  (when (= path c/repl-path)
+    (if-let [info (psd/get-completion-info)]
+      (.send XhrIo
+        "completions"
+        (fn [e]
+          (swap! s/runtime-state update :completions assoc path
+            (read-string (.. e -target getResponseText))))
+        "POST"
+        (pr-str info))
+      (swap! s/runtime-state update :completions assoc path []))))
 
 (defn completion-shortcut? [e]
   (and (= 9 (.-keyCode e))

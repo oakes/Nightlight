@@ -1,18 +1,11 @@
 (ns nightlight.status
   (:require [nightlight.repl :as repl]
-            [nightlight.editor-utils :as eu]
+            [nightlight.constants :as c]
             [nightlight.state :as s]
             [paren-soup.core :as ps]
             [goog.string :refer [format]]
             [goog.string.format]
             [cljs-react-material-ui.reagent :as ui]))
-
-(def ^:const status-path "*STATUS*")
-
-(def ^:const status-item
-  {:primary-text "Status"
-   :value "*STATUS*"
-   :style {:font-weight "bold"}})
 
 (defn init-status-receiver []
   (let [protocol (if (= (.-protocol js/location) "https:") "wss:" "ws:")
@@ -38,9 +31,9 @@
               (ps/append-text! editor new-text)
               (repl/scroll-to-bottom elem)
               (reset! text nil))))))
-    (set! (.-innerHTML elem) (format eu/ps-repl-html "false"))
-    (reify eu/Editor
-      (get-path [this] status-path)
+    (set! (.-innerHTML elem) (format c/ps-repl-html "false"))
+    (reify c/Editor
+      (get-path [this] c/status-path)
       (get-element [this] elem)
       (get-content [this]
         (.-textContent (.querySelector elem "#content")))
@@ -71,7 +64,7 @@
             (swap! text str (.-data event))))
         @editor-atom)
       (set-theme [this theme]
-        (swap! s/runtime-state assoc :paren-soup-css (eu/paren-soup-themes theme)))
+        (swap! s/runtime-state assoc :paren-soup-css (c/paren-soup-themes theme)))
       (hide [this]
         (when-let [ps (.querySelector elem "#paren-soup")]
           (reset! scroll-top (.-scrollTop ps))))

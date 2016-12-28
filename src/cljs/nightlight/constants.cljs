@@ -1,4 +1,8 @@
-(ns nightlight.editor-utils)
+(ns nightlight.constants)
+
+(def ^:const version "1.3.3")
+(def ^:const api-url "https://clojars.org/api/artifacts/nightlight")
+(def ^:const page-url "https://clojars.org/nightlight")
 
 (def ^:const clojure-exts #{"boot" "clj" "cljc" "cljs" "cljx" "edn" "pxi" "hl"})
 (def ^:const completion-exts #{"clj"})
@@ -28,6 +32,11 @@
     <div class='content' id='content' contenteditable=%s></div>
   </div>
 ")
+
+(def ^:const repl-path "*REPL*")
+(def ^:const cljs-repl-path "*CLJS-REPL*")
+(def ^:const repl-path? #{repl-path cljs-repl-path})
+(def ^:const status-path "*STATUS*")
 
 (defprotocol Editor
   (get-path [this])

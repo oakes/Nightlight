@@ -2,15 +2,13 @@
   (:require [nightlight.state :as s]
             [nightlight.repl :as repl]
             [nightlight.editors :as e]
-            [nightlight.editor-utils :as eu]
+            [nightlight.constants :as c]
             [nightlight.completions :refer [select-completion refresh-completions]]
             [nightlight.status :as status]
             [paren-soup.dom :as psd]
             [reagent.core :as r]
             [cljs-react-material-ui.core :refer [get-mui-theme color]]
             [cljs-react-material-ui.reagent :as ui]))
-
-(def ^:const page-url "https://clojars.org/nightlight")
 
 (defn node->element [{:keys [nested-items] :as node}]
   (let [node (if (seq nested-items)
@@ -25,18 +23,21 @@
    {:mui-theme mui-theme}
    (let [nodes (if (:url options)
                  (cons {:primary-text "ClojureScript REPL"
-                        :value repl/cljs-repl-path
+                        :value c/cljs-repl-path
                         :style {:font-weight "bold"}}
                    nodes)
                  nodes)
          nodes (cond
                  (not (:hosted? options))
                  (cons {:primary-text "Clojure REPL"
-                        :value repl/repl-path
+                        :value c/repl-path
                         :style {:font-weight "bold"}}
                    nodes)
                  (not (:read-only? options))
-                 (cons status/status-item nodes)
+                 (cons {:primary-text "Status"
+                        :value c/status-path
+                        :style {:font-weight "bold"}}
+                   nodes)
                  :else
                  nodes)
          nodes (map node->element nodes)]
@@ -69,7 +70,7 @@
                              (let [theme (if value :light :dark)]
                                (swap! s/pref-state assoc :theme theme)
                                (doseq [editor (-> runtime-state :editors vals)]
-                                 (eu/set-theme editor theme))))}]]
+                                 (c/set-theme editor theme))))}]]
    [:div {:class "leftsidebar"}
     [tree mui-theme runtime-state pref-state]
     [:div {:id "tree" :style {:display "none"}}]]])
@@ -90,7 +91,7 @@
               [ui/selectable-list
                {:on-change (fn [event value]
                              (when-let [info (psd/get-completion-info)]
-                               (select-completion (eu/get-object editor) info value)
+                               (select-completion (c/get-object editor) info value)
                                (refresh-completions selection)))}]
               (let [bg-color (if (= :light theme) "rgba(0, 0, 0, 0.2)" "rgba(255, 255, 255, 0.2)")]
                 (map node->element (assoc-in comps [0 :style :background-color] bg-color)))))]]))))
@@ -105,23 +106,23 @@
      {:style {:background-color "transparent"}}
      (when-let [editor (get editors selection)]
        [ui/toolbar-group
-        (if (= selection status/status-path)
+        (if (= selection c/status-path)
           (status/buttons)
           (list
-            (when-not (repl/repl-path? selection)
+            (when-not (c/repl-path? selection)
               [ui/raised-button {:disabled (or (:read-only? options)
-                                               (eu/clean? editor))
+                                               (c/clean? editor))
                                  :on-click #(e/write-file editor)
                                  :key :save}
                "Save"])
             [ui/raised-button {:disabled (or (:read-only? options)
-                                             (not (eu/can-undo? editor)))
-                               :on-click #(eu/undo editor)
+                                             (not (c/can-undo? editor)))
+                               :on-click #(c/undo editor)
                                :key :undo}
              "Undo"]
             [ui/raised-button {:disabled (or (:read-only? options)
-                                             (not (eu/can-redo? editor)))
-                               :on-click #(eu/redo editor)
+                                             (not (c/can-redo? editor)))
+                               :on-click #(c/redo editor)
                                :key :redo}
              "Redo"]))
         (when (-> selection e/get-extension e/show-instarepl?)
@@ -134,7 +135,7 @@
       {:style {:z-index 100}}
       [ui/raised-button {:background-color "#FF6F00"
                          :style {:display (if update? "block" "none")}
-                         :on-click #(.open js/window page-url)}
+                         :on-click #(.open js/window c/page-url)}
        "Update"]]]]])
 
 (defn app []
@@ -161,5 +162,5 @@
        [:span {:id "editor"}]]
       [right-sidebar mui-theme runtime-state pref-state]
       [:iframe {:id "cljsapp"
-                :style {:display (if (= selection repl/cljs-repl-path) "block" "none")}}]]]))
+                :style {:display (if (= selection c/cljs-repl-path) "block" "none")}}]]]))
 

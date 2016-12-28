@@ -4,7 +4,7 @@
             [nightlight.state :as s]
             [nightlight.completions :as com]
             [nightlight.repl :as repl]
-            [nightlight.editor-utils :as eu]
+            [nightlight.constants :as c]
             [nightlight.status :as status]
             [goog.functions :refer [debounce]]
             [reagent.core :as r]
@@ -36,9 +36,9 @@
     (.send XhrIo
       "write-file"
       (fn [e]
-        (eu/mark-clean editor))
+        (c/mark-clean editor))
       "POST"
-      (pr-str {:path (eu/get-path editor) :content (eu/get-content editor)}))))
+      (pr-str {:path (c/get-path editor) :content (c/get-content editor)}))))
 
 (def auto-save
   (debounce
@@ -48,11 +48,11 @@
     1000))
 
 (defn toggle-instarepl [editor show?]
-  (swap! s/runtime-state update :instarepls assoc (eu/get-path editor) show?)
-  (-> (.querySelector (eu/get-element editor) ".instarepl")
+  (swap! s/runtime-state update :instarepls assoc (c/get-path editor) show?)
+  (-> (.querySelector (c/get-element editor) ".instarepl")
       .-style
       (aset "display" (if show? "list-item" "none")))
-  (eu/init editor))
+  (c/init editor))
 
 (defn show-instarepl? [extension]
   (or (and (#{"clj" "cljc"} extension)
@@ -65,14 +65,14 @@
         editor-atom (atom nil)
         extension (get-extension path)
         compiler-fn (if (= extension "cljs") repl/compile-cljs repl/compile-clj)
-        completions? (eu/completion-exts extension)
+        completions? (c/completion-exts extension)
         scroll-top (atom 0)]
     (set! (.-innerHTML elem)
-      (format eu/ps-html (if (-> @s/runtime-state :options :read-only?)
+      (format c/ps-html (if (-> @s/runtime-state :options :read-only?)
                            "false" "true")))
     (set! (.-textContent (.querySelector elem "#content")) content)
     (-> elem (.querySelector "#instarepl") .-style (aset "display" "none"))
-    (reify eu/Editor
+    (reify c/Editor
       (get-path [this] path)
       (get-element [this] elem)
       (get-content [this]
@@ -85,16 +85,16 @@
         (some-> @editor-atom ps/can-redo?))
       (undo [this]
         (some-> @editor-atom ps/undo)
-        (eu/update-content this)
+        (c/update-content this)
         (auto-save this))
       (redo [this]
         (some-> @editor-atom ps/redo)
-        (eu/update-content this)
+        (c/update-content this)
         (auto-save this))
       (update-content [this]
-        (swap! s/runtime-state update :current-content assoc path (eu/get-content this)))
+        (swap! s/runtime-state update :current-content assoc path (c/get-content this)))
       (mark-clean [this]
-        (swap! s/runtime-state update :saved-content assoc path (eu/get-content this)))
+        (swap! s/runtime-state update :saved-content assoc path (c/get-content this)))
       (clean? [this]
         (= (get-in @s/runtime-state [:saved-content path])
            (get-in @s/runtime-state [:current-content path])))
@@ -110,13 +110,13 @@
                       (fn [event]
                         (when-not (-> @s/runtime-state :options :read-only?)
                           (when (= (.-type event) "keyup")
-                            (eu/update-content this)
+                            (c/update-content this)
                             (auto-save this))
                           (when (and completions? (not= (.-type event) "keydown"))
                             (com/refresh-completions path))))
                       :compiler-fn compiler-fn}))))
       (set-theme [this theme]
-        (swap! s/runtime-state assoc :paren-soup-css (eu/paren-soup-themes theme)))
+        (swap! s/runtime-state assoc :paren-soup-css (c/paren-soup-themes theme)))
       (hide [this]
         (when-let [ps (.querySelector elem "#paren-soup")]
           (reset! scroll-top (.-scrollTop ps))))
@@ -138,8 +138,8 @@
               (ps/append-text! editor new-text)
               (repl/scroll-to-bottom elem)
               (reset! text nil))))))
-    (set! (.-innerHTML elem) (format eu/ps-repl-html "true"))
-    (reify eu/Editor
+    (set! (.-innerHTML elem) (format c/ps-repl-html "true"))
+    (reify c/Editor
       (get-path [this] path)
       (get-element [this] elem)
       (get-content [this]
@@ -152,12 +152,12 @@
         (some-> @editor-atom ps/can-redo?))
       (undo [this]
         (some-> @editor-atom ps/undo)
-        (eu/update-content this))
+        (c/update-content this))
       (redo [this]
         (some-> @editor-atom ps/redo)
-        (eu/update-content this))
+        (c/update-content this))
       (update-content [this]
-        (swap! s/runtime-state update :current-content assoc path (eu/get-content this)))
+        (swap! s/runtime-state update :current-content assoc path (c/get-content this)))
       (mark-clean [this])
       (clean? [this] true)
       (init [this]
@@ -173,7 +173,7 @@
                         (repl/scroll-to-bottom elem)
                         (when (not= (.-type event) "keydown")
                           (com/refresh-completions path)
-                          (eu/update-content this)))
+                          (c/update-content this)))
                       :console-callback
                       (fn [text]
                         (repl/send sender text))
@@ -181,7 +181,7 @@
         (repl/init sender)
         @editor-atom)
       (set-theme [this theme]
-        (swap! s/runtime-state assoc :paren-soup-css (eu/paren-soup-themes theme)))
+        (swap! s/runtime-state assoc :paren-soup-css (c/paren-soup-themes theme)))
       (hide [this]
         (when-let [ps (.querySelector elem "#paren-soup")]
           (reset! scroll-top (.-scrollTop ps))))
@@ -198,7 +198,7 @@
         editor-atom (atom nil)
         extension (get-extension path)
         scroll-top (atom 0)]
-    (reify eu/Editor
+    (reify c/Editor
       (get-path [this] path)
       (get-element [this] elem)
       (get-content [this]
@@ -211,16 +211,16 @@
         (some-> @editor-atom .historySize .-redo (> 0)))
       (undo [this]
         (some-> @editor-atom .undo)
-        (eu/update-content this)
+        (c/update-content this)
         (auto-save this))
       (redo [this]
         (some-> @editor-atom .redo)
-        (eu/update-content this)
+        (c/update-content this)
         (auto-save this))
       (update-content [this]
-        (swap! s/runtime-state update :current-content assoc path (eu/get-content this)))
+        (swap! s/runtime-state update :current-content assoc path (c/get-content this)))
       (mark-clean [this]
-        (swap! s/runtime-state update :saved-content assoc path (eu/get-content this)))
+        (swap! s/runtime-state update :saved-content assoc path (c/get-content this)))
       (clean? [this]
         (= (get-in @s/runtime-state [:saved-content path])
            (get-in @s/runtime-state [:current-content path])))
@@ -231,17 +231,17 @@
               elem
               (clj->js {:value content
                         :lineNumbers true
-                        :theme (:dark eu/codemirror-themes)
-                        :mode (eu/extension->mode extension)
+                        :theme (:dark c/codemirror-themes)
+                        :mode (c/extension->mode extension)
                         :readOnly (if (-> @s/runtime-state :options :read-only?)
                                     "nocursor"
                                     false)}))
             (.on "change"
               (fn [editor-object change]
-                (eu/update-content this)
+                (c/update-content this)
                 (auto-save this))))))
       (set-theme [this theme]
-        (some-> @editor-atom (.setOption "theme" (eu/codemirror-themes theme))))
+        (some-> @editor-atom (.setOption "theme" (c/codemirror-themes theme))))
       (hide [this]
         (when-let [editor @editor-atom]
           (reset! scroll-top (-> editor .getScrollInfo .-top))))
@@ -250,24 +250,24 @@
           (.scrollTo editor nil @scroll-top))))))
 
 (defn create-editor [path content]
-  (if (-> path get-extension eu/clojure-exts some?)
+  (if (-> path get-extension c/clojure-exts some?)
     (ps-init path content)
     (cm-init path content)))
 
 (defn show-editor [editor]
-  (.appendChild (clear-editor) (eu/get-element editor))
+  (.appendChild (clear-editor) (c/get-element editor))
   (when-let [outer-editor (.querySelector js/document ".outer-editor")]
     (set! (.-bottom (.-style outer-editor))
-      (if (#{repl/cljs-repl-path status/status-path}
-            (eu/get-path editor))
+      (if (#{c/cljs-repl-path c/status-path}
+            (c/get-path editor))
         "50%" "0%")))
-  (eu/show editor))
+  (c/show editor))
 
 (defn init-editor [editor]
   (doto editor
     (show-editor)
-    (eu/init)
-    (eu/set-theme (:theme @s/pref-state))))
+    (c/init)
+    (c/set-theme (:theme @s/pref-state))))
 
 (defn download-file [path]
   (.send XhrIo
@@ -275,7 +275,7 @@
     (fn [e]
       (if (.isSuccess (.-target e))
         (let [editor (->> (.. e -target getResponseText) (create-editor path) (init-editor))
-              content (eu/get-content editor)]
+              content (c/get-content editor)]
           (swap! s/runtime-state
             (fn [state]
               (-> state
@@ -295,14 +295,14 @@
   (if-let [editor (get-in @s/runtime-state [:editors path])]
     (show-editor editor)
     (cond
-      (repl/repl-path? path)
+      (c/repl-path? path)
       (init-and-add-editor path (ps-repl-init path))
-      (= path status/status-path)
-      (init-and-add-editor status/status-path (status/status-init))
+      (= path c/status-path)
+      (init-and-add-editor c/status-path (status/status-init))
       :else
       (download-file path))))
 
 (defn unselect-node [path]
   (when-let [old-editor (get-in @s/runtime-state [:editors path])]
-    (eu/hide old-editor)))
+    (c/hide old-editor)))
 

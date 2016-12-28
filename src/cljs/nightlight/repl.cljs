@@ -1,12 +1,9 @@
 (ns nightlight.repl
   (:require [cljs.reader :refer [read-string]]
+            [nightlight.constants :as c]
             [nightlight.state :as s]
             [nightlight.repl-server :as rs])
   (:import goog.net.XhrIo))
-
-(def ^:const repl-path "*REPL*")
-(def ^:const cljs-repl-path "*CLJS-REPL*")
-(def ^:const repl-path? #{repl-path cljs-repl-path})
 
 (defn init-cljs [url]
   (when (= js/window.self js/window.top)
@@ -62,7 +59,7 @@
           "*")))))
 
 (defn create-repl-sender [path text-atom]
-  (if (= path cljs-repl-path)
+  (if (= path c/cljs-repl-path)
     (cljs-sender text-atom)
     (clj-sender text-atom)))
 
