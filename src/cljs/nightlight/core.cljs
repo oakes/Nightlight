@@ -4,6 +4,7 @@
             [nightlight.state :as s]
             [nightlight.repl :as repl]
             [nightlight.components :refer [app]]
+            [nightlight.status :as status]
             [reagent.core :as r])
   (:import goog.net.XhrIo))
 
@@ -23,7 +24,10 @@
     "GET"))
 
 (defn init-tree [{:keys [primary-text nested-items selection options]}]
-  (when-not (:hosted? options)
+  (cond
+    (and (:hosted? options) (not (:read-only? options)))
+    (status/init-status-receiver)
+    (not (:hosted? options))
     (check-version))
   (swap! s/runtime-state assoc :options options :title primary-text :nodes nested-items)
   (some-> (:url options) repl/init-cljs)

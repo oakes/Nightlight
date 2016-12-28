@@ -14,7 +14,7 @@
    :value "*STATUS*"
    :style {:font-weight "bold"}})
 
-(defn status-receiver [elem editor-atom]
+(defn init-status-receiver []
   (let [protocol (if (= (.-protocol js/location) "https:") "wss:" "ws:")
         host (-> js/window .-location .-host)
         path (-> js/window .-location .-pathname)
@@ -22,15 +22,13 @@
     (set! (.-onopen sock)
       (fn [event]
         (.send sock "")))
-    (set! (.-onmessage sock)
-      (fn [event]
-        (some-> @editor-atom (ps/append-text! (.-data event)))
-        (repl/scroll-to-bottom elem)))))
+    (swap! s/runtime-state assoc :status-socket sock)))
 
 (defn status-init []
   (let [elem (.createElement js/document "span")
         editor-atom (atom nil)
-        scroll-top (atom 0)]
+        scroll-top (atom 0)
+        sock (:status-socket @s/runtime-state)]
     (set! (.-innerHTML elem) (format eu/ps-repl-html "false"))
     (reify eu/Editor
       (get-path [this] status-path)
@@ -59,7 +57,10 @@
                       (fn [text])
                       :compiler-fn (fn [_ _])
                       :disable-clj? true})))
-        (status-receiver elem editor-atom)
+        (set! (.-onmessage sock)
+          (fn [event]
+            (some-> @editor-atom (ps/append-text! (.-data event)))
+            (repl/scroll-to-bottom elem)))
         @editor-atom)
       (set-theme [this theme]
         (swap! s/runtime-state assoc :paren-soup-css (eu/paren-soup-themes theme)))
