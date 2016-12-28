@@ -71,8 +71,10 @@
         (when-let [ps (.querySelector elem "#paren-soup")]
           (set! (.-scrollTop ps) @scroll-top))))))
 
-(defn restart-button []
-  [ui/raised-button {:disabled false
-                     :on-click (fn [])}
-   "Save"])
+(defn buttons []
+  (list
+    [ui/raised-button {:disabled false
+                       :on-click (fn [])
+                       :key :save}
+     "Save"]))
 

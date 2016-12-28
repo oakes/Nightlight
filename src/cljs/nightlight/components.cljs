@@ -106,7 +106,7 @@
      (when-let [editor (get editors selection)]
        [ui/toolbar-group
         (if (= selection status/status-path)
-          (status/restart-button)
+          (status/buttons)
           (list
             (when-not (repl/repl-path? selection)
               [ui/raised-button {:disabled (or (:read-only? options)
