@@ -52,6 +52,6 @@
     (cljs :source-map true :optimizations :none)
     (with-pass-thru _
       (instrument)
-      (dev-start {:port 4000 :url "http://localhost:4000" :hosted? true}))
+      (dev-start {:port 4000 :url "http://localhost:4000"}))
     (target)))
 
