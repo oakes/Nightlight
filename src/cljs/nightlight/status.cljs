@@ -18,8 +18,14 @@
       (fn [event]
         (.send sock "")))
     (set! (.-onmessage sock)
-          (fn [event]
-            (swap! text str (.-data event))))))
+      (fn [event]
+        (swap! text str (.-data event))))))
+
+(defn append-text! [editor elem text]
+  (when-let [s @text]
+    (ps/append-text! editor s)
+    (repl/scroll-to-bottom elem)
+    (reset! text nil)))
 
 (defn status-init []
   (let [elem (.createElement js/document "span")
@@ -28,12 +34,9 @@
         text (:status-text @s/runtime-state)]
     (add-watch text :append
       (fn [_ _ _ new-text]
-        (when new-text
-          (when-let [editor @editor-atom]
-            (when (.-parentNode elem)
-              (ps/append-text! editor new-text)
-              (repl/scroll-to-bottom elem)
-              (reset! text nil))))))
+        (when-let [editor @editor-atom]
+          (when (.-parentNode elem)
+            (append-text! editor elem text)))))
     (set! (.-innerHTML elem) (format c/ps-repl-html "false"))
     (reify c/Editor
       (get-path [this] c/status-path)
@@ -53,15 +56,17 @@
       (clean? [this] true)
       (init [this]
         (-> (.querySelector elem "#content") .-style (aset "whiteSpace" "pre-wrap"))
-        (reset! editor-atom
-          (ps/init (.querySelector elem "#paren-soup")
-            (clj->js {:change-callback
-                      (fn [event]
-                        (repl/scroll-to-bottom elem))
-                      :console-callback
-                      (fn [text])
-                      :compiler-fn (fn [_ _])
-                      :disable-clj? true}))))
+        (doto
+          (reset! editor-atom
+            (ps/init (.querySelector elem "#paren-soup")
+              (clj->js {:change-callback
+                        (fn [event]
+                          (repl/scroll-to-bottom elem))
+                        :console-callback
+                        (fn [text])
+                        :compiler-fn (fn [_ _])
+                        :disable-clj? true})))
+          (append-text! elem text)))
       (set-theme [this theme]
         (swap! s/runtime-state assoc :paren-soup-css (c/paren-soup-themes theme)))
       (hide [this]
@@ -70,11 +75,8 @@
       (show [this]
         (when-let [ps (.querySelector elem "#paren-soup")]
           (set! (.-scrollTop ps) @scroll-top))
-        (when-let [s @text]
-          (when-let [editor @editor-atom]
-            (ps/append-text! editor s)
-            (repl/scroll-to-bottom elem)
-            (reset! text nil)))))))
+        (when-let [editor @editor-atom]
+          (append-text! editor elem text))))))
 
 (defn buttons []
   (list
