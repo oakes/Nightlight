@@ -129,41 +129,39 @@
 (defn panel [mui-theme reset-count {:keys [deps project-name main-ns]}]
   [ui/mui-theme-provider
    {:mui-theme mui-theme}
-   [:span {:class "lower-half"}
-    [:div {:style {:float "left"}}
-     [ui/card {:class "card"
-               ; this is a hacky way to force the control panel
-               ; to re-render after reset is clicked
-               :key (str "control-panel-" reset-count)}
-      [ui/card-title {:title "Project Info"}]
-      [:div [ui/text-field {:floating-label-text "Name"
-                            :defaultValue project-name
-                            :on-change (fn [e]
-                                         (swap! s/runtime-state assoc-in
-                                           [:new-prefs :project-name]
-                                           (.-value (.-target e))))}]]
-      [:div [ui/text-field {:floating-label-text "Main Namespace"
-                            :defaultValue main-ns
-                            :on-change (fn [e]
-                                         (swap! s/runtime-state assoc-in
-                                           [:new-prefs :main-ns]
-                                           (.-value (.-target e))))}]]]]
-    [:div {:style {:float "left"}}
-     [ui/card {:class "card"}
-      [ui/card-title {:title "Libraries"}]
-      (for [dep deps]
-        (let [text (->> dep (map str) (str/join " "))]
-          [ui/chip {:key text
-                    :style {:font-family "monospace"
-                            :margin "10px"}
-                    :on-request-delete (fn [e]
-                                         (swap! s/runtime-state
-                                           (fn [state]
-                                             (->> (get-in state [:new-prefs :deps])
-                                                  (remove #(= % dep))
-                                                  vec
-                                                  (assoc-in state [:new-prefs :deps])))))}
-                                         
-           text]))]]
+   [:div {:class "lower-half"
+          :style {:overflow "auto"}}
+    [ui/card {:class "card"
+              ; this is a hacky way to force the control panel
+              ; to re-render after reset is clicked
+              :key (str "control-panel-" reset-count)}
+     [ui/card-title {:title "Project Info"}]
+     [:div [ui/text-field {:floating-label-text "Name"
+                           :defaultValue project-name
+                           :on-change (fn [e]
+                                        (swap! s/runtime-state assoc-in
+                                          [:new-prefs :project-name]
+                                          (.-value (.-target e))))}]]
+     [:div [ui/text-field {:floating-label-text "Main Namespace"
+                           :defaultValue main-ns
+                           :on-change (fn [e]
+                                        (swap! s/runtime-state assoc-in
+                                          [:new-prefs :main-ns]
+                                          (.-value (.-target e))))}]]]
+    [ui/card {:class "card"}
+     [ui/card-title {:title "Libraries"}]
+     (for [dep deps]
+       (let [text (->> dep (map str) (str/join " "))]
+         [ui/chip {:key text
+                   :style {:font-family "monospace"
+                           :margin "10px"}
+                   :on-request-delete (fn [e]
+                                        (swap! s/runtime-state
+                                          (fn [state]
+                                            (->> (get-in state [:new-prefs :deps])
+                                                 (remove #(= % dep))
+                                                 vec
+                                                 (assoc-in state [:new-prefs :deps])))))}
+          text]))]
     [new-library-dialog]]])
 
