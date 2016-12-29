@@ -133,12 +133,14 @@
       [ui/card-title {:title "Project Info"}]
       [:div [ui/text-field {:floating-label-text "Name"
                             :defaultValue project-name
+                            :key project-name
                             :on-change (fn [e]
                                          (swap! s/runtime-state assoc-in
                                            [:new-prefs :project-name]
                                            (.-value (.-target e))))}]]
       [:div [ui/text-field {:floating-label-text "Main Namespace"
                             :defaultValue main-ns
+                            :key main-ns
                             :on-change (fn [e]
                                          (swap! s/runtime-state assoc-in
                                            [:new-prefs :main-ns]
