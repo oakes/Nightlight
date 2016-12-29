@@ -30,7 +30,8 @@
   (swap! s/runtime-state assoc
     :options options
     :title primary-text
-    :nodes nested-items)
+    :nodes nested-items
+    :reset-count 0)
   (some-> (:url options) repl/init-cljs)
   (e/select-node selection))
 

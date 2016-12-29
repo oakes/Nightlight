@@ -88,7 +88,9 @@
                        :key :save}
      "Save"]
     [ui/raised-button {:disabled (= old-prefs new-prefs)
-                       :on-click #(swap! s/runtime-state assoc :new-prefs old-prefs)
+                       :on-click (fn []
+                                   (swap! s/runtime-state assoc :new-prefs old-prefs)
+                                   (swap! s/runtime-state update :reset-count inc))
                        :key :reset}
      "Reset"]
     [ui/raised-button {:on-click #(swap! s/runtime-state assoc :show-add-library? true)
@@ -124,23 +126,24 @@
        :hint-text "Example: 1.0.0"
        :on-change #(reset! library-version (sanitize-name (.-value (.-target %))))}]]))
 
-(defn panel [mui-theme {:keys [deps project-name main-ns]}]
+(defn panel [mui-theme reset-count {:keys [deps project-name main-ns]}]
   [ui/mui-theme-provider
    {:mui-theme mui-theme}
    [:span {:class "lower-half"}
     [:div {:style {:float "left"}}
-     [ui/card {:class "card"}
+     [ui/card {:class "card"
+               ; this is a hacky way to force the control panel
+               ; to re-render after reset is clicked
+               :key (str "control-panel-" reset-count)}
       [ui/card-title {:title "Project Info"}]
       [:div [ui/text-field {:floating-label-text "Name"
                             :defaultValue project-name
-                            :key project-name
                             :on-change (fn [e]
                                          (swap! s/runtime-state assoc-in
                                            [:new-prefs :project-name]
                                            (.-value (.-target e))))}]]
       [:div [ui/text-field {:floating-label-text "Main Namespace"
                             :defaultValue main-ns
-                            :key main-ns
                             :on-change (fn [e]
                                          (swap! s/runtime-state assoc-in
                                            [:new-prefs :main-ns]
@@ -161,5 +164,6 @@
                                                   vec
                                                   (assoc-in state [:new-prefs :deps])))))}
                                          
-           text]))]]]])
+           text]))]]
+    [new-library-dialog]]])
 

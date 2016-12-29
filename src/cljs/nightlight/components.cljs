@@ -139,7 +139,7 @@
        "Update"]]]]])
 
 (defn app []
-  (let [{:keys [title nodes new-prefs] :as runtime-state} @s/runtime-state
+  (let [{:keys [title nodes new-prefs reset-count] :as runtime-state} @s/runtime-state
         {:keys [theme selection] :as pref-state} @s/pref-state
         paren-soup-css (if (= :light theme) "paren-soup-light.css" "paren-soup-dark.css")
         text-color (if (= :light theme) (color :black) (color :white))
@@ -161,8 +161,7 @@
        [toolbar mui-theme runtime-state pref-state]
        [:span {:id "editor"}]]
       (when (and (= selection c/control-panel-path) new-prefs)
-        (cp/panel mui-theme new-prefs))
-      [cp/new-library-dialog]
+        (cp/panel mui-theme reset-count new-prefs))
       [right-sidebar mui-theme runtime-state pref-state]
       [:iframe {:id "cljsapp"
                 :class "lower-half"
