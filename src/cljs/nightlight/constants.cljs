@@ -36,7 +36,7 @@
 (def ^:const repl-path "*REPL*")
 (def ^:const cljs-repl-path "*CLJS-REPL*")
 (def ^:const repl-path? #{repl-path cljs-repl-path})
-(def ^:const status-path "*STATUS*")
+(def ^:const control-panel-path "*CONTROL-PANEL*")
 
 (defprotocol Editor
   (get-path [this])

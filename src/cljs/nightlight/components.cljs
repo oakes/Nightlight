@@ -4,7 +4,7 @@
             [nightlight.editors :as e]
             [nightlight.constants :as c]
             [nightlight.completions :refer [select-completion refresh-completions]]
-            [nightlight.status :as status]
+            [nightlight.control-panel :as cp]
             [paren-soup.dom :as psd]
             [reagent.core :as r]
             [cljs-react-material-ui.core :refer [get-mui-theme color]]
@@ -34,8 +34,8 @@
                         :style {:font-weight "bold"}}
                    nodes)
                  (not (:read-only? options))
-                 (cons {:primary-text "Status"
-                        :value c/status-path
+                 (cons {:primary-text "Control Panel"
+                        :value c/control-panel-path
                         :style {:font-weight "bold"}}
                    nodes)
                  :else
@@ -106,8 +106,8 @@
      {:style {:background-color "transparent"}}
      (when-let [editor (get editors selection)]
        [ui/toolbar-group
-        (if (= selection c/status-path)
-          (status/buttons)
+        (if (= selection c/control-panel-path)
+          (cp/buttons)
           (list
             (when-not (c/repl-path? selection)
               [ui/raised-button {:disabled (or (:read-only? options)

@@ -5,7 +5,7 @@
             [nightlight.completions :as com]
             [nightlight.repl :as repl]
             [nightlight.constants :as c]
-            [nightlight.status :as status]
+            [nightlight.control-panel :as cp]
             [goog.functions :refer [debounce]]
             [reagent.core :as r]
             [cljsjs.codemirror]
@@ -258,7 +258,7 @@
   (.appendChild (clear-editor) (c/get-element editor))
   (when-let [outer-editor (.querySelector js/document ".outer-editor")]
     (set! (.-bottom (.-style outer-editor))
-      (if (#{c/cljs-repl-path c/status-path}
+      (if (#{c/cljs-repl-path c/control-panel-path}
             (c/get-path editor))
         "50%" "0%")))
   (c/show editor))
@@ -297,8 +297,8 @@
     (cond
       (c/repl-path? path)
       (init-and-add-editor path (ps-repl-init path))
-      (= path c/status-path)
-      (init-and-add-editor c/status-path (status/status-init))
+      (= path c/control-panel-path)
+      (init-and-add-editor c/control-panel-path (cp/control-panel-init))
       :else
       (download-file path))))
 

@@ -1,4 +1,4 @@
-(ns nightlight.status
+(ns nightlight.control-panel
   (:require [nightlight.repl :as repl]
             [nightlight.constants :as c]
             [nightlight.state :as s]
@@ -27,7 +27,7 @@
     (repl/scroll-to-bottom elem)
     (reset! text nil)))
 
-(defn status-init []
+(defn control-panel-init []
   (let [elem (.createElement js/document "span")
         editor-atom (atom nil)
         scroll-top (atom 0)
@@ -39,7 +39,7 @@
             (append-text! editor elem text)))))
     (set! (.-innerHTML elem) (format c/ps-repl-html "false"))
     (reify c/Editor
-      (get-path [this] c/status-path)
+      (get-path [this] c/control-panel-path)
       (get-element [this] elem)
       (get-content [this]
         (.-textContent (.querySelector elem "#content")))
