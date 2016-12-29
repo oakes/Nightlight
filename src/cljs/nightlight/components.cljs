@@ -107,7 +107,7 @@
      (when-let [editor (get editors selection)]
        [ui/toolbar-group
         (if (= selection c/control-panel-path)
-          (cp/buttons)
+          (cp/buttons runtime-state)
           (list
             (when-not (c/repl-path? selection)
               [ui/raised-button {:disabled (or (:read-only? options)
@@ -139,7 +139,7 @@
        "Update"]]]]])
 
 (defn app []
-  (let [{:keys [title nodes] :as runtime-state} @s/runtime-state
+  (let [{:keys [title nodes new-options] :as runtime-state} @s/runtime-state
         {:keys [theme selection] :as pref-state} @s/pref-state
         paren-soup-css (if (= :light theme) "paren-soup-light.css" "paren-soup-dark.css")
         text-color (if (= :light theme) (color :black) (color :white))
@@ -160,7 +160,11 @@
       [:span {:class "outer-editor"}
        [toolbar mui-theme runtime-state pref-state]
        [:span {:id "editor"}]]
+      (when (and (= selection c/control-panel-path) new-options)
+        (cp/panel mui-theme new-options))
+      [cp/new-library-dialog]
       [right-sidebar mui-theme runtime-state pref-state]
       [:iframe {:id "cljsapp"
+                :class "lower-half"
                 :style {:display (if (= selection c/cljs-repl-path) "block" "none")}}]]]))
 

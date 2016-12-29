@@ -27,7 +27,11 @@
     (cp/init-status-receiver)
     (not (:hosted? options))
     (check-version))
-  (swap! s/runtime-state assoc :options options :title primary-text :nodes nested-items)
+  (swap! s/runtime-state assoc
+    :options options
+    :new-options options
+    :title primary-text
+    :nodes nested-items)
   (some-> (:url options) repl/init-cljs)
   (e/select-node selection))
 

@@ -1,10 +1,12 @@
 (ns nightlight.control-panel
-  (:require [nightlight.repl :as repl]
+  (:require [clojure.string :as str]
+            [nightlight.repl :as repl]
             [nightlight.constants :as c]
             [nightlight.state :as s]
             [paren-soup.core :as ps]
             [goog.string :refer [format]]
             [goog.string.format]
+            [reagent.core :as r]
             [cljs-react-material-ui.reagent :as ui]))
 
 (defn init-status-receiver []
@@ -78,10 +80,85 @@
         (when-let [editor @editor-atom]
           (append-text! editor elem text))))))
 
-(defn buttons []
+(defn buttons [{:keys [options new-options]}]
   (list
-    [ui/raised-button {:disabled false
-                       :on-click (fn [])
+    [ui/raised-button {:disabled (= options new-options)
+                       :on-click (fn []
+                                   (swap! s/runtime-state assoc :options new-options)
+                                   (swap! s/pref-state merge new-options))
                        :key :save}
-     "Save"]))
+     "Save"]
+    [ui/raised-button {:disabled (= options new-options)
+                       :on-click #(swap! s/runtime-state assoc :new-options options)
+                       :key :reset}
+     "Reset"]
+    [ui/raised-button {:on-click #(swap! s/runtime-state assoc :show-add-library? true)
+                       :key :add-library}
+     "Add Library"]))
+
+(defn sanitize-name [s]
+  (str/replace s #"\"" ""))
+
+(defn new-library-dialog []
+  (let [library-name (atom "")
+        library-version (atom "")]
+    [ui/dialog {:modal true
+                :open (some? (:show-add-library? @s/runtime-state))
+                :actions
+                [(r/as-element
+                   [ui/flat-button {:on-click #(swap! s/runtime-state dissoc :show-add-library?)
+                                    :style {:margin "10px"}}
+                    "Cancel"])
+                 (r/as-element
+                   [ui/flat-button {:on-click #(do
+                                                 (swap! s/runtime-state update-in [:new-options :deps]
+                                                   conj [(symbol @library-name) @library-version])
+                                                 (swap! s/runtime-state dissoc :show-add-library?))
+                                    :style {:margin "10px"}}
+                    "Add Library"])]}
+     [ui/text-field
+      {:floating-label-text "Name"
+       :hint-text "Example: org.clojure/core.async"
+       :on-change #(reset! library-name (sanitize-name (.-value (.-target %))))}]
+     [ui/text-field
+      {:floating-label-text "Version"
+       :hint-text "Example: 1.0.0"
+       :on-change #(reset! library-version (sanitize-name (.-value (.-target %))))}]]))
+
+(defn panel [mui-theme {:keys [deps project-name main-ns]}]
+  [ui/mui-theme-provider
+   {:mui-theme mui-theme}
+   [:span {:class "lower-half"}
+    [:div {:style {:float "left"}}
+     [ui/card {:class "card"}
+      [ui/card-title {:title "Project Info"}]
+      [:div [ui/text-field {:floating-label-text "Name"
+                            :defaultValue project-name
+                            :on-change (fn [e]
+                                         (swap! s/runtime-state assoc-in
+                                           [:new-options :project-name]
+                                           (.-value (.-target e))))}]]
+      [:div [ui/text-field {:floating-label-text "Main Namespace"
+                            :defaultValue main-ns
+                            :on-change (fn [e]
+                                         (swap! s/runtime-state assoc-in
+                                           [:new-options :main-ns]
+                                           (.-value (.-target e))))}]]]]
+    [:div {:style {:float "left"}}
+     [ui/card {:class "card"}
+      [ui/card-title {:title "Libraries"}]
+      (for [dep deps]
+        (let [text (->> dep (map str) (str/join " "))]
+          [ui/chip {:key text
+                    :style {:font-family "monospace"
+                            :margin "10px"}
+                    :on-request-delete (fn [e]
+                                         (swap! s/runtime-state
+                                           (fn [state]
+                                             (->> (get-in state [:new-options :deps])
+                                                  (remove #(= % dep))
+                                                  vec
+                                                  (assoc-in state [:new-options :deps])))))}
+                                         
+           text]))]]]])
 

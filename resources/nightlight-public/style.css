@@ -65,13 +65,17 @@ li {
     white-space: nowrap;
     overflow: hidden;
 }
-#cljsapp {
+.lower-half {
     position: fixed;
     left: 300px;
     top: 50%;
-    background-color: white;
     border: none;
     padding-right: 300px;
     height: 50%;
     width: 100%;
+}
+.card {
+    display: inline-block;
+    padding: 10px;
+    margin: 10px;
 }
