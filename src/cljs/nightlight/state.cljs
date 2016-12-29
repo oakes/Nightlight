@@ -7,6 +7,7 @@
 
 (add-watch pref-state :write-prefs
   (fn [_ _ _ new-state]
+    (swap! runtime-state assoc :new-prefs new-state)
     (when-not (-> @runtime-state :options :read-only?)
       (.send XhrIo
         "write-state"

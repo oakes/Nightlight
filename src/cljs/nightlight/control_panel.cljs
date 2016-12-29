@@ -80,16 +80,15 @@
         (when-let [editor @editor-atom]
           (append-text! editor elem text))))))
 
-(defn buttons [{:keys [options new-options]}]
+(defn buttons [old-prefs new-prefs]
   (list
-    [ui/raised-button {:disabled (= options new-options)
+    [ui/raised-button {:disabled (= old-prefs new-prefs)
                        :on-click (fn []
-                                   (swap! s/runtime-state assoc :options new-options)
-                                   (swap! s/pref-state merge new-options))
+                                   (reset! s/pref-state new-prefs))
                        :key :save}
      "Save"]
-    [ui/raised-button {:disabled (= options new-options)
-                       :on-click #(swap! s/runtime-state assoc :new-options options)
+    [ui/raised-button {:disabled (= old-prefs new-prefs)
+                       :on-click #(swap! s/runtime-state assoc :new-prefs old-prefs)
                        :key :reset}
      "Reset"]
     [ui/raised-button {:on-click #(swap! s/runtime-state assoc :show-add-library? true)
@@ -111,7 +110,7 @@
                     "Cancel"])
                  (r/as-element
                    [ui/flat-button {:on-click #(do
-                                                 (swap! s/runtime-state update-in [:new-options :deps]
+                                                 (swap! s/runtime-state update-in [:new-prefs :deps]
                                                    conj [(symbol @library-name) @library-version])
                                                  (swap! s/runtime-state dissoc :show-add-library?))
                                     :style {:margin "10px"}}
@@ -136,13 +135,13 @@
                             :defaultValue project-name
                             :on-change (fn [e]
                                          (swap! s/runtime-state assoc-in
-                                           [:new-options :project-name]
+                                           [:new-prefs :project-name]
                                            (.-value (.-target e))))}]]
       [:div [ui/text-field {:floating-label-text "Main Namespace"
                             :defaultValue main-ns
                             :on-change (fn [e]
                                          (swap! s/runtime-state assoc-in
-                                           [:new-options :main-ns]
+                                           [:new-prefs :main-ns]
                                            (.-value (.-target e))))}]]]]
     [:div {:style {:float "left"}}
      [ui/card {:class "card"}
@@ -155,10 +154,10 @@
                     :on-request-delete (fn [e]
                                          (swap! s/runtime-state
                                            (fn [state]
-                                             (->> (get-in state [:new-options :deps])
+                                             (->> (get-in state [:new-prefs :deps])
                                                   (remove #(= % dep))
                                                   vec
-                                                  (assoc-in state [:new-options :deps])))))}
+                                                  (assoc-in state [:new-prefs :deps])))))}
                                          
            text]))]]]])
 

@@ -29,7 +29,6 @@
     (check-version))
   (swap! s/runtime-state assoc
     :options options
-    :new-options options
     :title primary-text
     :nodes nested-items)
   (some-> (:url options) repl/init-cljs)
