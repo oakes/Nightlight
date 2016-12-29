@@ -84,7 +84,8 @@
   (list
     [ui/raised-button {:disabled (= old-prefs new-prefs)
                        :on-click (fn []
-                                   (reset! s/pref-state new-prefs))
+                                   (reset! s/pref-state new-prefs)
+                                   (swap! s/runtime-state assoc :title (:project-name new-prefs)))
                        :key :save}
      "Save"]
     [ui/raised-button {:disabled (= old-prefs new-prefs)
