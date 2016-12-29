@@ -166,5 +166,6 @@
       [right-sidebar mui-theme runtime-state pref-state]
       [:iframe {:id "cljsapp"
                 :class "lower-half"
-                :style {:display (if (= selection c/cljs-repl-path) "block" "none")}}]]]))
+                :style {:background-color "white"
+                        :display (if (= selection c/cljs-repl-path) "block" "none")}}]]]))
 
