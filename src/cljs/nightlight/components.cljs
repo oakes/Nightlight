@@ -37,62 +37,62 @@
                                       :style {:margin "10px"}}
                       "Create New File"])]}
        [ui/text-field
-        {:floating-label-text "Enter a new file name."
+        {:floating-label-text "Enter a new file name"
          :full-width true
          :on-change #(reset! path (.-value (.-target %)))}]])))
 
 (defn rename-dialog []
   (let [to (r/atom nil)]
     (fn []
-      [ui/dialog {:modal true
-                  :open (some? (:path-to-rename @s/runtime-state))
-                  :actions
-                  [(r/as-element
-                     [ui/flat-button {:on-click #(swap! s/runtime-state dissoc :path-to-rename)
-                                      :style {:margin "10px"}}
-                      "Cancel"])
-                   (r/as-element
-                     [ui/flat-button {:disabled (not (seq @to))
-                                      :on-click (fn []
-                                                  (let [path (:path-to-rename @s/runtime-state)]
-                                                    (swap! s/runtime-state dissoc :path-to-rename)
+      (let [node (:node-to-rename @s/runtime-state)]
+        [ui/dialog {:modal true
+                    :open (some? node)
+                    :actions
+                    [(r/as-element
+                       [ui/flat-button {:on-click #(swap! s/runtime-state dissoc :node-to-rename)
+                                        :style {:margin "10px"}}
+                        "Cancel"])
+                     (r/as-element
+                       [ui/flat-button {:disabled (not (seq @to))
+                                        :on-click (fn []
+                                                    (swap! s/runtime-state dissoc :node-to-rename)
                                                     (swap! s/pref-state assoc :selection nil)
-                                                    (a/rename-file path @to refresh-tree)))
-                                      :style {:margin "10px"}}
-                      "Rename"])]}
-       [ui/text-field
-        {:floating-label-text "Enter a new file name."
-         :full-width true
-         :on-change #(reset! to (.-value (.-target %)))}]
-       [:p "Note: To move into a directory, just write the path like this: "]
-       [:p [:code "dir/hello.txt"]]])))
+                                                    (a/rename-file (:value node) @to refresh-tree))
+                                        :style {:margin "10px"}}
+                        "Rename"])]}
+         [ui/text-field
+          {:floating-label-text (str "Enter a new file name for " (:primary-text node))
+           :full-width true
+           :on-change #(reset! to (.-value (.-target %)))}]
+         [:p "Note: To move into a directory, just write the path like this: "]
+         [:p [:code "dir/hello.txt"]]]))))
 
 (defn delete-dialog []
-  (let [path (:path-to-delete @s/runtime-state)]
+  (let [node (:node-to-delete @s/runtime-state)]
     [ui/dialog {:modal true
-                :open (some? path)
+                :open (some? node)
                 :actions
                 [(r/as-element
-                   [ui/flat-button {:on-click #(swap! s/runtime-state dissoc :path-to-delete)
+                   [ui/flat-button {:on-click #(swap! s/runtime-state dissoc :node-to-delete)
                                     :style {:margin "10px"}}
                     "Cancel"])
                  (r/as-element
                    [ui/flat-button {:on-click (fn []
-                                                (swap! s/runtime-state dissoc :path-to-delete)
+                                                (swap! s/runtime-state dissoc :node-to-delete)
                                                 (swap! s/pref-state assoc :selection nil)
-                                                (a/delete-file path refresh-tree))
+                                                (a/delete-file (:value node) refresh-tree))
                                     :style {:margin "10px"}}
                     "Delete"])]}
-     "Are you sure you want to delete this file?"]))
+     (str "Are you sure you want to delete " (:primary-text node) "?")]))
 
-(defn icon-button [{:keys [value]}]
+(defn icon-button [node]
   (r/as-element
     [ui/icon-menu {:icon-button-element (r/as-element
                                           [ui/icon-button {:touch true}
                                            [icons/navigation-more-vert {:color (color :grey700)}]])}
-     [ui/menu-item {:on-click #(swap! s/runtime-state assoc :path-to-rename value)}
+     [ui/menu-item {:on-click #(swap! s/runtime-state assoc :node-to-rename node)}
       "Rename"]
-     [ui/menu-item {:on-click #(swap! s/runtime-state assoc :path-to-delete value)}
+     [ui/menu-item {:on-click #(swap! s/runtime-state assoc :node-to-delete node)}
       "Delete"]]))
 
 (defn node->element [editable? {:keys [nested-items] :as node}]
