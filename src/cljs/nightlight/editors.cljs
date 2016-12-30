@@ -298,7 +298,8 @@
       (c/repl-path? path)
       (init-and-add-editor path (ps-repl-init path))
       (= path c/control-panel-path)
-      (init-and-add-editor c/control-panel-path (cp/control-panel-init))
+      (when (-> @s/runtime-state :options :hosted?)
+        (init-and-add-editor c/control-panel-path (cp/control-panel-init)))
       :else
       (download-file path))))
 
