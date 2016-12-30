@@ -254,11 +254,11 @@
 
 (defn cljs-repl-overlay [url]
   [:span
-   [:span {:class "outer-editor"
+   [:span {:class "overlay"
            :style {:background-color "black"
-                   :opacity 0.5
+                   :opacity 0.2
                    :z-index 100}}]
-   [:span {:class "outer-editor"
+   [:span {:class "overlay"
            :style {:z-index 100}}
     [ui/raised-button {:background-color "#FF6F00"
                        :on-click (fn []

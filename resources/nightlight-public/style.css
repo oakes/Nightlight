@@ -78,3 +78,10 @@ li {
     padding: 10px;
     margin: 10px;
 }
+.overlay {
+    position: fixed;
+    top: 50px;
+    left: 300px;
+    right: 0px;
+    bottom: 0px;
+}
