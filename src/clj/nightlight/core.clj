@@ -98,6 +98,9 @@
                      (.renameTo from-file to-file)
                      (delete-parents-recursively! from-file)
                      {:status 200})
+    "/delete-file" (let [file (-> request body-string io/file)]
+                     (delete-parents-recursively! file)
+                     {:status 200})
     "/read-state" {:status 200
                    :headers {"Content-Type" "text/plain"}
                    :body (pr-str (read-state))}
