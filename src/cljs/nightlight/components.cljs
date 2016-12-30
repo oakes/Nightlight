@@ -26,14 +26,17 @@
                   :open (some? (:show-new-file? @s/runtime-state))
                   :actions
                   [(r/as-element
-                     [ui/flat-button {:on-click #(swap! s/runtime-state dissoc :show-new-file?)
+                     [ui/flat-button {:on-click (fn []
+                                                  (swap! s/runtime-state dissoc :show-new-file?)
+                                                  (reset! path nil))
                                       :style {:margin "10px"}}
                       "Cancel"])
                    (r/as-element
                      [ui/flat-button {:disabled (not (seq @path))
                                       :on-click (fn []
                                                   (swap! s/runtime-state dissoc :show-new-file?)
-                                                  (a/new-file @path refresh-tree))
+                                                  (a/new-file @path refresh-tree)
+                                                  (reset! path nil))
                                       :style {:margin "10px"}}
                       "Create New File"])]}
        [ui/text-field
@@ -49,7 +52,9 @@
                     :open (some? node)
                     :actions
                     [(r/as-element
-                       [ui/flat-button {:on-click #(swap! s/runtime-state dissoc :node-to-rename)
+                       [ui/flat-button {:on-click (fn []
+                                                    (swap! s/runtime-state dissoc :node-to-rename)
+                                                    (reset! to nil))
                                         :style {:margin "10px"}}
                         "Cancel"])
                      (r/as-element
@@ -64,7 +69,8 @@
                                                               (update :saved-content dissoc path)
                                                               (update :current-content dissoc path))))
                                                       (swap! s/pref-state assoc :selection nil)
-                                                      (a/rename-file path @to refresh-tree)))
+                                                      (a/rename-file path @to refresh-tree)
+                                                      (reset! to nil)))
                                         :style {:margin "10px"}}
                         "Rename"])]}
          [ui/text-field
