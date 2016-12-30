@@ -12,8 +12,6 @@
             [cljs-react-material-ui.reagent :as ui]
             [cljs-react-material-ui.icons :as icons]))
 
-(def ^:const special-item-style {:font-weight "bold"})
-
 (defn refresh-tree []
   (a/download-tree
     (fn [{:keys [nested-items selection]}]
@@ -97,11 +95,11 @@
      [ui/menu-item {:on-click #(swap! s/runtime-state assoc :path-to-delete value)}
       "Delete"]]))
 
-(defn node->element [{:keys [nested-items] :as node}]
+(defn node->element [editable? {:keys [nested-items] :as node}]
   (let [node (cond
                (seq nested-items)
-               (assoc node :nested-items (mapv node->element nested-items))
-               (and (not= (:style node) special-item-style)
+               (assoc node :nested-items (mapv (partial node->element editable?) nested-items))
+               (and editable?
                     (-> @s/runtime-state :options :read-only? not))
                (assoc node :right-icon-button (icon-button node))
                :else
@@ -113,26 +111,24 @@
             {:keys [selection] :as pref-state}]
   [ui/mui-theme-provider
    {:mui-theme mui-theme}
-   (let [nodes (if (:url options)
-                 (cons {:primary-text "ClojureScript REPL"
-                        :value c/cljs-repl-path
-                        :style special-item-style}
-                   nodes)
-                 nodes)
-         nodes (cond
-                 (not (:hosted? options))
-                 (cons {:primary-text "Clojure REPL"
-                        :value c/repl-path
-                        :style special-item-style}
-                   nodes)
-                 (not (:read-only? options))
-                 (cons {:primary-text "Control Panel"
-                        :value c/control-panel-path
-                        :style special-item-style}
-                   nodes)
-                 :else
-                 nodes)
-         nodes (map node->element nodes)]
+   (let [header-nodes (->> [(when (:url options)
+                              {:primary-text "ClojureScript REPL"
+                               :value c/cljs-repl-path
+                               :style {:font-weight "bold"}})
+                            (cond
+                              (not (:hosted? options))
+                              {:primary-text "Clojure REPL"
+                               :value c/repl-path
+                               :style {:font-weight "bold"}}
+                              (not (:read-only? options))
+                              {:primary-text "Control Panel"
+                               :value c/control-panel-path
+                               :style {:font-weight "bold"}})]
+                           (remove nil?)
+                           (map (partial node->element false)))
+         nodes (->> nodes
+                    (map (partial node->element true))
+                    (concat header-nodes))]
      (vec
        (concat
          [ui/selectable-list
@@ -193,7 +189,8 @@
                                (select-completion (c/get-object editor) info value)
                                (refresh-completions selection)))}]
               (let [bg-color (if (= :light theme) "rgba(0, 0, 0, 0.2)" "rgba(255, 255, 255, 0.2)")]
-                (map node->element (assoc-in comps [0 :style :background-color] bg-color)))))]]))))
+                (map (partial node->element false)
+                  (assoc-in comps [0 :style :background-color] bg-color)))))]]))))
 
 (defn toolbar [mui-theme
                {:keys [update? editors options new-prefs] :as runtime-state}
