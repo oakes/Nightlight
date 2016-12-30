@@ -48,14 +48,14 @@
        node))))
 
 (defn delete-parents-recursively!
-  "Deletes the given file along with all empty parents."
-  [file]
+  "Deletes the given file along with all empty parents up to top-level-file."
+  [top-level-file file]
   (when (and (zero? (count (.listFiles file)))
-             (not (.equals file (io/file "."))))
+             (not (.equals file top-level-file)))
     (io/delete-file file true)
     (->> file
          .getParentFile
-         (delete-parents-recursively!)))
+         (delete-parents-recursively! top-level-file)))
   nil)
 
 (defn handler [request]
@@ -103,10 +103,10 @@
                          to-file (io/file "." to)]
                      (.mkdirs (.getParentFile to-file))
                      (.renameTo from-file to-file)
-                     (delete-parents-recursively! from-file)
+                     (delete-parents-recursively! (io/file ".") from-file)
                      {:status 200})
     "/delete-file" (let [file (-> request body-string io/file)]
-                     (delete-parents-recursively! file)
+                     (delete-parents-recursively! (io/file ".") file)
                      {:status 200})
     "/read-state" {:status 200
                    :headers {"Content-Type" "text/plain"}
