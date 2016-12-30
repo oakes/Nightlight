@@ -22,48 +22,52 @@
       (e/select-node selection))))
 
 (defn new-file-dialog []
-  (let [path (atom nil)]
-    [ui/dialog {:modal true
-                :open (some? (:show-new-file? @s/runtime-state))
-                :actions
-                [(r/as-element
-                   [ui/flat-button {:on-click #(swap! s/runtime-state dissoc :show-new-file?)
-                                    :style {:margin "10px"}}
-                    "Cancel"])
-                 (r/as-element
-                   [ui/flat-button {:on-click (fn []
-                                                (swap! s/runtime-state dissoc :show-new-file?)
-                                                (a/new-file @path refresh-tree))
-                                    :style {:margin "10px"}}
-                    "Create New File"])]}
-     [ui/text-field
-      {:floating-label-text "Enter a new file name."
-       :full-width true
-       :on-change #(reset! path (.-value (.-target %)))}]]))
+  (let [path (r/atom nil)]
+    (fn []
+      [ui/dialog {:modal true
+                  :open (some? (:show-new-file? @s/runtime-state))
+                  :actions
+                  [(r/as-element
+                     [ui/flat-button {:on-click #(swap! s/runtime-state dissoc :show-new-file?)
+                                      :style {:margin "10px"}}
+                      "Cancel"])
+                   (r/as-element
+                     [ui/flat-button {:disabled (not (seq @path))
+                                      :on-click (fn []
+                                                  (swap! s/runtime-state dissoc :show-new-file?)
+                                                  (a/new-file @path refresh-tree))
+                                      :style {:margin "10px"}}
+                      "Create New File"])]}
+       [ui/text-field
+        {:floating-label-text "Enter a new file name."
+         :full-width true
+         :on-change #(reset! path (.-value (.-target %)))}]])))
 
 (defn rename-dialog []
-  (let [from (:path-to-rename @s/runtime-state)
-        to (atom nil)]
-    [ui/dialog {:modal true
-                :open (some? from)
-                :actions
-                [(r/as-element
-                   [ui/flat-button {:on-click #(swap! s/runtime-state dissoc :path-to-rename)
-                                    :style {:margin "10px"}}
-                    "Cancel"])
-                 (r/as-element
-                   [ui/flat-button {:on-click (fn []
-                                                (swap! s/runtime-state dissoc :path-to-rename)
-                                                (swap! s/pref-state assoc :selection nil)
-                                                (a/rename-file from @to refresh-tree))
-                                    :style {:margin "10px"}}
-                    "Rename"])]}
-     [ui/text-field
-      {:floating-label-text "Enter a new file name."
-       :full-width true
-       :on-change #(reset! to (.-value (.-target %)))}]
-     [:p "Note: To move into a directory, just write the path like this: "]
-     [:p [:code "dir/hello.txt"]]]))
+  (let [to (r/atom nil)]
+    (fn []
+      [ui/dialog {:modal true
+                  :open (some? (:path-to-rename @s/runtime-state))
+                  :actions
+                  [(r/as-element
+                     [ui/flat-button {:on-click #(swap! s/runtime-state dissoc :path-to-rename)
+                                      :style {:margin "10px"}}
+                      "Cancel"])
+                   (r/as-element
+                     [ui/flat-button {:disabled (not (seq @to))
+                                      :on-click (fn []
+                                                  (let [path (:path-to-rename @s/runtime-state)]
+                                                    (swap! s/runtime-state dissoc :path-to-rename)
+                                                    (swap! s/pref-state assoc :selection nil)
+                                                    (a/rename-file path @to refresh-tree)))
+                                      :style {:margin "10px"}}
+                      "Rename"])]}
+       [ui/text-field
+        {:floating-label-text "Enter a new file name."
+         :full-width true
+         :on-change #(reset! to (.-value (.-target %)))}]
+       [:p "Note: To move into a directory, just write the path like this: "]
+       [:p [:code "dir/hello.txt"]]])))
 
 (defn delete-dialog []
   (let [path (:path-to-delete @s/runtime-state)]
