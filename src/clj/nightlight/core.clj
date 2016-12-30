@@ -91,9 +91,16 @@
     "/write-file" (let [{:keys [path content]} (-> request body-string edn/read-string)]
                     (spit path content)
                     {:status 200})
+    "/new-file" (let [file (->> request body-string (io/file "."))]
+                  (.mkdirs (.getParentFile file))
+                  (.createNewFile file)
+                  (->> (assoc (read-state) :selection (.getCanonicalPath file))
+                       pr-str
+                       (spit pref-file))
+                  {:status 200})
     "/rename-file" (let [{:keys [from to]} (-> request body-string edn/read-string)
                          from-file (io/file from)
-                         to-file (io/file to)]
+                         to-file (io/file "." to)]
                      (.mkdirs (.getParentFile to-file))
                      (.renameTo from-file to-file)
                      (delete-parents-recursively! from-file)

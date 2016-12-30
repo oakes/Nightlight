@@ -16,10 +16,30 @@
 
 (defn refresh-tree []
   (a/download-tree
-    (fn [{:keys [nested-items]}]
+    (fn [{:keys [nested-items selection]}]
       (swap! s/runtime-state assoc :nodes nested-items)
-      (swap! s/pref-state assoc :selection nil)
-      (e/clear-editor))))
+      (swap! s/pref-state assoc :selection selection)
+      (e/select-node selection))))
+
+(defn new-file-dialog []
+  (let [path (atom nil)]
+    [ui/dialog {:modal true
+                :open (some? (:show-new-file? @s/runtime-state))
+                :actions
+                [(r/as-element
+                   [ui/flat-button {:on-click #(swap! s/runtime-state dissoc :show-new-file?)
+                                    :style {:margin "10px"}}
+                    "Cancel"])
+                 (r/as-element
+                   [ui/flat-button {:on-click (fn []
+                                                (swap! s/runtime-state dissoc :show-new-file?)
+                                                (a/new-file @path refresh-tree))
+                                    :style {:margin "10px"}}
+                    "Create New File"])]}
+     [ui/text-field
+      {:floating-label-text "Enter a new file name."
+       :full-width true
+       :on-change #(reset! path (.-value (.-target %)))}]]))
 
 (defn rename-dialog []
   (let [from (:path-to-rename @s/runtime-state)
@@ -32,15 +52,18 @@
                                     :style {:margin "10px"}}
                     "Cancel"])
                  (r/as-element
-                   [ui/flat-button {:on-click #(do
-                                                 (swap! s/runtime-state dissoc :path-to-rename)
-                                                 (a/rename-file from @to refresh-tree))
+                   [ui/flat-button {:on-click (fn []
+                                                (swap! s/runtime-state dissoc :path-to-rename)
+                                                (swap! s/pref-state assoc :selection nil)
+                                                (a/rename-file from @to refresh-tree))
                                     :style {:margin "10px"}}
                     "Rename"])]}
      [ui/text-field
       {:floating-label-text "Enter a new file name."
        :full-width true
-       :on-change #(reset! to (.-value (.-target %)))}]]))
+       :on-change #(reset! to (.-value (.-target %)))}]
+     [:p "Note: To move into a directory, just write the path like this: "]
+     [:p [:code "dir/hello.txt"]]]))
 
 (defn delete-dialog []
   (let [path (:path-to-delete @s/runtime-state)]
@@ -52,9 +75,10 @@
                                     :style {:margin "10px"}}
                     "Cancel"])
                  (r/as-element
-                   [ui/flat-button {:on-click #(do
-                                                 (swap! s/runtime-state dissoc :path-to-delete)
-                                                 (a/delete-file path refresh-tree))
+                   [ui/flat-button {:on-click (fn []
+                                                (swap! s/runtime-state dissoc :path-to-delete)
+                                                (swap! s/pref-state assoc :selection nil)
+                                                (a/delete-file path refresh-tree))
                                     :style {:margin "10px"}}
                     "Delete"])]}
      "Are you sure you want to delete this file?"]))
@@ -121,20 +145,27 @@
                     {:keys [auto-save? theme] :as pref-state}]
   [:span
    [:div {:class "settings" :style {:padding-left "10px"}}
-    [ui/toggle {:label "Auto Save"
-                :label-position "right"
-                :default-toggled auto-save?
-                :on-toggle (fn [event value]
-                             (swap! s/pref-state assoc :auto-save? value))
-                :disabled (:read-only? options)}]
-    [ui/toggle {:label "Theme"
-                :label-position "right"
-                :default-toggled (= :light theme)
-                :on-toggle (fn [event value]
-                             (let [theme (if value :light :dark)]
-                               (swap! s/pref-state assoc :theme theme)
-                               (doseq [editor (-> runtime-state :editors vals)]
-                                 (c/set-theme editor theme))))}]]
+    [:div {:style {:float "left"}}
+     [ui/toggle {:label "Auto Save"
+                 :label-position "right"
+                 :default-toggled auto-save?
+                 :on-toggle (fn [event value]
+                              (swap! s/pref-state assoc :auto-save? value))
+                 :disabled (:read-only? options)}]
+     [ui/toggle {:label "Theme"
+                 :label-position "right"
+                 :default-toggled (= :light theme)
+                 :on-toggle (fn [event value]
+                              (let [theme (if value :light :dark)]
+                                (swap! s/pref-state assoc :theme theme)
+                                (doseq [editor (-> runtime-state :editors vals)]
+                                  (c/set-theme editor theme))))}]]
+    [:div {:style {:float "left"
+                   :margin-top "5px"
+                   :margin-left "20px"}}
+     [ui/raised-button {:on-click #(swap! s/runtime-state assoc :show-new-file? true)
+                        :disabled (:read-only? options)}
+      "New File"]]]
    [:div {:class "leftsidebar"}
     [tree mui-theme runtime-state pref-state]
     [:div {:id "tree" :style {:display "none"}}]]])
@@ -229,6 +260,7 @@
       [right-sidebar mui-theme runtime-state pref-state]
       [rename-dialog]
       [delete-dialog]
+      [new-file-dialog]
       [:iframe {:id "cljsapp"
                 :class "lower-half"
                 :style {:background-color "white"

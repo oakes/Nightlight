@@ -38,7 +38,6 @@ html, body {
 .settings {
     position: fixed;
     left: 0px;
-    right: 0px;
     height: 60px;
     padding: 5px;
 }

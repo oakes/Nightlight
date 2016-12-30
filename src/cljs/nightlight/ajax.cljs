@@ -59,3 +59,7 @@
   (when-not (-> @s/runtime-state :options :read-only?)
     (.send XhrIo "delete-file" cb "POST" path)))
 
+(defn new-file [path cb]
+  (when-not (-> @s/runtime-state :options :read-only?)
+    (.send XhrIo "new-file" cb "POST" path)))
+
