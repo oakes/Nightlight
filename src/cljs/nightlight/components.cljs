@@ -55,9 +55,16 @@
                      (r/as-element
                        [ui/flat-button {:disabled (not (seq @to))
                                         :on-click (fn []
-                                                    (swap! s/runtime-state dissoc :node-to-rename)
-                                                    (swap! s/pref-state assoc :selection nil)
-                                                    (a/rename-file (:value node) @to refresh-tree))
+                                                    (let [path (:value node)]
+                                                      (swap! s/runtime-state
+                                                        (fn [state]
+                                                          (-> state
+                                                              (dissoc :node-to-rename)
+                                                              (update :editors dissoc path)
+                                                              (update :saved-content dissoc path)
+                                                              (update :current-content dissoc path))))
+                                                      (swap! s/pref-state assoc :selection nil)
+                                                      (a/rename-file path @to refresh-tree)))
                                         :style {:margin "10px"}}
                         "Rename"])]}
          [ui/text-field
@@ -78,9 +85,16 @@
                     "Cancel"])
                  (r/as-element
                    [ui/flat-button {:on-click (fn []
-                                                (swap! s/runtime-state dissoc :node-to-delete)
-                                                (swap! s/pref-state assoc :selection nil)
-                                                (a/delete-file (:value node) refresh-tree))
+                                                (let [path (:value node)]
+                                                  (swap! s/runtime-state
+                                                          (fn [state]
+                                                            (-> state
+                                                                (dissoc :node-to-delete)
+                                                                (update :editors dissoc path)
+                                                                (update :saved-content dissoc path)
+                                                                (update :current-content dissoc path))))
+                                                  (swap! s/pref-state assoc :selection nil)
+                                                  (a/delete-file path refresh-tree)))
                                     :style {:margin "10px"}}
                     "Delete"])]}
      (str "Are you sure you want to delete " (:primary-text node) "?")]))
