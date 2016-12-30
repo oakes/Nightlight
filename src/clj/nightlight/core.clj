@@ -47,6 +47,17 @@
        (assoc node :nested-items children)
        node))))
 
+(defn delete-parents-recursively!
+  "Deletes the given file along with all empty parents."
+  [file]
+  (when (and (zero? (count (.listFiles file)))
+             (not (.equals file (io/file "."))))
+    (io/delete-file file true)
+    (->> file
+         .getParentFile
+         (delete-parents-recursively!)))
+  nil)
+
 (defn handler [request]
   (case (:uri request)
     "/" {:status 200
@@ -80,6 +91,13 @@
     "/write-file" (let [{:keys [path content]} (-> request body-string edn/read-string)]
                     (spit path content)
                     {:status 200})
+    "/rename-file" (let [{:keys [from to]} (-> request body-string edn/read-string)
+                         from-file (io/file from)
+                         to-file (io/file to)]
+                     (.mkdirs (.getParentFile to-file))
+                     (.renameTo from-file to-file)
+                     (delete-parents-recursively! from-file)
+                     {:status 200})
     "/read-state" {:status 200
                    :headers {"Content-Type" "text/plain"}
                    :body (pr-str (read-state))}
