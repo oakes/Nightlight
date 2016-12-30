@@ -16,9 +16,10 @@
 
 (defn refresh-tree []
   (a/download-tree
-    (fn [{:keys [nested-items selection]}]
+    (fn [{:keys [nested-items]}]
       (swap! s/runtime-state assoc :nodes nested-items)
-      (e/select-node selection))))
+      (swap! s/pref-state assoc :selection nil)
+      (e/clear-editor))))
 
 (defn rename-dialog []
   (let [from (:path-to-rename @s/runtime-state)
@@ -32,8 +33,8 @@
                     "Cancel"])
                  (r/as-element
                    [ui/flat-button {:on-click #(do
-                                                 (a/rename-file from @to refresh-tree)
-                                                 (swap! s/runtime-state dissoc :path-to-rename))
+                                                 (swap! s/runtime-state dissoc :path-to-rename)
+                                                 (a/rename-file from @to refresh-tree))
                                     :style {:margin "10px"}}
                     "Rename"])]}
      [ui/text-field
@@ -52,8 +53,8 @@
                     "Cancel"])
                  (r/as-element
                    [ui/flat-button {:on-click #(do
-                                                 (a/delete-file path refresh-tree)
-                                                 (swap! s/runtime-state dissoc :path-to-delete))
+                                                 (swap! s/runtime-state dissoc :path-to-delete)
+                                                 (a/delete-file path refresh-tree))
                                     :style {:margin "10px"}}
                     "Delete"])]}
      "Are you sure you want to delete this file?"]))

@@ -292,6 +292,8 @@
       (= path c/control-panel-path)
       (when (-> @s/runtime-state :options :hosted?)
         (init-and-add-editor c/control-panel-path (cp/control-panel-init)))
+      (nil? path)
+      (clear-editor)
       :else
       (download-file path))))
 
