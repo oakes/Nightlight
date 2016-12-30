@@ -6,6 +6,7 @@
             [nightlight.repl :as repl]
             [nightlight.constants :as c]
             [nightlight.control-panel :as cp]
+            [nightlight.ajax :as a]
             [goog.functions :refer [debounce]]
             [reagent.core :as r]
             [cljsjs.codemirror]
@@ -31,20 +32,11 @@
     (set! (.-innerHTML editor) "")
     editor))
 
-(defn write-file [editor]
-  (when-not (-> @s/runtime-state :options :read-only?)
-    (.send XhrIo
-      "write-file"
-      (fn [e]
-        (c/mark-clean editor))
-      "POST"
-      (pr-str {:path (c/get-path editor) :content (c/get-content editor)}))))
-
 (def auto-save
   (debounce
     (fn [editor]
       (when (:auto-save? @s/pref-state)
-        (write-file editor)))
+        (a/write-file editor)))
     1000))
 
 (defn toggle-instarepl [editor show?]

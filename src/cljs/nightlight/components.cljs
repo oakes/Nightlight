@@ -5,14 +5,39 @@
             [nightlight.constants :as c]
             [nightlight.completions :refer [select-completion refresh-completions]]
             [nightlight.control-panel :as cp]
+            [nightlight.ajax :as a]
             [paren-soup.dom :as psd]
             [reagent.core :as r]
             [cljs-react-material-ui.core :refer [get-mui-theme color]]
-            [cljs-react-material-ui.reagent :as ui]))
+            [cljs-react-material-ui.reagent :as ui]
+            [cljs-react-material-ui.icons :as icons]))
+
+(def ^:const special-item-style {:font-weight "bold"})
+
+(defn refresh-tree []
+  (a/download-tree
+    (fn [{:keys [nested-items selection]}]
+      (swap! s/runtime-state assoc :nodes nested-items)
+      (e/select-node selection))))
+
+(defn icon-button [{:keys [value]}]
+  (r/as-element
+    [ui/icon-menu {:icon-button-element (r/as-element
+                                          [ui/icon-button {:touch true}
+                                           [icons/navigation-more-vert {:color (color :grey700)}]])}
+     [ui/menu-item {:on-click #(a/rename-file value refresh-tree)}
+      "Rename"]
+     [ui/menu-item {:on-click #(a/delete-file value refresh-tree)}
+      "Delete"]]))
 
 (defn node->element [{:keys [nested-items] :as node}]
-  (let [node (if (seq nested-items)
+  (let [node (cond
+               (seq nested-items)
                (assoc node :nested-items (mapv node->element nested-items))
+               (and (not= (:style node) special-item-style)
+                    (-> @s/runtime-state :options :read-only? not))
+               (assoc node :right-icon-button (icon-button node))
+               :else
                node)]
     (r/as-element [ui/list-item node])))
 
@@ -24,19 +49,19 @@
    (let [nodes (if (:url options)
                  (cons {:primary-text "ClojureScript REPL"
                         :value c/cljs-repl-path
-                        :style {:font-weight "bold"}}
+                        :style special-item-style}
                    nodes)
                  nodes)
          nodes (cond
                  (not (:hosted? options))
                  (cons {:primary-text "Clojure REPL"
                         :value c/repl-path
-                        :style {:font-weight "bold"}}
+                        :style special-item-style}
                    nodes)
                  (not (:read-only? options))
                  (cons {:primary-text "Control Panel"
                         :value c/control-panel-path
-                        :style {:font-weight "bold"}}
+                        :style special-item-style}
                    nodes)
                  :else
                  nodes)
@@ -112,7 +137,7 @@
             (when-not (c/repl-path? selection)
               [ui/raised-button {:disabled (or (:read-only? options)
                                                (c/clean? editor))
-                                 :on-click #(e/write-file editor)
+                                 :on-click #(a/write-file editor)
                                  :key :save}
                "Save"])
             [ui/raised-button {:disabled (or (:read-only? options)

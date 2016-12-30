@@ -4,8 +4,8 @@
             [paren-soup.core :as ps]
             [paren-soup.dom :as psd]
             [nightlight.state :as s]
-            [nightlight.constants :as c])
-  (:import goog.net.XhrIo))
+            [nightlight.constants :as c]
+            [nightlight.ajax :as a]))
 
 (defn select-completion [editor {:keys [context-before context-after start-position]} text]
   (when-let [top-level-elem (psd/get-focused-top-level)]
@@ -20,13 +20,7 @@
 (defn refresh-completions [path]
   (when (= path c/repl-path)
     (if-let [info (psd/get-completion-info)]
-      (.send XhrIo
-        "completions"
-        (fn [e]
-          (swap! s/runtime-state update :completions assoc path
-            (read-string (.. e -target getResponseText))))
-        "POST"
-        (pr-str info))
+      (a/download-completions path info)
       (swap! s/runtime-state update :completions assoc path []))))
 
 (defn completion-shortcut? [e]

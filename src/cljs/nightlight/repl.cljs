@@ -66,7 +66,7 @@
 (defn compile-clj [forms cb]
   (try
     (.send XhrIo
-      "/eval"
+      "eval"
       (fn [e]
         (if (.isSuccess (.-target e))
           (->> (.. e -target getResponseText)
