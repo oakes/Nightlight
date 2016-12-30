@@ -252,8 +252,30 @@
                          :on-click #(.open js/window c/page-url)}
        "Update"]]]]])
 
+(defn cljs-repl-overlay [url]
+  [:span
+   [:span {:class "outer-editor"
+           :style {:background-color "black"
+                   :opacity 0.5
+                   :z-index 100}}]
+   [:span {:class "outer-editor"
+           :style {:z-index 100}}
+    [ui/raised-button {:background-color "#FF6F00"
+                       :on-click (fn []
+                                   (repl/init-cljs url)
+                                   (swap! s/runtime-state assoc :enable-cljs-repl? true))
+                       :style {:margin "auto"
+                               :position "absolute"
+                               :top 0
+                               :left 0
+                               :right 0
+                               :bottom 0
+                               :height 40
+                               :width 80}}
+     "Start"]]])
+
 (defn app []
-  (let [{:keys [title nodes new-prefs reset-count options] :as runtime-state} @s/runtime-state
+  (let [{:keys [title nodes new-prefs reset-count options enable-cljs-repl?] :as runtime-state} @s/runtime-state
         {:keys [theme selection] :as pref-state} @s/pref-state
         paren-soup-css (if (= :light theme) "paren-soup-light.css" "paren-soup-dark.css")
         text-color (if (= :light theme) (color :black) (color :white))
@@ -274,14 +296,20 @@
       [:span {:class "outer-editor"}
        [toolbar mui-theme runtime-state pref-state]
        [:span {:id "editor"}]]
-      (when (and (= selection c/control-panel-path) (:hosted? options))
-        (cp/panel mui-theme reset-count new-prefs))
+      (case selection
+        c/control-panel-path
+        (when (:hosted? options)
+          (cp/panel mui-theme reset-count new-prefs))
+        c/cljs-repl-path
+        (when-not enable-cljs-repl?
+          [cljs-repl-overlay (:url options)])
+        nil)
       [right-sidebar mui-theme runtime-state pref-state]
       [rename-dialog]
       [delete-dialog]
       [new-file-dialog]
       [:iframe {:id "cljsapp"
                 :class "lower-half"
-                :style {:background-color "white"
+                :style {:background-color (if enable-cljs-repl? "white" "none")
                         :display (if (= selection c/cljs-repl-path) "block" "none")}}]]]))
 

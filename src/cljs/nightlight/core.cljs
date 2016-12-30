@@ -18,7 +18,6 @@
     :title primary-text
     :nodes nested-items
     :reset-count 0)
-  (some-> (:url options) repl/init-cljs)
   (e/select-node selection))
 
 (def app-with-init
