@@ -20,14 +20,52 @@
       (swap! s/runtime-state assoc :nodes nested-items)
       (e/select-node selection))))
 
+(defn rename-dialog []
+  (let [from (:path-to-rename @s/runtime-state)
+        to (atom nil)]
+    [ui/dialog {:modal true
+                :open (some? from)
+                :actions
+                [(r/as-element
+                   [ui/flat-button {:on-click #(swap! s/runtime-state dissoc :path-to-rename)
+                                    :style {:margin "10px"}}
+                    "Cancel"])
+                 (r/as-element
+                   [ui/flat-button {:on-click #(do
+                                                 (a/rename-file from @to refresh-tree)
+                                                 (swap! s/runtime-state dissoc :path-to-rename))
+                                    :style {:margin "10px"}}
+                    "Rename"])]}
+     [ui/text-field
+      {:floating-label-text "Enter a new file name."
+       :full-width true
+       :on-change #(reset! to (.-value (.-target %)))}]]))
+
+(defn delete-dialog []
+  (let [path (:path-to-delete @s/runtime-state)]
+    [ui/dialog {:modal true
+                :open (some? path)
+                :actions
+                [(r/as-element
+                   [ui/flat-button {:on-click #(swap! s/runtime-state dissoc :path-to-delete)
+                                    :style {:margin "10px"}}
+                    "Cancel"])
+                 (r/as-element
+                   [ui/flat-button {:on-click #(do
+                                                 (a/delete-file path refresh-tree)
+                                                 (swap! s/runtime-state dissoc :path-to-delete))
+                                    :style {:margin "10px"}}
+                    "Delete"])]}
+     "Are you sure you want to delete this file?"]))
+
 (defn icon-button [{:keys [value]}]
   (r/as-element
     [ui/icon-menu {:icon-button-element (r/as-element
                                           [ui/icon-button {:touch true}
                                            [icons/navigation-more-vert {:color (color :grey700)}]])}
-     [ui/menu-item {:on-click #(a/rename-file value refresh-tree)}
+     [ui/menu-item {:on-click #(swap! s/runtime-state assoc :path-to-rename value)}
       "Rename"]
-     [ui/menu-item {:on-click #(a/delete-file value refresh-tree)}
+     [ui/menu-item {:on-click #(swap! s/runtime-state assoc :path-to-delete value)}
       "Delete"]]))
 
 (defn node->element [{:keys [nested-items] :as node}]
@@ -188,6 +226,8 @@
       (when (and (= selection c/control-panel-path) (:hosted? options))
         (cp/panel mui-theme reset-count new-prefs))
       [right-sidebar mui-theme runtime-state pref-state]
+      [rename-dialog]
+      [delete-dialog]
       [:iframe {:id "cljsapp"
                 :class "lower-half"
                 :style {:background-color "white"

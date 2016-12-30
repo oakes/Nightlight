@@ -51,9 +51,9 @@
       "POST"
       (pr-str {:path (c/get-path editor) :content (c/get-content editor)}))))
 
-(defn rename-file [path cb]
+(defn rename-file [from to cb]
   (when-not (-> @s/runtime-state :options :read-only?)
-    (.send XhrIo "rename-file" cb "POST" path)))
+    (.send XhrIo "rename-file" cb "POST" (pr-str {:from from :to to}))))
 
 (defn delete-file [path cb]
   (when-not (-> @s/runtime-state :options :read-only?)
