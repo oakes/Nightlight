@@ -50,7 +50,7 @@
   (or (and (#{"clj" "cljc"} extension)
            (not (-> @s/runtime-state :options :hosted?)))
       (and (= "cljs" extension)
-           (-> @s/runtime-state :options :url))))
+           (-> @s/runtime-state :enable-cljs-repl?))))
 
 (defn ps-init [path content]
   (let [elem (.createElement js/document "span")
