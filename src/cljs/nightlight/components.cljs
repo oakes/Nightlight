@@ -111,11 +111,7 @@
             {:keys [selection] :as pref-state}]
   [ui/mui-theme-provider
    {:mui-theme mui-theme}
-   (let [header-nodes (->> [(when (:url options)
-                              {:primary-text "ClojureScript REPL"
-                               :value c/cljs-repl-path
-                               :style {:font-weight "bold"}})
-                            (cond
+   (let [header-nodes (->> [(cond
                               (not (:hosted? options))
                               {:primary-text "Clojure REPL"
                                :value c/repl-path
@@ -123,6 +119,10 @@
                               (not (:read-only? options))
                               {:primary-text "Control Panel"
                                :value c/control-panel-path
+                               :style {:font-weight "bold"}})
+                            (when (:url options)
+                              {:primary-text "ClojureScript REPL"
+                               :value c/cljs-repl-path
                                :style {:font-weight "bold"}})]
                            (remove nil?)
                            (map (partial node->element false)))
