@@ -18,10 +18,9 @@
          (ps/edit-and-refresh! editor))))
 
 (defn refresh-completions [path]
-  (when (= path c/repl-path)
-    (if-let [info (psd/get-completion-info)]
-      (a/download-completions path info)
-      (swap! s/runtime-state update :completions assoc path []))))
+  (if-let [info (psd/get-completion-info)]
+    (a/download-completions path info)
+    (swap! s/runtime-state update :completions assoc path [])))
 
 (defn completion-shortcut? [e]
   (and (= 9 (.-keyCode e))

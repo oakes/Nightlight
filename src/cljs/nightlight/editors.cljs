@@ -163,7 +163,7 @@
                       :change-callback
                       (fn [event]
                         (repl/scroll-to-bottom elem)
-                        (when (not= (.-type event) "keydown")
+                        (when (and (= path c/repl-path) (not= (.-type event) "keydown"))
                           (com/refresh-completions path)
                           (c/update-content this)))
                       :console-callback
