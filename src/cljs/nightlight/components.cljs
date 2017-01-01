@@ -20,7 +20,8 @@
       (e/select-node selection))))
 
 (defn new-file-dialog []
-  (let [path (r/atom nil)]
+  (let [path (r/atom nil)
+        upload (r/atom nil)]
     (fn []
       [ui/dialog {:modal true
                   :open (some? (:show-new-file? @s/runtime-state))
@@ -28,21 +29,37 @@
                   [(r/as-element
                      [ui/flat-button {:on-click (fn []
                                                   (swap! s/runtime-state dissoc :show-new-file?)
-                                                  (reset! path nil))
+                                                  (reset! path nil)
+                                                  (reset! upload nil))
                                       :style {:margin "10px"}}
                       "Cancel"])
                    (r/as-element
-                     [ui/flat-button {:disabled (not (seq @path))
+                     [ui/flat-button {:disabled (and (not (seq @path))
+                                                     (not @upload))
                                       :on-click (fn []
+                                                  (if-let [form @upload]
+                                                    (a/new-file-upload form refresh-tree)
+                                                    (a/new-file @path refresh-tree))
                                                   (swap! s/runtime-state dissoc :show-new-file?)
-                                                  (a/new-file @path refresh-tree)
-                                                  (reset! path nil))
+                                                  (reset! path nil)
+                                                  (reset! upload nil))
                                       :style {:margin "10px"}}
-                      "Create New File"])]}
+                      "New File"])]}
        [ui/text-field
         {:floating-label-text "Enter a new file name"
          :full-width true
-         :on-change #(reset! path (.-value (.-target %)))}]])))
+         :disabled (some? @upload)
+         :on-change #(reset! path (.-value (.-target %)))}]
+       (when (-> @s/runtime-state :options :hosted?)
+         [:span
+          [:p {:style {:text-align "center"}} "— or —"]
+          [:p "Upload a file: "]
+          [:form {:action "upload"
+                  :enc-type "multipart/form-data"}
+           [:input {:type "file"
+                    :disabled (some? (seq @path))
+                    :multiple "multiple"
+                    :on-change #(reset! upload (.-target %))}]]])])))
 
 (defn rename-dialog []
   (let [to (r/atom nil)]

@@ -63,3 +63,10 @@
   (when-not (-> @s/runtime-state :options :read-only?)
     (.send XhrIo "new-file" cb "POST" path)))
 
+(defn new-file-upload [form cb]
+  (when-not (-> @s/runtime-state :options :read-only?)
+    (let [form-data (js/FormData.)]
+      (doseq [file (array-seq (.-files form))]
+        (.append form-data "files" file (.-name file)))
+      (.send XhrIo "new-file-upload" cb "POST" form-data))))
+
