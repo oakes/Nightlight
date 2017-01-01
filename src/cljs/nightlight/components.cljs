@@ -268,6 +268,10 @@
       {:style {:z-index 100}}
       [ui/raised-button {:background-color "#FF6F00"
                          :style {:display (if (:hosted? options) "block" "none")}
+                         :href "export"}
+       "Export"]
+      [ui/raised-button {:background-color "#FF6F00"
+                         :style {:display (if (:url options) "block" "none")}
                          :on-click #(.open js/window (:url options))}
        "View App"]
       [ui/raised-button {:background-color "#FF6F00"
