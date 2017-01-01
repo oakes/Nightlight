@@ -268,7 +268,7 @@
       {:style {:z-index 100}}
       [ui/raised-button {:background-color "#FF6F00"
                          :style {:display (if (:hosted? options) "block" "none")}
-                         :href "export"}
+                         :href "export.zip"}
        "Export"]
       [ui/raised-button {:background-color "#FF6F00"
                          :style {:display (if (:url options) "block" "none")}
