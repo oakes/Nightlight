@@ -6,6 +6,7 @@
             [ring.middleware.file :refer [wrap-file]]
             [ring.util.response :refer [redirect]]
             [ring.util.request :refer [body-string]]
+            [ring.util.mime-type :refer [ext-mime-type]]
             [eval-soup.core :as es]
             [compliment.core :as com]
             [nightlight.repl :as repl]
@@ -85,9 +86,12 @@
                       :headers {}
                       :body "File too large."}
                      :else
-                     {:status 200
-                      :headers {"Content-Type" "text/plain"}
-                      :body f}))
+                     (let [mime-type (ext-mime-type (.getCanonicalPath f))]
+                       (when (or (nil? mime-type)
+                                 (.startsWith mime-type "text"))
+                         {:status 200
+                          :headers {"Content-Type" "text/plain"}
+                          :body f}))))
     "/write-file" (let [{:keys [path content]} (-> request body-string edn/read-string)]
                     (spit path content)
                     {:status 200})
