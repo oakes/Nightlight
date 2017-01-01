@@ -24,11 +24,11 @@
         upload (r/atom nil)]
     (fn []
       [ui/dialog {:modal true
-                  :open (some? (:show-new-file? @s/runtime-state))
+                  :open (= :new (:dialog @s/runtime-state))
                   :actions
                   [(r/as-element
                      [ui/flat-button {:on-click (fn []
-                                                  (swap! s/runtime-state dissoc :show-new-file?)
+                                                  (swap! s/runtime-state dissoc :dialog)
                                                   (reset! path nil)
                                                   (reset! upload nil))
                                       :style {:margin "10px"}}
@@ -40,7 +40,7 @@
                                                   (if-let [form @upload]
                                                     (a/new-file-upload form refresh-tree)
                                                     (a/new-file @path refresh-tree))
-                                                  (swap! s/runtime-state dissoc :show-new-file?)
+                                                  (swap! s/runtime-state dissoc :dialog)
                                                   (reset! path nil)
                                                   (reset! upload nil))
                                       :style {:margin "10px"}}
@@ -64,13 +64,13 @@
 (defn rename-dialog []
   (let [to (r/atom nil)]
     (fn []
-      (let [node (:node-to-rename @s/runtime-state)]
+      (let [node (:node @s/runtime-state)]
         [ui/dialog {:modal true
-                    :open (some? node)
+                    :open (= :rename (:dialog @s/runtime-state))
                     :actions
                     [(r/as-element
                        [ui/flat-button {:on-click (fn []
-                                                    (swap! s/runtime-state dissoc :node-to-rename)
+                                                    (swap! s/runtime-state dissoc :dialog :node)
                                                     (reset! to nil))
                                         :style {:margin "10px"}}
                         "Cancel"])
@@ -81,7 +81,7 @@
                                                       (swap! s/runtime-state
                                                         (fn [state]
                                                           (-> state
-                                                              (dissoc :node-to-rename)
+                                                              (dissoc :dialog :node)
                                                               (update :editors dissoc path)
                                                               (update :saved-content dissoc path)
                                                               (update :current-content dissoc path))))
@@ -98,12 +98,12 @@
          [:p [:code "dir/hello.txt"]]]))))
 
 (defn delete-dialog []
-  (let [node (:node-to-delete @s/runtime-state)]
+  (let [node (:node @s/runtime-state)]
     [ui/dialog {:modal true
-                :open (some? node)
+                :open (= :delete (:dialog @s/runtime-state))
                 :actions
                 [(r/as-element
-                   [ui/flat-button {:on-click #(swap! s/runtime-state dissoc :node-to-delete)
+                   [ui/flat-button {:on-click #(swap! s/runtime-state dissoc :dialog :node)
                                     :style {:margin "10px"}}
                     "Cancel"])
                  (r/as-element
@@ -112,7 +112,7 @@
                                                   (swap! s/runtime-state
                                                           (fn [state]
                                                             (-> state
-                                                                (dissoc :node-to-delete)
+                                                                (dissoc :dialog :node)
                                                                 (update :editors dissoc path)
                                                                 (update :saved-content dissoc path)
                                                                 (update :current-content dissoc path))))
@@ -127,9 +127,9 @@
     [ui/icon-menu {:icon-button-element (r/as-element
                                           [ui/icon-button {:touch true}
                                            [icons/navigation-more-vert {:color (color :grey700)}]])}
-     [ui/menu-item {:on-click #(swap! s/runtime-state assoc :node-to-rename node)}
+     [ui/menu-item {:on-click #(swap! s/runtime-state assoc :dialog :rename :node node)}
       "Rename"]
-     [ui/menu-item {:on-click #(swap! s/runtime-state assoc :node-to-delete node)}
+     [ui/menu-item {:on-click #(swap! s/runtime-state assoc :dialog :delete :node node)}
       "Delete"]]))
 
 (defn node->element [editable? {:keys [nested-items] :as node}]
@@ -200,7 +200,7 @@
     [:div {:style {:float "left"
                    :margin-top "5px"
                    :margin-left "20px"}}
-     [ui/raised-button {:on-click #(swap! s/runtime-state assoc :show-new-file? true)
+     [ui/raised-button {:on-click #(swap! s/runtime-state assoc :dialog :new)
                         :disabled (:read-only? options)}
       "New File"]]]
    [:div {:class "leftsidebar"}
