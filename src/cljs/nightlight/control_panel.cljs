@@ -137,7 +137,8 @@
                 ; this is a hacky way to force the control panel
                 ; to re-render after reset is clicked
                 :key (str "control-panel-" reset-count)}
-       [ui/card-title {:title "Project Info"}]
+       [ui/card-title {:title "Project Info"
+                       :style {:text-align "center"}}]
        [:div [ui/text-field {:floating-label-text "Name"
                              :defaultValue project-name
                              :on-change (fn [e]
@@ -151,7 +152,8 @@
                                             [:new-prefs :main-ns]
                                             (.-value (.-target e))))}]]]
       [ui/card {:class "card"}
-       [ui/card-title {:title "Libraries"}]
+       [ui/card-title {:title "Libraries"
+                       :style {:text-align "center"}}]
        (for [dep deps]
          (let [text (->> dep (map str) (str/join " "))]
            [ui/chip {:key text
