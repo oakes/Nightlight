@@ -22,7 +22,9 @@
                           :results (into-array (mapv form->serializable results))
                           :ns (str @current-ns)})
                 "*"))
-            {:current-ns current-ns}))))))
+            {:current-ns current-ns
+             :custom-load (fn [opts cb]
+                            (cb {:lang :clj :source ""}))}))))))
 
 (init-cljs-server)
 
