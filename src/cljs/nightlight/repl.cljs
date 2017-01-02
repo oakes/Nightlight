@@ -19,7 +19,7 @@
           (callback (aget data "results") (aget data "ns")))))))
 
 (defn scroll-to-bottom [elem]
-  (let [ps (.querySelector elem "#paren-soup")]
+  (when-let [ps (.querySelector elem "#paren-soup")]
     (set! (.-scrollTop ps) (.-scrollHeight ps))))
 
 (defprotocol ReplSender
