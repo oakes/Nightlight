@@ -10,7 +10,6 @@
             [goog.functions :refer [debounce]]
             [reagent.core :as r]
             [cljsjs.codemirror]
-            [cljsjs.codemirror.mode.clojure]
             [cljsjs.codemirror.mode.css]
             [cljsjs.codemirror.mode.javascript]
             [cljsjs.codemirror.mode.markdown]
@@ -47,15 +46,11 @@
       (aset "display" (if show? "list-item" "none")))
   (c/init editor))
 
-(defn disable-paren-soup? []
-  (not= -1 (.indexOf js/navigator.userAgent "Edge")))
-
 (defn show-instarepl? [extension]
-  (and (not (disable-paren-soup?))
-       (or (and (#{"clj" "cljc"} extension)
-                (not (-> @s/runtime-state :options :hosted?)))
-           (and (= "cljs" extension)
-                (-> @s/runtime-state :enable-cljs-repl?)))))
+  (or (and (#{"clj" "cljc"} extension)
+           (not (-> @s/runtime-state :options :hosted?)))
+      (and (= "cljs" extension)
+           (-> @s/runtime-state :enable-cljs-repl?))))
 
 (defn ps-init [path content]
   (let [elem (.createElement js/document "span")
@@ -247,8 +242,7 @@
           (.scrollTo editor nil @scroll-top))))))
 
 (defn create-editor [path content]
-  (if (and (-> path get-extension c/clojure-exts some?)
-           (not (disable-paren-soup?)))
+  (if (-> path get-extension c/clojure-exts some?)
     (ps-init path content)
     (cm-init path content)))
 

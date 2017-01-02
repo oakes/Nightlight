@@ -7,6 +7,14 @@
             [nightlight.ajax :as a]
             [reagent.core :as r]))
 
+(defn check-browser []
+  (when (not= -1 (.indexOf js/navigator.userAgent "Edge"))
+    (swap! s/runtime-state
+      (fn [state]
+        (-> state
+            (assoc :dialog :unsupported-browser)
+            (assoc-in [:options :read-only?] true))))))
+
 (defn init-tree [{:keys [primary-text nested-items selection options]}]
   (cond
     (and (:hosted? options) (not (:read-only? options)))
@@ -18,6 +26,7 @@
     :title primary-text
     :nodes nested-items
     :reset-count 0)
+  (check-browser)
   (e/select-node selection))
 
 (def app-with-init
