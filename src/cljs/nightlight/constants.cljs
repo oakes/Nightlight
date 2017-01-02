@@ -9,15 +9,21 @@
 (def ^:const paren-soup-themes {:dark "paren-soup-dark.css" :light "paren-soup-light.css"})
 (def ^:const codemirror-themes {:dark "lesser-dark" :light "default"})
 (def ^:const extension->mode
-  {"css" "css"
-   "js" "javascript"
-   "md" "markdown"
-   "markdown" "markdown"
-   "sass" "sass"
-   "sh" "shell"
-   "sql" "sql"
-   "html" "xml"
-   "xml" "xml"})
+  (merge
+    {"css" "css"
+     "js" "javascript"
+     "md" "markdown"
+     "markdown" "markdown"
+     "sass" "sass"
+     "sh" "shell"
+     "sql" "sql"
+     "html" "xml"
+     "xml" "xml"}
+    (reduce
+      (fn [m ext]
+        (assoc m ext "clojure"))
+      {}
+      clojure-exts)))
 
 (def ^:const ps-html "
   <div class='paren-soup' id='paren-soup'>

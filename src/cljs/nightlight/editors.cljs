@@ -10,6 +10,7 @@
             [goog.functions :refer [debounce]]
             [reagent.core :as r]
             [cljsjs.codemirror]
+            [cljsjs.codemirror.mode.clojure]
             [cljsjs.codemirror.mode.css]
             [cljsjs.codemirror.mode.javascript]
             [cljsjs.codemirror.mode.markdown]
@@ -242,7 +243,8 @@
           (.scrollTo editor nil @scroll-top))))))
 
 (defn create-editor [path content]
-  (if (-> path get-extension c/clojure-exts some?)
+  (if (and (-> path get-extension c/clojure-exts some?)
+           (= -1 (.indexOf js/navigator.userAgent "Edge")))
     (ps-init path content)
     (cm-init path content)))
 
