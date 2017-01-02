@@ -37,7 +37,14 @@
             (.send sock "")))
         (set! (.-onmessage sock)
           (fn [event]
-            (swap! text-atom str (.-data event)))))
+            (swap! text-atom str (.-data event))))
+        (set! (.-onclose sock)
+          (fn [event]
+            (swap! s/runtime-state
+              (fn [state]
+                (-> state
+                    (assoc :dialog :connection-lost)
+                    (assoc-in [:options :read-only?] true)))))))
       (send [this text]
         (.send sock (str text "\n"))))))
 

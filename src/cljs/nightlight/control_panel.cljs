@@ -21,7 +21,16 @@
         (.send sock "")))
     (set! (.-onmessage sock)
       (fn [event]
-        (swap! text str (.-data event))))))
+        (swap! text str (.-data event))))
+    (set! (.-onclose sock)
+      (fn [event]
+        (swap! s/runtime-state
+          (fn [state]
+            (swap! s/runtime-state
+              (fn [state]
+                (-> state
+                    (assoc :dialog :connection-lost)
+                    (assoc-in [:options :read-only?] true))))))))))
 
 (defn append-text! [editor elem text]
   (when-let [s @text]

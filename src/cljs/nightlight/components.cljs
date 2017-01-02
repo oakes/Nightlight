@@ -122,6 +122,16 @@
                     "Delete"])]}
      (str "Are you sure you want to delete " (:primary-text node) "?")]))
 
+(defn connection-lost-dialog []
+  [ui/dialog {:modal true
+              :open (= :connection-lost (:dialog @s/runtime-state))
+              :actions
+              [(r/as-element
+                 [ui/flat-button {:on-click #(swap! s/runtime-state dissoc :dialog)
+                                  :style {:margin "10px"}}
+                  "OK"])]}
+   "Connection to server has been lost. Try refreshing or check to see if the server is still running."])
+
 (defn icon-button [node]
   (r/as-element
     [ui/icon-menu {:icon-button-element (r/as-element
@@ -302,8 +312,10 @@
      "Start"]]])
 
 (defn app []
-  (let [{:keys [title nodes new-prefs reset-count options enable-cljs-repl?] :as runtime-state} @s/runtime-state
-        {:keys [theme selection] :as pref-state} @s/pref-state
+  (let [{:keys [title nodes new-prefs reset-count options enable-cljs-repl? connection-lost?]
+         :as runtime-state} @s/runtime-state
+        {:keys [theme selection]
+         :as pref-state} @s/pref-state
         paren-soup-css (if (= :light theme) "paren-soup-light.css" "paren-soup-dark.css")
         text-color (if (= :light theme) (color :black) (color :white))
         mui-theme (if (= :light theme)
@@ -335,6 +347,7 @@
       [rename-dialog]
       [delete-dialog]
       [new-file-dialog]
+      [connection-lost-dialog]
       [:iframe {:id "cljsapp"
                 :class "lower-half"
                 :style {:background-color (if enable-cljs-repl? "white" "none")
