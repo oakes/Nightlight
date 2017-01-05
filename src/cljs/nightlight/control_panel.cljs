@@ -92,18 +92,18 @@
 (defn buttons [old-prefs new-prefs]
   (list
     [ui/raised-button {:disabled (= old-prefs new-prefs)
-                       :on-click (fn []
-                                   (reset! s/pref-state new-prefs)
-                                   (swap! s/runtime-state assoc :title (:project-name new-prefs)))
+                       :on-touch-tap (fn []
+                                       (reset! s/pref-state new-prefs)
+                                       (swap! s/runtime-state assoc :title (:project-name new-prefs)))
                        :key :save}
      "Save"]
     [ui/raised-button {:disabled (= old-prefs new-prefs)
-                       :on-click (fn []
-                                   (swap! s/runtime-state assoc :new-prefs old-prefs)
-                                   (swap! s/runtime-state update :reset-count inc))
+                       :on-touch-tap (fn []
+                                       (swap! s/runtime-state assoc :new-prefs old-prefs)
+                                       (swap! s/runtime-state update :reset-count inc))
                        :key :reset}
      "Reset"]
-    [ui/raised-button {:on-click #(swap! s/runtime-state assoc :dialog :add-library)
+    [ui/raised-button {:on-touch-tap #(swap! s/runtime-state assoc :dialog :add-library)
                        :key :add-library}
      "Add Library"]))
 
@@ -117,14 +117,14 @@
                 :open (= :add-library (:dialog @s/runtime-state))
                 :actions
                 [(r/as-element
-                   [ui/flat-button {:on-click #(swap! s/runtime-state dissoc :dialog)
+                   [ui/flat-button {:on-touch-tap #(swap! s/runtime-state dissoc :dialog)
                                     :style {:margin "10px"}}
                     "Cancel"])
                  (r/as-element
-                   [ui/flat-button {:on-click #(do
-                                                 (swap! s/runtime-state update-in [:new-prefs :deps]
-                                                   conj [(symbol @library-name) @library-version])
-                                                 (swap! s/runtime-state dissoc :dialog))
+                   [ui/flat-button {:on-touch-tap (fn []
+                                                    (swap! s/runtime-state update-in [:new-prefs :deps]
+                                                      conj [(symbol @library-name) @library-version])
+                                                    (swap! s/runtime-state dissoc :dialog))
                                     :style {:margin "10px"}}
                     "Add Library"])]}
      [ui/text-field
