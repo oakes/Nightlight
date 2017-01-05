@@ -82,11 +82,13 @@
                                                         (fn [state]
                                                           (-> state
                                                               (dissoc :dialog :node)
-                                                              (update :editors dissoc path)
-                                                              (update :saved-content dissoc path)
-                                                              (update :current-content dissoc path))))
+                                                              (e/remove-editor path))))
                                                       (swap! s/pref-state assoc :selection nil)
-                                                      (a/rename-file path @to refresh-tree)
+                                                      (a/rename-file path @to
+                                                        (fn [e]
+                                                          (let [new-path (.. e -target getResponseText)]
+                                                            (swap! s/runtime-state e/remove-editor new-path)
+                                                            (refresh-tree))))
                                                       (reset! to nil)))
                                         :style {:margin "10px"}}
                         "Rename"])]}
@@ -113,9 +115,7 @@
                                                           (fn [state]
                                                             (-> state
                                                                 (dissoc :dialog :node)
-                                                                (update :editors dissoc path)
-                                                                (update :saved-content dissoc path)
-                                                                (update :current-content dissoc path))))
+                                                                (e/remove-editor path))))
                                                   (swap! s/pref-state assoc :selection nil)
                                                   (a/delete-file path refresh-tree)))
                                     :style {:margin "10px"}}

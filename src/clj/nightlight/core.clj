@@ -108,7 +108,9 @@
                      (.mkdirs (.getParentFile to-file))
                      (.renameTo from-file to-file)
                      (delete-parents-recursively! (io/file ".") from-file)
-                     {:status 200})
+                     {:status 200
+                      :headers {"Content-Type" "text/plain"}
+                      :body (.getCanonicalPath to-file)})
     "/delete-file" (let [file (-> request body-string io/file)]
                      (delete-parents-recursively! (io/file ".") file)
                      {:status 200})

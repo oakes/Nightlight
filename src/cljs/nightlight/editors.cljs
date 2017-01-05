@@ -241,6 +241,12 @@
         (when-let [editor @editor-atom]
           (.scrollTo editor nil @scroll-top))))))
 
+(defn remove-editor [state path]
+  (-> state
+      (update :editors dissoc path)
+      (update :saved-content dissoc path)
+      (update :current-content dissoc path)))
+
 (defn create-editor [path content]
   (if (-> path get-extension c/clojure-exts some?)
     (ps-init path content)
