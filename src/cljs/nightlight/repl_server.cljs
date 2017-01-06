@@ -24,7 +24,12 @@
                 "*"))
             {:current-ns current-ns
              :custom-load (fn [opts cb]
-                            (cb {:lang :clj :source ""}))}))))))
+                            (cb {:lang :clj :source ""}))})))
+      (.postMessage (.-parent js/window)
+        (clj->js {:type "repl"
+                  :results (array "")
+                  :ns (str @current-ns)})
+        "*"))))
 
 (init-cljs-server)
 

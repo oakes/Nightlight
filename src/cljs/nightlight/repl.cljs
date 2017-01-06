@@ -55,11 +55,12 @@
             result (if (array? result)
                      (str "Error: " (aget result 0))
                      result)]
-        (swap! text-atom str result "\n" current-ns "=> "))))
+        (when (seq result)
+          (swap! text-atom str result "\n"))
+        (swap! text-atom str current-ns "=> "))))
   (let [iframe (.querySelector js/document "#cljsapp")]
     (reify ReplSender
-      (init [this]
-        (swap! text-atom str rs/cljs-start-ns "=> "))
+      (init [this])
       (send [this text]
         (.postMessage (.-contentWindow iframe)
           (clj->js {:type "repl" :forms (array text)})
