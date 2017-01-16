@@ -12,6 +12,7 @@
                   ; clj deps
                   [org.clojure/clojure "1.8.0"]
                   [ring "1.5.0"]
+                  [ring-basic-authentication "1.0.5"]
                   [http-kit "2.2.0"]
                   [compliment "0.3.1"]
                   [eval-soup "1.2.0"]]

@@ -4,6 +4,7 @@
             [clojure.set :as set]
             [ring.middleware.resource :refer [wrap-resource]]
             [ring.middleware.file :refer [wrap-file]]
+            [ring.middleware.basic-authentication :refer [wrap-basic-authentication]]
             [ring.util.response :refer [redirect]]
             [ring.util.request :refer [body-string]]
             [ring.util.mime-type :refer [ext-mime-type]]
@@ -145,6 +146,13 @@
       (-> server meta :local-port)))
   server)
 
+(defn wrap-auth [app opts]
+  (if-let [auth (:auth opts)]
+    (wrap-basic-authentication app
+      (fn [uname pass]
+        (= (get auth uname) pass)))
+    app))
+
 (defn start
   ([opts]
    (start (wrap-resource handler "nightlight-public") opts))
@@ -152,7 +160,7 @@
    (when-not @web-server
      (->> (merge {:port 0} opts)
           (reset! options)
-          (run-server app)
+          (run-server (wrap-auth app opts))
           (reset! web-server)
           print-server))))
 
