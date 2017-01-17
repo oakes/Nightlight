@@ -292,16 +292,9 @@
 (defn select-node [path]
   (if-let [editor (get-in @s/runtime-state [:editors path])]
     (show-editor editor)
-    (cond
-      (c/repl-path? path)
-      (init-and-add-editor path (ps-repl-init path))
-      (= path c/control-panel-path)
-      (when (-> @s/runtime-state :options :hosted?)
-        (init-and-add-editor c/control-panel-path (cp/control-panel-init)))
-      (nil? path)
-      (clear-editor)
-      :else
-      (download-file path))))
+    (if path
+      (download-file path)
+      (clear-editor))))
 
 (defn unselect-node [path]
   (when-let [old-editor (get-in @s/runtime-state [:editors path])]

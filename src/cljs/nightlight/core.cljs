@@ -5,6 +5,7 @@
             [nightlight.components :refer [app]]
             [nightlight.control-panel :as cp]
             [nightlight.ajax :as a]
+            [nightlight.constants :as c]
             [reagent.core :as r]))
 
 (defn check-browser []
@@ -16,11 +17,14 @@
             (assoc-in [:options :read-only?] true))))))
 
 (defn init-tree [{:keys [primary-text nested-items selection options]}]
-  (cond
-    (and (:hosted? options) (not (:read-only? options)))
-    (cp/init-status-receiver)
-    (not (:hosted? options))
+  (when (and (:hosted? options)
+             (not (:read-only? options)))
+    (e/init-and-add-editor c/control-panel-path (cp/control-panel-init)))
+  (when (not (:hosted? options))
+    (e/init-and-add-editor c/repl-path (e/ps-repl-init c/repl-path))
     (a/check-version))
+  (when (:url options)
+    (e/init-and-add-editor c/cljs-repl-path (e/ps-repl-init c/cljs-repl-path)))
   (swap! s/runtime-state assoc
     :options options
     :title primary-text

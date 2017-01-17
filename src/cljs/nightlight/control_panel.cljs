@@ -9,13 +9,11 @@
             [reagent.core :as r]
             [cljs-react-material-ui.reagent :as ui]))
 
-(defn init-status-receiver []
+(defn init-status-receiver [text]
   (let [protocol (if (= (.-protocol js/location) "https:") "wss:" "ws:")
         host (-> js/window .-location .-host)
         path (-> js/window .-location .-pathname)
-        sock (js/WebSocket. (str protocol "//" host path "status"))
-        text (atom nil)]
-    (swap! s/runtime-state assoc :status-text text)
+        sock (js/WebSocket. (str protocol "//" host path "status"))]
     (set! (.-onopen sock)
       (fn [event]
         (.send sock "")))
@@ -42,7 +40,8 @@
   (let [elem (.createElement js/document "span")
         editor-atom (atom nil)
         scroll-top (atom 0)
-        text (:status-text @s/runtime-state)]
+        text (atom nil)]
+    (init-status-receiver text)
     (add-watch text :append
       (fn [_ _ _ new-text]
         (when-let [editor @editor-atom]
