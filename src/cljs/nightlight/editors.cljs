@@ -35,7 +35,8 @@
 (def auto-save
   (debounce
     (fn [editor]
-      (when (:auto-save? @s/pref-state)
+      (when (and (:auto-save? @s/pref-state)
+                 (not (c/clean? editor)))
         (a/write-file editor)))
     1000))
 
