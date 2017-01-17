@@ -11,7 +11,9 @@
    _ users USERS edn "A map of usernames and passwords to restrict access to"
    _ user USER str "A single username/password, separated by a space"]
   (core/with-pass-thru _
-    (start {:port port :url url :users (or users (apply hash-map (str/split user #" ")))})))
+    (start {:port port :url url :users (or users
+                                           (when user
+                                             (apply hash-map (str/split user #" "))))})))
 
 (def night nightlight)
 
