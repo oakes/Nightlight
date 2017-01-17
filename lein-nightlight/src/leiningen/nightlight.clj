@@ -1,9 +1,9 @@
 (ns leiningen.nightlight
-  (:require
-    [leinjacker.deps :as deps]
-    [leinjacker.eval :as eval]
-    [clojure.tools.cli :as cli]))
-
+  (:require [leinjacker.deps :as deps]
+            [leinjacker.eval :as eval]
+            [clojure.tools.cli :as cli]
+            [clojure.edn :as edn]
+            [clojure.string :as str]))
 
 (def cli-options
   [["-p" "--port PORT" "Port number"
@@ -11,17 +11,22 @@
     :parse-fn #(Integer/parseInt %)
     :validate [#(< 0 % 0x10000) "Must be an integer between 0 and 65536"]]
    ["-a" "--url URL" "The URL that the ClojureScript app is being served on"]
+   [nil "--users USERS" "A map of usernames and passwords to restrict access to"
+    :parse-fn edn/read-string
+    :validate [map? "Must be a hash-map"]]
+   [nil "--user USER" "A single username/password, separated by a space"
+    :parse-fn #(apply hash-map (str/split % #" "))]
    ["-u" "--usage" "Show CLI usage options"]])
 
 
 (defn start-nightlight
-  [{:keys [main] :as project} {:keys [port url] :as options}]
+  [{:keys [main] :as project} {:keys [port url users user] :as options}]
   (eval/eval-in-project
     (deps/add-if-missing
       project
       '[nightlight/lein-nightlight "1.4.5"])
     `(do
-       (nightlight.core/start {:port ~port :url ~url})
+       (nightlight.core/start {:port ~port :url ~url :users (or ~users ~user)})
        (when '~main (require '~main)))
     `(require 'nightlight.core)))
 

@@ -147,10 +147,10 @@
   server)
 
 (defn wrap-auth [app opts]
-  (if-let [auth (:auth opts)]
+  (if-let [users (:users opts)]
     (wrap-basic-authentication app
       (fn [uname pass]
-        (= (get auth uname) pass)))
+        (= (get users uname) pass)))
     app))
 
 (defn start
