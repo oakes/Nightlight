@@ -50,6 +50,7 @@
     (set! (.-innerHTML elem) (format c/ps-repl-html "false"))
     (reify c/Editor
       (get-path [this] c/control-panel-path)
+      (get-extension [this] "")
       (get-element [this] elem)
       (get-content [this]
         (.-textContent (.querySelector elem "#content")))

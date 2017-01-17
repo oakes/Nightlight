@@ -40,6 +40,7 @@
 
 (defprotocol Editor
   (get-path [this])
+  (get-extension [this])
   (get-element [this])
   (get-content [this])
   (get-object [this])

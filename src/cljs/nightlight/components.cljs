@@ -245,7 +245,7 @@
                {:on-change (fn [event value]
                              (when-let [info (psd/get-completion-info)]
                                (select-completion (c/get-object editor) info value)
-                               (refresh-completions selection)))}]
+                               (refresh-completions selection (c/get-extension editor))))}]
               (let [bg-color (if (= :light theme) "rgba(0, 0, 0, 0.2)" "rgba(255, 255, 255, 0.2)")]
                 (map (partial node->element false)
                   (assoc-in comps [0 :style :background-color] bg-color)))))]]))))

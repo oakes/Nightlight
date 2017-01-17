@@ -57,7 +57,6 @@
         editor-atom (atom nil)
         extension (get-extension path)
         compiler-fn (if (= extension "cljs") repl/compile-cljs repl/compile-clj)
-        completions? (c/completion-exts extension)
         scroll-top (atom 0)]
     (set! (.-innerHTML elem)
       (format c/ps-html (if (-> @s/runtime-state :options :read-only?)
@@ -66,6 +65,7 @@
     (-> elem (.querySelector "#instarepl") .-style (aset "display" "none"))
     (reify c/Editor
       (get-path [this] path)
+      (get-extension [this] extension)
       (get-element [this] elem)
       (get-content [this]
         (.-textContent (.querySelector elem "#content")))
@@ -91,8 +91,7 @@
         (= (get-in @s/runtime-state [:saved-content path])
            (get-in @s/runtime-state [:current-content path])))
       (init [this]
-        (when completions?
-          (com/init-completions path editor-atom elem))
+        (com/init-completions path extension editor-atom elem)
         (reset! editor-atom
           (ps/init (.querySelector elem "#paren-soup")
             (clj->js {:before-change-callback
@@ -104,8 +103,8 @@
                           (when (= (.-type event) "keyup")
                             (c/update-content this)
                             (auto-save this))
-                          (when (and completions? (not= (.-type event) "keydown"))
-                            (com/refresh-completions path))))
+                          (when (not= (.-type event) "keydown")
+                            (com/refresh-completions path extension))))
                       :compiler-fn compiler-fn}))))
       (set-theme [this theme]
         (swap! s/runtime-state assoc :paren-soup-css (c/paren-soup-themes theme)))
@@ -121,7 +120,8 @@
         editor-atom (atom nil)
         text (atom nil)
         sender (repl/create-repl-sender path text)
-        scroll-top (atom 0)]
+        scroll-top (atom 0)
+        extension (if (= path c/repl-path) "clj" "cljs")]
     (add-watch text :append
       (fn [_ _ _ new-text]
         (when new-text
@@ -133,6 +133,7 @@
     (set! (.-innerHTML elem) (format c/ps-repl-html "true"))
     (reify c/Editor
       (get-path [this] path)
+      (get-extension [this] extension)
       (get-element [this] elem)
       (get-content [this]
         (.-textContent (.querySelector elem "#content")))
@@ -153,7 +154,7 @@
       (mark-clean [this])
       (clean? [this] true)
       (init [this]
-        (com/init-completions path editor-atom elem)
+        (com/init-completions path extension editor-atom elem)
         (-> (.querySelector elem "#content") .-style (aset "whiteSpace" "pre-wrap"))
         (reset! editor-atom
           (ps/init (.querySelector elem "#paren-soup")
@@ -163,8 +164,8 @@
                       :change-callback
                       (fn [event]
                         (repl/scroll-to-bottom elem)
-                        (when (and (= path c/repl-path) (not= (.-type event) "keydown"))
-                          (com/refresh-completions path)
+                        (when (not= (.-type event) "keydown")
+                          (com/refresh-completions path extension)
                           (c/update-content this)))
                       :console-callback
                       (fn [text]
@@ -192,6 +193,7 @@
         scroll-top (atom 0)]
     (reify c/Editor
       (get-path [this] path)
+      (get-extension [this] extension)
       (get-element [this] elem)
       (get-content [this]
         (some-> @editor-atom .getValue))

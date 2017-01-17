@@ -17,10 +17,11 @@
          (ps/add-parinfer true -1 :paren)
          (ps/edit-and-refresh! editor))))
 
-(defn refresh-completions [path]
-  (if-let [info (psd/get-completion-info)]
-    (a/download-completions path info)
-    (swap! s/runtime-state update :completions assoc path [])))
+(defn refresh-completions [path extension]
+  (when (c/completion-exts extension)
+    (if-let [info (psd/get-completion-info)]
+      (a/download-completions path info)
+      (swap! s/runtime-state update :completions assoc path []))))
 
 (defn completion-shortcut? [e]
   (and (= 9 (.-keyCode e))
@@ -32,12 +33,13 @@
                count
                (= 1))))
 
-(defn init-completions [path editor-atom elem]
-  (events/listen elem "keyup"
-    (fn [e]
-      (when (completion-shortcut? e)
-        (when-let [comps (get-in @s/runtime-state [:completions path])]
-          (when-let [info (psd/get-completion-info)]
-            (select-completion @editor-atom info (:value (first comps)))
-            (refresh-completions path)))))))
+(defn init-completions [path extension editor-atom elem]
+  (when (c/completion-exts extension)
+    (events/listen elem "keyup"
+      (fn [e]
+        (when (completion-shortcut? e)
+          (when-let [comps (get-in @s/runtime-state [:completions path])]
+            (when-let [info (psd/get-completion-info)]
+              (select-completion @editor-atom info (:value (first comps)))
+              (refresh-completions path extension))))))))
 
