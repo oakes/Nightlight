@@ -18,7 +18,8 @@
             [cljsjs.codemirror.mode.sql]
             [cljsjs.codemirror.mode.xml]
             [goog.string :refer [format]]
-            [goog.string.format])
+            [goog.string.format]
+            [goog.dom :as gdom])
   (:import goog.net.XhrIo))
 
 (defn get-extension [path]
@@ -62,7 +63,7 @@
     (set! (.-innerHTML elem)
       (format c/ps-html (if (-> @s/runtime-state :options :read-only?)
                            "false" "true")))
-    (set! (.-textContent (.querySelector elem "#content")) content)
+    (-> elem (.querySelector "#content") (gdom/setTextContent content))
     (-> elem (.querySelector "#instarepl") .-style (aset "display" "none"))
     (reify c/Editor
       (get-path [this] path)

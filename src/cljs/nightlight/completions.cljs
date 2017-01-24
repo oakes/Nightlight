@@ -5,11 +5,12 @@
             [paren-soup.dom :as psd]
             [nightlight.state :as s]
             [nightlight.constants :as c]
-            [nightlight.ajax :as a]))
+            [nightlight.ajax :as a]
+            [goog.dom :as gdom]))
 
 (defn select-completion [editor {:keys [context-before context-after start-position]} text]
   (when-let [top-level-elem (psd/get-focused-top-level)]
-    (set! (.-textContent top-level-elem)
+    (gdom/setTextContent top-level-elem
       (str context-before text context-after))
     (let [pos (+ start-position (count text))]
       (psd/set-cursor-position! top-level-elem [pos pos]))
