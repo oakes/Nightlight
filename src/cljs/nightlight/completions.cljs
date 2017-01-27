@@ -15,7 +15,7 @@
     (let [pos (+ start-position (count text))]
       (psd/set-cursor-position! top-level-elem [pos pos]))
     (->> (ps/init-state (.querySelector js/document "#content") true false)
-         (ps/add-parinfer true -1 :paren)
+         (ps/add-parinfer true -1)
          (ps/edit-and-refresh! editor))))
 
 (defn refresh-completions [path extension]
