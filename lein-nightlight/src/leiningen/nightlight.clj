@@ -24,7 +24,7 @@
   (eval/eval-in-project
     (deps/add-if-missing
       project
-      '[nightlight/lein-nightlight "1.6.2"])
+      '[nightlight/lein-nightlight "1.6.3"])
     `(do
        (nightlight.core/start {:port ~port :url ~url :users (or ~users ~user)})
        (when '~main (require '~main)))
