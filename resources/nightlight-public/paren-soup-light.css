@@ -6,6 +6,7 @@ html, body, .paren-soup {
 	font-size: 16px;
 	font-family: monospace;
 	color: gray;
+	caret-color: black;
 }
 
 .paren-soup .error-text {
