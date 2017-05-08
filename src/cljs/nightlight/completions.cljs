@@ -10,13 +10,14 @@
 
 (defn select-completion [editor {:keys [context-before context-after start-position]} text]
   (when-let [top-level-elem (psd/get-focused-top-level)]
-    (gdom/setTextContent top-level-elem
-      (str context-before text context-after))
-    (let [pos (+ start-position (count text))]
-      (psd/set-cursor-position! top-level-elem [pos pos]))
-    (->> (ps/init-state (.querySelector js/document "#content") true false)
-         (ps/add-parinfer true -1)
-         (ps/edit-and-refresh! editor))))
+    (when (seq text)
+      (gdom/setTextContent top-level-elem
+        (str context-before text context-after))
+      (let [pos (+ start-position (count text))]
+        (psd/set-cursor-position! top-level-elem [pos pos]))
+      (->> (ps/init-state (.querySelector js/document "#content") true false)
+           (ps/add-parinfer true -1)
+           (ps/edit-and-refresh! editor)))))
 
 (defn refresh-completions [path extension]
   (when (c/completion-exts extension)
