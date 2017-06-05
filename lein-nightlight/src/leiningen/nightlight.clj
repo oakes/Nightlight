@@ -10,9 +10,9 @@
     :default 4000
     :parse-fn #(Integer/parseInt %)
     :validate [#(< 0 % 0x10000) "Must be an integer between 0 and 65536"]]
-   ["-h" "--host HOST" "The hostname that Nightlight listens on"
+   [nil "--host HOST" "The hostname that Nightlight listens on"
     :default "0.0.0.0"]
-   ["-a" "--url URL" "The URL that the ClojureScript app is being served on"]
+   [nil "--url URL" "The URL that the ClojureScript app is being served on"]
    [nil "--users USERS" "A map of usernames and passwords to restrict access to"
     :parse-fn edn/read-string
     :validate [map? "Must be a hash-map"]]

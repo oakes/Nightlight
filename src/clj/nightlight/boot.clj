@@ -7,8 +7,8 @@
 
 (core/deftask nightlight
   [p port PORT int "The port that Nightlight runs on"
-   h host HOST str "The hostname that Nightlight listens on"
-   a url URL str "The URL that the ClojureScript app is being served on"
+   _ host HOST str "The hostname that Nightlight listens on"
+   _ url URL str "The URL that the ClojureScript app is being served on"
    _ users USERS edn "A map of usernames and passwords to restrict access to"
    _ user USER str "A single username/password, separated by a space"]
   (core/with-pass-thru _
