@@ -155,7 +155,9 @@
 (defn node->element [editable? {:keys [nested-items] :as node}]
   (let [node (cond
                (seq nested-items)
-               (assoc node :nested-items (mapv (partial node->element editable?) nested-items))
+               (assoc node :nested-items (->> nested-items
+                                              (sort-by :primary-text)
+                                              (mapv (partial node->element editable?))))
                (and editable?
                     (-> @s/runtime-state :options :read-only? not))
                (assoc node :right-icon-button (icon-button node))
@@ -184,6 +186,7 @@
                            (remove nil?)
                            (map (partial node->element false)))
          nodes (->> nodes
+                    (sort-by :primary-text)
                     (map (partial node->element true))
                     (concat header-nodes))]
      (vec
