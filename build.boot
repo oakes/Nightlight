@@ -15,7 +15,7 @@
                   [ring-basic-authentication "1.0.5"]
                   [http-kit "2.2.0"]
                   [compliment "0.3.1"]
-                  [eval-soup "1.2.0"]]
+                  [eval-soup "1.2.1"]]
   :repositories (conj (get-env :repositories)
                   ["clojars" {:url "https://clojars.org/repo/"
                               :username (System/getenv "CLOJARS_USER")
