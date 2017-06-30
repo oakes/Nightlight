@@ -4,18 +4,18 @@
                   [adzerk/boot-reload "0.4.12" :scope "test"]
                   [org.clojure/test.check "0.9.0" :scope "test"]
                   ; cljs deps
-                  [org.clojure/clojurescript "1.9.518" :scope "test"]
-                  [paren-soup "2.8.6" :scope "test"]
+                  [org.clojure/clojurescript "1.9.660" :scope "test"]
+                  [paren-soup "2.8.7" :scope "test"]
                   [cljsjs/codemirror "5.19.0-0" :scope "test"]
-                  [reagent "0.6.0" :exclusions [cljsjs/react cljsjs/react-dom] :scope "test"]
+                  [reagent "0.7.0" :exclusions [cljsjs/react cljsjs/react-dom] :scope "test"]
                   [cljs-react-material-ui "0.2.34" :scope "test"]
                   ; clj deps
-                  [org.clojure/clojure "1.8.0"]
+                  [org.clojure/clojure "1.8.0" :scope "provided"]
                   [ring "1.5.1"]
                   [ring-basic-authentication "1.0.5"]
                   [http-kit "2.2.0"]
                   [compliment "0.3.1"]
-                  [eval-soup "1.2.1"]]
+                  [eval-soup "1.2.2"]]
   :repositories (conj (get-env :repositories)
                   ["clojars" {:url "https://clojars.org/repo/"
                               :username (System/getenv "CLOJARS_USER")
@@ -25,7 +25,7 @@
   '[adzerk.boot-cljs :refer [cljs]]
   '[adzerk.boot-reload :refer [reload]]
   '[nightlight.core :refer [dev-start]]
-  '[clojure.spec.test :refer [instrument]])
+  '[clojure.spec.test.alpha :refer [instrument]])
 
 (task-options!
   pom {:project 'nightlight
