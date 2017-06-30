@@ -6,7 +6,7 @@
                   ; cljs deps
                   [org.clojure/clojurescript "1.9.660" :scope "test"]
                   [paren-soup "2.8.7" :scope "test"]
-                  [cljsjs/codemirror "5.19.0-0" :scope "test"]
+                  [cljsjs/codemirror "5.24.0-1" :scope "test"]
                   [reagent "0.7.0" :exclusions [cljsjs/react cljsjs/react-dom] :scope "test"]
                   [cljs-react-material-ui "0.2.34" :scope "test"]
                   ; clj deps
