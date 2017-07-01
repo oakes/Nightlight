@@ -113,7 +113,9 @@
                             (c/update-content this)
                             (auto-save this))
                           (when (not= (.-type event) "keydown")
-                            (com/refresh-completions path extension))))
+                            (com/refresh-completions path extension))
+                          (swap! s/runtime-state update-in [:paths path] assoc :eval-code
+                            (or (ps/selected-text) (ps/focused-text)))))
                       :compiler-fn compiler-fn}))))
       (set-theme [this theme]
         (swap! s/runtime-state assoc :paren-soup-css (c/paren-soup-themes theme)))
@@ -125,8 +127,8 @@
           (set! (.-scrollTop ps) @scroll-top)))
       (eval-selection [this]
         (when-let [editor (get-repl extension)]
-          (when-let [text (or (ps/selected-text) (ps/focused-text))]
-            (c/eval editor text))))
+          (when-let [code (get-in @s/runtime-state [:paths path :eval-code])]
+            (c/eval editor code))))
       (eval [this code]))))
 
 (defn ps-repl-init [path]
@@ -201,9 +203,8 @@
           (set! (.-scrollTop ps) @scroll-top)))
       (eval-selection [this])
       (eval [this code]
-        (when-let [editor @editor-atom]
-          (ps/append-text! editor (str code \newline))
-          (repl/send sender code))))))
+        (swap! text str code \newline)
+        (repl/send sender code)))))
 
 (defn cm-init [path content]
   (let [elem (.createElement js/document "span")

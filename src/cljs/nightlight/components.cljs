@@ -285,7 +285,7 @@
              "Redo"]))
         (when (-> selection e/get-extension e/show-instarepl?)
           (list
-            [ui/raised-button {:disabled false
+            [ui/raised-button {:disabled (not (seq (get-in paths [selection :eval-code])))
                                :on-touch-tap #(c/eval-selection editor)
                                :key :eval}
              "Eval"]
