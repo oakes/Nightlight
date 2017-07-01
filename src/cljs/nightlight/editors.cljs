@@ -48,6 +48,13 @@
       (aset "display" (if show? "list-item" "none")))
   (c/init editor))
 
+(defn get-repl [extension]
+  (cond
+    (#{"clj" "cljc"} extension)
+    (get-in @s/runtime-state [:editors c/repl-path])
+    (= "cljs" extension)
+    (get-in @s/runtime-state [:editors c/cljs-repl-path])))
+
 (defn show-instarepl? [extension]
   (or (and (#{"clj" "cljc"} extension)
            (not (-> @s/runtime-state :options :hosted?)))
@@ -115,7 +122,12 @@
           (reset! scroll-top (.-scrollTop ps))))
       (show [this]
         (when-let [ps (.querySelector elem "#paren-soup")]
-          (set! (.-scrollTop ps) @scroll-top))))))
+          (set! (.-scrollTop ps) @scroll-top)))
+      (eval-selection [this]
+        (when-let [editor (get-repl extension)]
+          (when-let [text (or (ps/selected-text) (ps/focused-text))]
+            (c/eval editor text))))
+      (eval [this code]))))
 
 (defn ps-repl-init [path]
   (let [elem (.createElement js/document "span")
@@ -186,7 +198,12 @@
             (ps/append-text! editor s)
             (reset! text nil)))
         (when-let [ps (.querySelector elem "#paren-soup")]
-          (set! (.-scrollTop ps) @scroll-top))))))
+          (set! (.-scrollTop ps) @scroll-top)))
+      (eval-selection [this])
+      (eval [this code]
+        (when-let [editor @editor-atom]
+          (ps/append-text! editor (str code \newline))
+          (repl/send sender code))))))
 
 (defn cm-init [path content]
   (let [elem (.createElement js/document "span")
@@ -243,7 +260,9 @@
           (reset! scroll-top (-> editor .getScrollInfo .-top))))
       (show [this]
         (when-let [editor @editor-atom]
-          (.scrollTo editor nil @scroll-top))))))
+          (.scrollTo editor nil @scroll-top)))
+      (eval-selection [this])
+      (eval [this code]))))
 
 (defn remove-editor [state path]
   (-> state

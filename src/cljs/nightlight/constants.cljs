@@ -54,5 +54,7 @@
   (init [this])
   (set-theme [this theme])
   (hide [this])
-  (show [this]))
+  (show [this])
+  (eval-selection [this])
+  (eval [this code]))
 

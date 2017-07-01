@@ -283,11 +283,17 @@
                                :key :redo}
              "Redo"]))
         (when (-> selection e/get-extension e/show-instarepl?)
-          [ui/toggle {:label "InstaREPL"
-                      :label-position "right"
-                      :default-toggled (get-in runtime-state [:instarepls selection])
-                      :on-toggle (fn [event value]
-                                   (e/toggle-instarepl editor value))}])])
+          (list
+            [ui/raised-button {:disabled false
+                               :on-touch-tap #(c/eval-selection editor)
+                               :key :eval}
+             "Eval"]
+            [ui/toggle {:label "InstaREPL"
+                        :label-position "right"
+                        :default-toggled (get-in runtime-state [:instarepls selection])
+                        :on-toggle (fn [event value]
+                                     (e/toggle-instarepl editor value))
+                        :key :instarepl}]))])
      [ui/toolbar-group
       {:style {:z-index 100}}
       [ui/raised-button {:background-color "#FF6F00"
