@@ -194,10 +194,7 @@
          [ui/selectable-list
           {:value selection
            :on-change (fn [event value]
-                        (when selection
-                          (e/unselect-node selection))
-                        (swap! s/pref-state assoc :selection value)
-                        (e/select-node value))}]
+                        (e/set-selection value))}]
          nodes)))])
 
 (defn left-sidebar [mui-theme

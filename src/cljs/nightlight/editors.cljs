@@ -131,6 +131,8 @@
             (c/eval editor code))))
       (eval [this code]))))
 
+(declare set-selection)
+
 (defn ps-repl-init [path]
   (let [elem (.createElement js/document "span")
         editor-atom (atom nil)
@@ -204,7 +206,10 @@
       (eval-selection [this])
       (eval [this code]
         (swap! text str code \newline)
-        (repl/send sender code)))))
+        (repl/send sender code)
+        (set-selection path)
+        (when-let [sidebar (.querySelector js/document ".leftsidebar")]
+          (set! (.-scrollTop sidebar) 0))))))
 
 (defn cm-init [path content]
   (let [elem (.createElement js/document "span")
@@ -315,4 +320,10 @@
 (defn unselect-node [path]
   (when-let [old-editor (get-in @s/runtime-state [:paths path :editor])]
     (c/hide old-editor)))
+
+(defn set-selection [new-path]
+  (when-let [old-path (:selection @s/pref-state)]
+    (unselect-node old-path))
+  (swap! s/pref-state assoc :selection new-path)
+  (select-node new-path))
 
