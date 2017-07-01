@@ -82,12 +82,12 @@
                                                             (fn [state]
                                                               (-> state
                                                                   (dissoc :dialog :node)
-                                                                  (e/remove-editor path))))
+                                                                  (update :paths dissoc path))))
                                                           (swap! s/pref-state assoc :selection nil)
                                                           (a/rename-file path @to
                                                             (fn [e]
                                                               (let [new-path (.. e -target getResponseText)]
-                                                                (swap! s/runtime-state e/remove-editor new-path)
+                                                                (swap! s/runtime-state update :paths dissoc new-path)
                                                                 (refresh-tree))))
                                                           (reset! to nil)))
                                         :style {:margin "10px"}}
@@ -115,7 +115,7 @@
                                                               (fn [state]
                                                                 (-> state
                                                                     (dissoc :dialog :node)
-                                                                    (e/remove-editor path))))
+                                                                    (update :paths dissoc path))))
                                                       (swap! s/pref-state assoc :selection nil)
                                                       (a/delete-file path refresh-tree)))
                                     :style {:margin "10px"}}
@@ -219,8 +219,9 @@
                  :on-toggle (fn [event value]
                               (let [theme (if value :light :dark)]
                                 (swap! s/pref-state assoc :theme theme)
-                                (doseq [editor (-> runtime-state :editors vals)]
-                                  (c/set-theme editor theme))))}]]
+                                (doseq [m (-> runtime-state :paths vals)]
+                                  (when-let [editor (:editor m)]
+                                    (c/set-theme editor theme)))))}]]
     [:div {:style {:float "left"
                    :margin-top "5px"
                    :margin-left "20px"}}
@@ -232,9 +233,9 @@
     [:div {:id "tree" :style {:display "none"}}]]])
 
 (defn right-sidebar [mui-theme
-                     {:keys [editors completions] :as runtime-state}
+                     {:keys [paths completions] :as runtime-state}
                      {:keys [selection theme] :as pref-state}]
-  (when-let [editor (get editors selection)]
+  (when-let [editor (get-in paths [selection :editor])]
     (when-let [comps (get completions selection)]
       (when (seq comps)
         [:div {:class "rightsidebar"
@@ -254,14 +255,14 @@
                   (assoc-in comps [0 :style :background-color] bg-color)))))]]))))
 
 (defn toolbar [mui-theme
-               {:keys [update? editors options new-prefs] :as runtime-state}
+               {:keys [update? paths options new-prefs] :as runtime-state}
                {:keys [selection] :as pref-state}]
   [:div {:class "toolbar"}
    [ui/mui-theme-provider
     {:mui-theme mui-theme}
     [ui/toolbar
      {:style {:background-color "transparent"}}
-     (when-let [editor (get editors selection)]
+     (when-let [editor (get-in paths [selection :editor])]
        [ui/toolbar-group
         (if (= selection c/control-panel-path)
           (cp/buttons pref-state new-prefs)

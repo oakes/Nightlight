@@ -51,9 +51,9 @@
 (defn get-repl [extension]
   (cond
     (#{"clj" "cljc"} extension)
-    (get-in @s/runtime-state [:editors c/repl-path])
+    (get-in @s/runtime-state [:paths c/repl-path :editor])
     (= "cljs" extension)
-    (get-in @s/runtime-state [:editors c/cljs-repl-path])))
+    (get-in @s/runtime-state [:paths c/cljs-repl-path :editor])))
 
 (defn show-instarepl? [extension]
   (or (and (#{"clj" "cljc"} extension)
@@ -93,12 +93,12 @@
         (c/update-content this)
         (auto-save this))
       (update-content [this]
-        (swap! s/runtime-state update :current-content assoc path (c/get-content this)))
+        (swap! s/runtime-state update-in [:paths path] assoc :current-content (c/get-content this)))
       (mark-clean [this]
-        (swap! s/runtime-state update :saved-content assoc path (c/get-content this)))
+        (swap! s/runtime-state update-in [:paths path] assoc :saved-content (c/get-content this)))
       (clean? [this]
-        (= (get-in @s/runtime-state [:saved-content path])
-           (get-in @s/runtime-state [:current-content path])))
+        (= (get-in @s/runtime-state [:paths path :saved-content])
+           (get-in @s/runtime-state [:paths path :current-content])))
       (init [this]
         (com/init-completions path extension editor-atom elem)
         (reset! editor-atom
@@ -164,7 +164,7 @@
         (some-> @editor-atom ps/redo)
         (c/update-content this))
       (update-content [this]
-        (swap! s/runtime-state update :current-content assoc path (c/get-content this)))
+        (swap! s/runtime-state update-in [:paths path] assoc :current-content (c/get-content this)))
       (mark-clean [this])
       (clean? [this] true)
       (init [this]
@@ -231,12 +231,12 @@
         (c/update-content this)
         (auto-save this))
       (update-content [this]
-        (swap! s/runtime-state update :current-content assoc path (c/get-content this)))
+        (swap! s/runtime-state update-in [:paths path] assoc :current-content (c/get-content this)))
       (mark-clean [this]
-        (swap! s/runtime-state update :saved-content assoc path (c/get-content this)))
+        (swap! s/runtime-state update-in [:paths path] assoc :saved-content (c/get-content this)))
       (clean? [this]
-        (= (get-in @s/runtime-state [:saved-content path])
-           (get-in @s/runtime-state [:current-content path])))
+        (= (get-in @s/runtime-state [:paths path :saved-content])
+           (get-in @s/runtime-state [:paths path :current-content])))
       (init [this]
         (reset! editor-atom
           (doto
@@ -263,12 +263,6 @@
           (.scrollTo editor nil @scroll-top)))
       (eval-selection [this])
       (eval [this code]))))
-
-(defn remove-editor [state path]
-  (-> state
-      (update :editors dissoc path)
-      (update :saved-content dissoc path)
-      (update :current-content dissoc path)))
 
 (defn create-editor [path content]
   (if (-> path get-extension c/clojure-exts some?)
@@ -297,12 +291,10 @@
       (if (.isSuccess (.-target e))
         (let [editor (->> (.. e -target getResponseText) (create-editor path) (init-editor))
               content (c/get-content editor)]
-          (swap! s/runtime-state
-            (fn [state]
-              (-> state
-                  (assoc-in [:editors path] editor)
-                  (assoc-in [:saved-content path] content)
-                  (assoc-in [:current-content path] content)))))
+          (swap! s/runtime-state assoc-in [:paths path]
+            {:editor editor
+             :saved-content content
+             :current-content content}))
         (clear-editor)))
     "POST"
     path))
@@ -310,16 +302,16 @@
 (defn init-and-add-editor [path editor]
   (->> editor
        (init-editor)
-       (swap! s/runtime-state update :editors assoc path)))
+       (swap! s/runtime-state update-in [:paths path] assoc :editor)))
 
 (defn select-node [path]
-  (if-let [editor (get-in @s/runtime-state [:editors path])]
+  (if-let [editor (get-in @s/runtime-state [:paths path :editor])]
     (show-editor editor)
     (if path
       (download-file path)
       (clear-editor))))
 
 (defn unselect-node [path]
-  (when-let [old-editor (get-in @s/runtime-state [:editors path])]
+  (when-let [old-editor (get-in @s/runtime-state [:paths path :editor])]
     (c/hide old-editor)))
 
