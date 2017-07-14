@@ -2,7 +2,8 @@
   (:require [cljs.reader :refer [read-string]]
             [nightlight.constants :as c]
             [nightlight.state :as s]
-            [nightlight.repl-server :as rs])
+            [nightlight.repl-server :as rs]
+            [goog.object])
   (:import goog.net.XhrIo))
 
 (defn init-cljs [url]
@@ -15,8 +16,8 @@
     (set! (.-onmessage js/window)
       (fn [e]
         (let [data (.-data e)
-              callback (get-in @s/runtime-state [:callbacks (aget data "type")])]
-          (callback (aget data "results") (aget data "ns")))))))
+              callback (get-in @s/runtime-state [:callbacks (goog.object/get data "type")])]
+          (callback (goog.object/get data "results") (goog.object/get data "ns")))))))
 
 (defn scroll-to-bottom [elem]
   (when-let [ps (.querySelector elem "#paren-soup")]

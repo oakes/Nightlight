@@ -10,7 +10,8 @@
             [reagent.core :as r]
             [cljs-react-material-ui.core :refer [get-mui-theme color]]
             [cljs-react-material-ui.reagent :as ui]
-            [cljs-react-material-ui.icons :as icons]))
+            [cljs-react-material-ui.icons :as icons]
+            [goog.object]))
 
 (defn refresh-tree []
   (a/download-tree
@@ -337,9 +338,9 @@
         paren-soup-css (if (= :light theme) "paren-soup-light.css" "paren-soup-dark.css")
         text-color (if (= :light theme) (color :black) (color :white))
         mui-theme (if (= :light theme)
-                    (get-mui-theme (aget js/MaterialUIStyles "LightRawTheme"))
+                    (get-mui-theme (goog.object/get js/MaterialUIStyles "LightRawTheme"))
                     (get-mui-theme
-                      (doto (aget js/MaterialUIStyles "DarkRawTheme")
+                      (doto (goog.object/get js/MaterialUIStyles "DarkRawTheme")
                         (aset "palette" "accent1Color" "darkgray")
                         (aset "palette" "accent2Color" "darkgray")
                         (aset "palette" "accent3Color" "darkgray"))))]

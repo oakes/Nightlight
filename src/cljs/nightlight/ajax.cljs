@@ -1,7 +1,8 @@
 (ns nightlight.ajax
   (:require [cljs.reader :refer [read-string]]
             [nightlight.state :as s]
-            [nightlight.constants :as c])
+            [nightlight.constants :as c]
+            [goog.object])
   (:import goog.net.XhrIo))
 
 (defn check-version []
@@ -11,7 +12,7 @@
       (when (and (.isSuccess (.-target e))
                  (some->> (.. e -target getResponseText)
                           (.parse js/JSON)
-                          (#(aget % "latest_version"))
+                          (#(goog.object/get % "latest_version"))
                           (not= c/version)))
         (swap! s/runtime-state assoc :update? true)))
     "GET"))
