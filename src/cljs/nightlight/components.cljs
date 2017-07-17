@@ -339,12 +339,12 @@
         text-color (if (= :light theme) (color :black) (color :white))
         mui-theme (if (= :light theme)
                     (get-mui-theme (gobj/get js/MaterialUIStyles "LightRawTheme"))
-                    (let [theme (gobj/get js/MaterialUIStyles "DarkRawTheme")]
-                      (doto (gobj/get theme "palette")
+                    (let [dark-raw-theme (gobj/get js/MaterialUIStyles "DarkRawTheme")]
+                      (doto (gobj/get dark-raw-theme "palette")
                         (gobj/set "accent1Color" "darkgray")
                         (gobj/set "accent2Color" "darkgray")
                         (gobj/set "accent3Color" "darkgray"))
-                      (get-mui-theme theme)))]
+                      (get-mui-theme dark-raw-theme)))]
     [ui/mui-theme-provider
      {:mui-theme mui-theme}
      [:span
