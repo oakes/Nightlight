@@ -3,7 +3,7 @@
             [nightlight.constants :as c]
             [nightlight.state :as s]
             [nightlight.repl-server :as rs]
-            [goog.object])
+            [goog.object :as gobj])
   (:import goog.net.XhrIo))
 
 (defn init-cljs [url]
@@ -16,8 +16,8 @@
     (set! (.-onmessage js/window)
       (fn [e]
         (let [data (.-data e)
-              callback (get-in @s/runtime-state [:callbacks (goog.object/get data "type")])]
-          (callback (goog.object/get data "results") (goog.object/get data "ns")))))))
+              callback (get-in @s/runtime-state [:callbacks (gobj/get data "type")])]
+          (callback (gobj/get data "results") (gobj/get data "ns")))))))
 
 (defn scroll-to-bottom [elem]
   (when-let [ps (.querySelector elem "#paren-soup")]

@@ -66,7 +66,10 @@
       (mark-clean [this])
       (clean? [this] true)
       (init [this]
-        (-> (.querySelector elem "#content") .-style (aset "whiteSpace" "pre-wrap"))
+        (-> (.querySelector elem "#content")
+            .-style
+            .-whiteSpace
+            (set! "pre-wrap"))
         (doto
           (reset! editor-atom
             (ps/init (.querySelector elem "#paren-soup")

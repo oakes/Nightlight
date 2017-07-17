@@ -2,7 +2,7 @@
   (:require [cljs.reader :refer [read-string]]
             [nightlight.state :as s]
             [nightlight.constants :as c]
-            [goog.object])
+            [goog.object :as gobj])
   (:import goog.net.XhrIo))
 
 (defn check-version []
@@ -12,7 +12,7 @@
       (when (and (.isSuccess (.-target e))
                  (some->> (.. e -target getResponseText)
                           (.parse js/JSON)
-                          (#(goog.object/get % "latest_version"))
+                          (#(gobj/get % "latest_version"))
                           (not= c/version)))
         (swap! s/runtime-state assoc :update? true)))
     "GET"))

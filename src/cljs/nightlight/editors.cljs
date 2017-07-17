@@ -45,7 +45,8 @@
   (swap! s/runtime-state update :instarepls assoc (c/get-path editor) show?)
   (-> (.querySelector (c/get-element editor) ".instarepl")
       .-style
-      (aset "display" (if show? "list-item" "none")))
+      .-display
+      (set! (if show? "list-item" "none")))
   (c/init editor))
 
 (defn get-repl [extension]
@@ -71,7 +72,10 @@
       (format c/ps-html (if (-> @s/runtime-state :options :read-only?)
                            "false" "true")))
     (-> elem (.querySelector "#content") (gdom/setTextContent content))
-    (-> elem (.querySelector "#instarepl") .-style (aset "display" "none"))
+    (-> elem (.querySelector "#instarepl")
+        .-style
+        .-display
+        (set! "none"))
     (reify c/Editor
       (get-path [this] path)
       (get-extension [this] extension)
@@ -173,7 +177,10 @@
       (clean? [this] true)
       (init [this]
         (com/init-completions path extension editor-atom elem)
-        (-> (.querySelector elem "#content") .-style (aset "whiteSpace" "pre-wrap"))
+        (-> (.querySelector elem "#content")
+            .-style
+            .-whiteSpace
+            (set! "pre-wrap"))
         (reset! editor-atom
           (ps/init (.querySelector elem "#paren-soup")
             (clj->js {:before-change-callback
