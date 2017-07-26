@@ -195,7 +195,8 @@
                       :console-callback
                       (fn [text]
                         (repl/send sender text))
-                      :compiler-fn (fn [_ _])})))
+                      :compiler-fn (fn [_ _])
+                      :append-limit 10000})))
         (repl/init sender)
         @editor-atom)
       (set-theme [this theme]
