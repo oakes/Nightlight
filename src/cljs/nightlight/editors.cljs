@@ -1,5 +1,6 @@
 (ns nightlight.editors
   (:require [paren-soup.core :as ps]
+            [mistakes-were-made.core :as mwm]
             [clojure.string :as str]
             [nightlight.state :as s]
             [nightlight.completions :as com]
@@ -67,7 +68,8 @@
         editor-atom (atom nil)
         extension (get-extension path)
         compiler-fn (if (= extension "cljs") repl/compile-cljs repl/compile-clj)
-        scroll-top (atom 0)]
+        scroll-top (atom 0)
+        edit-history (mwm/create-edit-history)]
     (set! (.-innerHTML elem)
       (format c/ps-html (if (-> @s/runtime-state :options :read-only?)
                            "false" "true")))
@@ -120,7 +122,8 @@
                             (com/refresh-completions path extension))
                           (swap! s/runtime-state update-in [:paths path] assoc :eval-code
                             (or (ps/selected-text) (ps/focused-text)))))
-                      :compiler-fn compiler-fn}))))
+                      :compiler-fn compiler-fn
+                      :edit-history edit-history}))))
       (set-theme [this theme]
         (swap! s/runtime-state assoc :paren-soup-css (c/paren-soup-themes theme)))
       (hide [this]
