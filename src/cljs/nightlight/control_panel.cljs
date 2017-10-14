@@ -56,6 +56,8 @@
         (.-textContent (.querySelector elem "#content")))
       (get-object [this]
         @editor-atom)
+      (get-focused-text [this])
+      (get-completions [this])
       (can-undo? [this]
         false)
       (can-redo? [this]
