@@ -83,12 +83,12 @@
                                                             (fn [state]
                                                               (-> state
                                                                   (dissoc :dialog :node)
-                                                                  (update :paths dissoc path))))
+                                                                  (update :editors dissoc path))))
                                                           (swap! s/pref-state assoc :selection nil)
                                                           (a/rename-file path @to
                                                             (fn [e]
                                                               (let [new-path (.. e -target getResponseText)]
-                                                                (swap! s/runtime-state update :paths dissoc new-path)
+                                                                (swap! s/runtime-state update :editors dissoc new-path)
                                                                 (refresh-tree))))
                                                           (reset! to nil)))
                                         :style {:margin "10px"}}
@@ -116,7 +116,7 @@
                                                               (fn [state]
                                                                 (-> state
                                                                     (dissoc :dialog :node)
-                                                                    (update :paths dissoc path))))
+                                                                    (update :editors dissoc path))))
                                                       (swap! s/pref-state assoc :selection nil)
                                                       (a/delete-file path refresh-tree)))
                                     :style {:margin "10px"}}
@@ -199,7 +199,7 @@
          nodes)))])
 
 (defn left-sidebar [mui-theme
-                    {:keys [nodes options] :as runtime-state}
+                    {:keys [nodes editors options] :as runtime-state}
                     {:keys [auto-save? theme] :as pref-state}]
   [:span
    [:div {:class "settings" :style {:padding-left "10px"}}
@@ -217,9 +217,8 @@
                  :on-toggle (fn [event value]
                               (let [theme (if value :light :dark)]
                                 (swap! s/pref-state assoc :theme theme)
-                                (doseq [m (-> runtime-state :paths vals)]
-                                  (when-let [editor (:editor m)]
-                                    (c/set-theme editor theme)))))}]]
+                                (doseq [editor (vals editors)]
+                                  (c/set-theme editor theme))))}]]
     [:div {:style {:float "left"
                    :margin-top "5px"
                    :margin-left "20px"}}
@@ -231,10 +230,10 @@
     [:div {:id "tree" :style {:display "none"}}]]])
 
 (defn right-sidebar [mui-theme
-                     {:keys [paths completions] :as runtime-state}
+                     {:keys [editors] :as runtime-state}
                      {:keys [selection theme] :as pref-state}]
-  (when-let [editor (get-in paths [selection :editor])]
-    (when-let [comps (get completions selection)]
+  (when-let [editor (get editors selection)]
+    (when-let [comps (some-> (c/get-completions editor) deref)]
       (when (seq comps)
         [:div {:class "rightsidebar"
                :on-mouse-down #(.preventDefault %)
@@ -247,20 +246,20 @@
                {:on-change (fn [event value]
                              (when-let [info (psd/get-completion-info)]
                                (select-completion (c/get-object editor) info value)
-                               (refresh-completions selection (c/get-extension editor))))}]
+                               (refresh-completions (c/get-extension editor) (c/get-completions editor))))}]
               (let [bg-color (if (= :light theme) "rgba(0, 0, 0, 0.2)" "rgba(255, 255, 255, 0.2)")]
                 (map (partial node->element false)
                   (assoc-in comps [0 :style :background-color] bg-color)))))]]))))
 
 (defn toolbar [mui-theme
-               {:keys [update? paths options new-prefs] :as runtime-state}
+               {:keys [update? editors options new-prefs] :as runtime-state}
                {:keys [selection] :as pref-state}]
   [:div {:class "toolbar"}
    [ui/mui-theme-provider
     {:mui-theme mui-theme}
     [ui/toolbar
      {:style {:background-color "transparent"}}
-     (when-let [editor (get-in paths [selection :editor])]
+     (when-let [editor (get editors selection)]
        [ui/toolbar-group
         (if (= selection c/control-panel-path)
           (cp/buttons pref-state new-prefs)
@@ -283,7 +282,7 @@
              "Redo"]))
         (when (-> selection e/get-extension e/show-instarepl?)
           (list
-            [ui/raised-button {:disabled (not (seq (get-in paths [selection :eval-code])))
+            [ui/raised-button {:disabled (not (seq (c/get-focused-text editor)))
                                :on-touch-tap #(c/eval-selection editor)
                                :key :eval}
              "Eval"]

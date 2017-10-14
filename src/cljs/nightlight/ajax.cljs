@@ -34,12 +34,11 @@
       (download-tree cb))
     "GET"))
 
-(defn download-completions [path info]
+(defn download-completions [info completions]
   (.send XhrIo
     "completions"
     (fn [e]
-      (swap! s/runtime-state update :completions assoc path
-        (read-string (.. e -target getResponseText))))
+      (reset! completions (read-string (.. e -target getResponseText))))
     "POST"
     (pr-str info)))
 

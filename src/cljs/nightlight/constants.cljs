@@ -44,6 +44,8 @@
   (get-element [this])
   (get-content [this])
   (get-object [this])
+  (get-focused-text [this])
+  (get-completions [this])
   (can-undo? [this])
   (can-redo? [this])
   (undo [this])

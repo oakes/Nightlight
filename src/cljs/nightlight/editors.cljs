@@ -53,9 +53,9 @@
 (defn get-repl [extension]
   (cond
     (#{"clj" "cljc"} extension)
-    (get-in @s/runtime-state [:paths c/repl-path :editor])
+    (get-in @s/runtime-state [:editors c/repl-path])
     (= "cljs" extension)
-    (get-in @s/runtime-state [:paths c/cljs-repl-path :editor])))
+    (get-in @s/runtime-state [:editors c/cljs-repl-path])))
 
 (defn show-instarepl? [extension]
   (or (and (#{"clj" "cljc"} extension)
@@ -69,7 +69,10 @@
         extension (get-extension path)
         compiler-fn (if (= extension "cljs") repl/compile-cljs repl/compile-clj)
         scroll-top (atom 0)
-        edit-history (mwm/create-edit-history)]
+        edit-history (mwm/create-edit-history)
+        content-state (r/atom {:saved content :current content})
+        focused-text (r/atom "")
+        completions (r/atom nil)]
     (set! (.-innerHTML elem)
       (format c/ps-html (if (-> @s/runtime-state :options :read-only?)
                            "false" "true")))
@@ -90,6 +93,8 @@
         (some-> @editor-atom ps/can-undo?))
       (can-redo? [this]
         (some-> @editor-atom ps/can-redo?))
+      (get-focused-text [this] @focused-text)
+      (get-completions [this] completions)
       (undo [this]
         (some-> @editor-atom ps/undo)
         (c/update-content this)
@@ -99,14 +104,13 @@
         (c/update-content this)
         (auto-save this))
       (update-content [this]
-        (swap! s/runtime-state update-in [:paths path] assoc :current-content (c/get-content this)))
+        (swap! content-state assoc :current (c/get-content this)))
       (mark-clean [this]
-        (swap! s/runtime-state update-in [:paths path] assoc :saved-content (c/get-content this)))
+        (swap! content-state assoc :saved (c/get-content this)))
       (clean? [this]
-        (= (get-in @s/runtime-state [:paths path :saved-content])
-           (get-in @s/runtime-state [:paths path :current-content])))
+        (= (:saved @content-state) (:current @content-state)))
       (init [this]
-        (com/init-completions path extension editor-atom elem)
+        (com/init-completions extension editor-atom elem completions)
         (reset! editor-atom
           (ps/init (.querySelector elem "#paren-soup")
             (clj->js {:before-change-callback
@@ -119,9 +123,8 @@
                             (c/update-content this)
                             (auto-save this))
                           (when (not= (.-type event) "keydown")
-                            (com/refresh-completions path extension))
-                          (swap! s/runtime-state update-in [:paths path] assoc :eval-code
-                            (or (ps/selected-text) (ps/focused-text)))))
+                            (com/refresh-completions extension completions))
+                          (reset! focused-text (or (ps/selected-text) (ps/focused-text)))))
                       :compiler-fn compiler-fn
                       :edit-history edit-history}))))
       (set-theme [this theme]
@@ -134,7 +137,7 @@
           (set! (.-scrollTop ps) @scroll-top)))
       (eval-selection [this]
         (when-let [editor (get-repl extension)]
-          (when-let [code (get-in @s/runtime-state [:paths path :eval-code])]
+          (when-let [code @focused-text]
             (c/eval editor code))))
       (eval [this code]))))
 
@@ -146,7 +149,8 @@
         text (atom nil)
         sender (repl/create-repl-sender path text)
         scroll-top (atom 0)
-        extension (if (= path c/repl-path) "clj" "cljs")]
+        extension (if (= path c/repl-path) "clj" "cljs")
+        completions (r/atom nil)]
     (add-watch text :append
       (fn [_ _ _ new-text]
         (when new-text
@@ -164,6 +168,8 @@
         (.-textContent (.querySelector elem "#content")))
       (get-object [this]
         @editor-atom)
+      (get-focused-text [this])
+      (get-completions [this])
       (can-undo? [this]
         (some-> @editor-atom ps/can-undo?))
       (can-redo? [this]
@@ -174,12 +180,11 @@
       (redo [this]
         (some-> @editor-atom ps/redo)
         (c/update-content this))
-      (update-content [this]
-        (swap! s/runtime-state update-in [:paths path] assoc :current-content (c/get-content this)))
+      (update-content [this])
       (mark-clean [this])
       (clean? [this] true)
       (init [this]
-        (com/init-completions path extension editor-atom elem)
+        (com/init-completions extension editor-atom elem completions)
         (-> (.querySelector elem "#content")
             .-style
             .-whiteSpace
@@ -193,7 +198,7 @@
                       (fn [event]
                         (repl/scroll-to-bottom elem)
                         (when (not= (.-type event) "keydown")
-                          (com/refresh-completions path extension)
+                          (com/refresh-completions extension completions)
                           (c/update-content this)))
                       :console-callback
                       (fn [text]
@@ -226,7 +231,8 @@
   (let [elem (.createElement js/document "span")
         editor-atom (atom nil)
         extension (get-extension path)
-        scroll-top (atom 0)]
+        scroll-top (atom 0)
+        content-state (r/atom {:saved content :current content})]
     (reify c/Editor
       (get-path [this] path)
       (get-extension [this] extension)
@@ -235,6 +241,8 @@
         (some-> @editor-atom .getValue))
       (get-object [this]
         @editor-atom)
+      (get-focused-text [this])
+      (get-completions [this])
       (can-undo? [this]
         (some-> @editor-atom .historySize .-undo (> 0)))
       (can-redo? [this]
@@ -248,12 +256,11 @@
         (c/update-content this)
         (auto-save this))
       (update-content [this]
-        (swap! s/runtime-state update-in [:paths path] assoc :current-content (c/get-content this)))
+        (swap! content-state assoc :current (c/get-content this)))
       (mark-clean [this]
-        (swap! s/runtime-state update-in [:paths path] assoc :saved-content (c/get-content this)))
+        (swap! content-state assoc :saved (c/get-content this)))
       (clean? [this]
-        (= (get-in @s/runtime-state [:paths path :saved-content])
-           (get-in @s/runtime-state [:paths path :current-content])))
+        (= (:saved @content-state) (:current @content-state)))
       (init [this]
         (reset! editor-atom
           (doto
@@ -308,10 +315,7 @@
       (if (.isSuccess (.-target e))
         (let [editor (->> (.. e -target getResponseText) (create-editor path) (init-editor))
               content (c/get-content editor)]
-          (swap! s/runtime-state assoc-in [:paths path]
-            {:editor editor
-             :saved-content content
-             :current-content content}))
+          (swap! s/runtime-state assoc-in [:editors path] editor))
         (clear-editor)))
     "POST"
     path))
@@ -319,17 +323,17 @@
 (defn init-and-add-editor [path editor]
   (->> editor
        (init-editor)
-       (swap! s/runtime-state update-in [:paths path] assoc :editor)))
+       (swap! s/runtime-state assoc-in [:editors path])))
 
 (defn select-node [path]
-  (if-let [editor (get-in @s/runtime-state [:paths path :editor])]
+  (if-let [editor (get-in @s/runtime-state [:editors path])]
     (show-editor editor)
     (if path
       (download-file path)
       (clear-editor))))
 
 (defn unselect-node [path]
-  (when-let [old-editor (get-in @s/runtime-state [:paths path :editor])]
+  (when-let [old-editor (get-in @s/runtime-state [:editors path])]
     (c/hide old-editor)))
 
 (defn set-selection [new-path]

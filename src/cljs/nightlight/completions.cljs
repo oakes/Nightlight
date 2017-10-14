@@ -17,11 +17,11 @@
         (psd/set-cursor-position! top-level-elem [pos pos]))
       (ps/refresh-after-cut-paste! editor))))
 
-(defn refresh-completions [path extension]
+(defn refresh-completions [extension completions]
   (when (c/completion-exts extension)
     (if-let [info (psd/get-completion-info)]
-      (a/download-completions path info)
-      (swap! s/runtime-state update :completions assoc path []))))
+      (a/download-completions info completions)
+      (reset! completions nil))))
 
 (defn completion-shortcut? [e]
   (and (= 9 (.-keyCode e))
@@ -33,13 +33,13 @@
                count
                (= 1))))
 
-(defn init-completions [path extension editor-atom elem]
+(defn init-completions [extension editor-atom elem completions]
   (when (c/completion-exts extension)
     (events/listen elem "keyup"
       (fn [e]
         (when (completion-shortcut? e)
-          (when-let [comps (get-in @s/runtime-state [:completions path])]
+          (when-let [comps @completions]
             (when-let [info (psd/get-completion-info)]
               (select-completion @editor-atom info (:value (first comps)))
-              (refresh-completions path extension))))))))
+              (refresh-completions extension completions))))))))
 
