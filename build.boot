@@ -4,7 +4,7 @@
                   [adzerk/boot-reload "0.4.12" :scope "test"]
                   [org.clojure/test.check "0.9.0" :scope "test"]
                   ; cljs deps
-                  [org.clojure/clojurescript "1.9.908" :scope "test"]
+                  [org.clojure/clojurescript "1.9.946" :scope "test"]
                   [paren-soup "2.9.0" :scope "test"]
                   [mistakes-were-made "1.7.3" :scope "test"]
                   [cljsjs/codemirror "5.24.0-1" :scope "test"]
