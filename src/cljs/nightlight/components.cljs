@@ -307,30 +307,8 @@
                          :on-touch-tap #(.open js/window c/page-url)}
        "Update"]]]]])
 
-(defn cljs-repl-overlay [url]
-  [:span
-   [:span {:class "overlay"
-           :style {:background-color "black"
-                   :opacity 0.2
-                   :z-index 100}}]
-   [:span {:class "overlay"
-           :style {:z-index 100}}
-    [ui/raised-button {:background-color "#FF6F00"
-                       :on-touch-tap (fn []
-                                       (repl/init-cljs url)
-                                       (swap! s/runtime-state assoc :enable-cljs-repl? true))
-                       :style {:margin "auto"
-                               :position "absolute"
-                               :top 0
-                               :left 0
-                               :right 0
-                               :bottom 0
-                               :height 40
-                               :width 80}}
-     "Start"]]])
-
 (defn app []
-  (let [{:keys [title nodes new-prefs reset-count options enable-cljs-repl? connection-lost?]
+  (let [{:keys [title nodes new-prefs reset-count options connection-lost?]
          :as runtime-state} @s/runtime-state
         {:keys [theme selection]
          :as pref-state} @s/pref-state
@@ -358,9 +336,6 @@
         c/control-panel-path
         (when (:hosted? options)
           (cp/panel mui-theme reset-count new-prefs))
-        c/cljs-repl-path
-        (when-not enable-cljs-repl?
-          [cljs-repl-overlay (:url options)])
         nil)
       [right-sidebar mui-theme runtime-state pref-state]
       [rename-dialog]
@@ -370,6 +345,6 @@
       [unsupported-browser-dialog]
       [:iframe {:id "cljsapp"
                 :class "lower-half"
-                :style {:background-color (if enable-cljs-repl? "white" "none")
+                :style {:background-color "white"
                         :display (if (= selection c/cljs-repl-path) "block" "none")}}]]]))
 
