@@ -1,7 +1,7 @@
 (set-env!
   :source-paths #{"src/clj" "src/cljs"}
-  :dependencies '[[adzerk/boot-cljs "1.7.228-2" :scope "test"]
-                  [adzerk/boot-reload "0.4.12" :scope "test"]
+  :dependencies '[[adzerk/boot-cljs "2.1.4" :scope "test"]
+                  [adzerk/boot-reload "0.5.2" :scope "test"]
                   [org.clojure/test.check "0.9.0" :scope "test"]
                   ; cljs deps
                   [org.clojure/clojurescript "1.9.946" :scope "test"]
@@ -52,7 +52,7 @@
   (comp
     (watch)
     (reload :asset-path "nightlight-public")
-    (cljs :source-map true :optimizations :none)
+    (cljs :source-map true :optimizations :none :compiler-options {:asset-path "main.out"})
     (with-pass-thru _
       (instrument)
       (dev-start {:port 4000 :url "http://localhost:4000"}))
