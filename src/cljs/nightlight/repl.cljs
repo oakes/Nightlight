@@ -6,11 +6,6 @@
             [goog.object :as gobj])
   (:import goog.net.XhrIo))
 
-(defn init-cljs [url]
-  (when (= js/window.self js/window.top)
-    (let [iframe (.querySelector js/document "#cljsapp")]
-      (set! (.-src iframe) url))))
-
 (defn init-cljs-client []
   (when (= js/window.self js/window.top)
     (set! (.-onmessage js/window)

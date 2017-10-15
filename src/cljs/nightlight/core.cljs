@@ -23,9 +23,8 @@
   (when (not (:hosted? options))
     (e/init-and-add-editor c/repl-path (e/ps-repl-init c/repl-path))
     (a/check-version))
-  (when-let [url (:url options)]
-    (e/init-and-add-editor c/cljs-repl-path (e/ps-repl-init c/cljs-repl-path))
-    (repl/init-cljs url))
+  (when (:url options)
+    (e/init-and-add-editor c/cljs-repl-path (e/ps-repl-init c/cljs-repl-path)))
   (swap! s/runtime-state assoc
     :options options
     :title primary-text

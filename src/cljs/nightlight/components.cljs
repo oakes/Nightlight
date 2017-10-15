@@ -346,5 +346,7 @@
       [:iframe {:id "cljsapp"
                 :class "lower-half"
                 :style {:background-color "white"
-                        :display (if (= selection c/cljs-repl-path) "block" "none")}}]]]))
+                        :display (if (= selection c/cljs-repl-path) "block" "none")}
+                :src (when (= js/window.self js/window.top)
+                       (:url options))}]]]))
 
