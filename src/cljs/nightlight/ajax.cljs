@@ -12,7 +12,7 @@
       (when (and (.isSuccess (.-target e))
                  (some->> (.. e -target getResponseText)
                           (.parse js/JSON)
-                          (#(gobj/get % "latest_version"))
+                          (#(gobj/get % "latest_release"))
                           (not= c/version)))
         (swap! s/runtime-state assoc :update? true)))
     "GET"))
