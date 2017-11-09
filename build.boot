@@ -12,8 +12,9 @@
                   [cljs-react-material-ui "0.2.34" :scope "test"]
                   ; clj deps
                   [org.clojure/clojure "1.8.0" :scope "provided"]
-                  [ring "1.5.1"]
+                  [ring "1.6.1"]
                   [ring-basic-authentication "1.0.5"]
+                  [hawk "0.2.11"]
                   [http-kit "2.2.0"]
                   [javax.xml.bind/jaxb-api "2.3.0"] ; necessary for Java 9 compatibility
                   [compliment "0.3.1"]
