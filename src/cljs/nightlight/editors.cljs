@@ -8,6 +8,7 @@
             [nightlight.constants :as c]
             [nightlight.control-panel :as cp]
             [nightlight.ajax :as a]
+            [nightlight.watch :as watch]
             [goog.functions :refer [debounce]]
             [reagent.core :as r]
             [cljsjs.codemirror]
@@ -115,16 +116,17 @@
           (ps/init (.querySelector elem "#paren-soup")
             (clj->js {:before-change-callback
                       (fn [event]
-                        (com/completion-shortcut? event))
+                        (or (com/completion-shortcut? event)
+                            (-> @s/runtime-state :options :read-only?)
+                            (@watch/modified-files path)))
                       :change-callback
                       (fn [event]
-                        (when-not (-> @s/runtime-state :options :read-only?)
-                          (when (= (.-type event) "keyup")
-                            (c/update-content this)
-                            (auto-save this))
-                          (when (not= (.-type event) "keydown")
-                            (com/refresh-completions extension completions))
-                          (reset! focused-text (or (ps/selected-text) (ps/focused-text)))))
+                        (when (= (.-type event) "keyup")
+                          (c/update-content this)
+                          (auto-save this))
+                        (when (not= (.-type event) "keydown")
+                          (com/refresh-completions extension completions))
+                        (reset! focused-text (or (ps/selected-text) (ps/focused-text))))
                       :compiler-fn compiler-fn
                       :edit-history edit-history}))))
       (set-theme [this theme]
@@ -269,10 +271,12 @@
               (clj->js {:value content
                         :lineNumbers true
                         :theme (:dark c/codemirror-themes)
-                        :mode (c/extension->mode extension)
-                        :readOnly (if (-> @s/runtime-state :options :read-only?)
-                                    "nocursor"
-                                    false)}))
+                        :mode (c/extension->mode extension)}))
+            (.on "beforeChange"
+              (fn [editor-object change]
+                (when (or (-> @s/runtime-state :options :read-only?)
+                          (@watch/modified-files path))
+                  (.cancel change))))
             (.on "change"
               (fn [editor-object change]
                 (c/update-content this)
