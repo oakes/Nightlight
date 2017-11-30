@@ -191,13 +191,12 @@
                     (sort-by :primary-text)
                     (map (partial node->element true))
                     (concat header-nodes))]
-     (vec
-       (concat
-         [ui/selectable-list
-          {:value selection
-           :on-change (fn [event value]
-                        (e/set-selection value))}]
-         nodes)))])
+     (into
+       [ui/selectable-list
+        {:value selection
+         :on-change (fn [event value]
+                      (e/set-selection value))}]
+       nodes))])
 
 (defn left-sidebar [mui-theme
                     {:keys [nodes editors options] :as runtime-state}
@@ -238,19 +237,20 @@
       (when (seq comps)
         [:div {:class "rightsidebar"
                :on-mouse-down #(.preventDefault %)
-               :style {:background-color (if (= :light theme) "#f7f7f7" "#272b30")}}
+               :style {:background-color (if (= :light theme)
+                                           "rgba(247, 247, 247, 0.7)"
+                                           "rgba(39, 43, 48, 0.7)")}}
          [ui/mui-theme-provider
           {:mui-theme mui-theme}
-          (vec
-            (concat
-              [ui/selectable-list
-               {:on-change (fn [event value]
-                             (when-let [info (psd/get-completion-info)]
-                               (select-completion (c/get-object editor) info value)
-                               (refresh-completions (c/get-extension editor) (c/get-completions editor))))}]
-              (let [bg-color (if (= :light theme) "rgba(0, 0, 0, 0.2)" "rgba(255, 255, 255, 0.2)")]
-                (map (partial node->element false)
-                  (assoc-in comps [0 :style :background-color] bg-color)))))]]))))
+          (into
+            [ui/selectable-list
+             {:on-change (fn [event value]
+                           (when-let [info (psd/get-completion-info)]
+                             (select-completion (c/get-object editor) info value)
+                             (refresh-completions (c/get-extension editor) (c/get-completions editor))))}]
+            (let [bg-color (if (= :light theme) "rgba(0, 0, 0, 0.2)" "rgba(255, 255, 255, 0.2)")]
+              (map (partial node->element false)
+                (assoc-in comps [0 :style :background-color] bg-color))))]]))))
 
 (defn toolbar [mui-theme
                {:keys [update? editors options new-prefs] :as runtime-state}
