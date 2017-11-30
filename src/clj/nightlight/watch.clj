@@ -8,13 +8,14 @@
 (defonce file-content (atom {}))
 
 (defonce watcher (hawk/watch! [{:paths [(.getCanonicalPath (io/file "."))]
-                                :handler (fn [ctx {:keys [file]}]
-                                           (let [path (.getCanonicalPath file)]
-                                             (when (and (.isFile file)
-                                                        (not= (@file-content path)
-                                                              (slurp file)))
-                                               (doseq [channel @channels]
-                                                 (send! channel path)))))}]))
+                                :handler (fn [ctx {:keys [kind file]}]
+                                           (when (= kind :modify)
+                                             (let [path (.getCanonicalPath file)]
+                                               (when (and (.isFile file)
+                                                          (not= (@file-content path)
+                                                                (slurp file)))
+                                                 (doseq [channel @channels]
+                                                   (send! channel path))))))}]))
 
 (defn watch-request [request]
   (with-channel request channel
