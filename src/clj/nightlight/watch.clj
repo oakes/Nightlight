@@ -39,7 +39,8 @@
                                            (when (str/ends-with? (.getName file) ".cljs")
                                              (try
                                                (swap! cljs-info #(dyn/read-cljs-file % file))
-                                               (catch Exception _))))}]))
+                                               (catch Exception _)))
+                                           ctx)}]))
 
 (defn watch-request [request]
   (with-channel request channel
