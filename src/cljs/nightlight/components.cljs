@@ -317,10 +317,10 @@
                      :z-index 100}}]
      [:span {:class "overlay"
              :style {:z-index 100}}
-      [:p {:style {:color "white"
-                   :margin "auto"
-                   :padding-top 50
-                   :width 500}}
+      [:div {:style {:color "white"
+                     :margin "auto"
+                     :padding-top 50
+                     :width 500}}
        "This file was modified externally. You can either refresh your browser or ignore the change and continue editing."
        [:br][:br]
        [ui/raised-button {:background-color "#FF6F00"

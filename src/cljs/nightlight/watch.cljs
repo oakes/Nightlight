@@ -2,7 +2,7 @@
   (:require [nightlight.state :as s]
             [reagent.core :as r]))
 
-(def modified-files (r/atom #{}))
+(defonce modified-files (r/atom #{}))
 
 (defn init-watcher! []
   (let [protocol (if (= (.-protocol js/location) "https:") "wss:" "ws:")

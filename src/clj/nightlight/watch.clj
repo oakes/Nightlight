@@ -29,17 +29,17 @@
 
 (defonce watcher (hawk/watch! [{:paths [(.getCanonicalPath (io/file "."))]
                                 :handler (fn [ctx {:keys [kind file]}]
-                                           (when (= kind :modify)
+                                           (when (#{:create :modify} kind)
                                              (let [path (.getCanonicalPath file)]
                                                (when (and (.isFile file)
                                                           (not= (@file-content path)
                                                                 (slurp file)))
                                                  (doseq [channel @channels]
-                                                   (send! channel path)))))
-                                           (when (str/ends-with? (.getName file) ".cljs")
-                                             (try
-                                               (swap! cljs-info #(dyn/read-cljs-file % file))
-                                               (catch Exception _)))
+                                                   (send! channel path))))
+                                             (when (str/ends-with? (.getName file) ".cljs")
+                                               (try
+                                                 (swap! cljs-info #(dyn/read-cljs-file % file))
+                                                 (catch Exception _))))
                                            ctx)}]))
 
 (defn watch-request [request]
