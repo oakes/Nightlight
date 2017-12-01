@@ -5,7 +5,7 @@
                   [org.clojure/test.check "0.9.0" :scope "test"]
                   ; cljs deps
                   [org.clojure/clojurescript "1.9.946" :scope "test"]
-                  [paren-soup "2.9.2" :scope "test"]
+                  [paren-soup "2.9.3" :scope "test"]
                   [mistakes-were-made "1.7.3" :scope "test"]
                   [cljsjs/codemirror "5.24.0-1" :scope "test"]
                   [reagent "0.7.0" :exclusions [cljsjs/react cljsjs/react-dom] :scope "test"]
@@ -18,7 +18,8 @@
                   [http-kit "2.2.0"]
                   [javax.xml.bind/jaxb-api "2.3.0"] ; necessary for Java 9 compatibility
                   [compliment "0.3.1"]
-                  [eval-soup "1.2.2"]]
+                  [eval-soup "1.2.2"]
+                  [dynadoc "1.0.0" :exclusions [cljsjs/react cljsjs/react-dom]]]
   :repositories (conj (get-env :repositories)
                   ["clojars" {:url "https://clojars.org/repo/"
                               :username (System/getenv "CLOJARS_USER")

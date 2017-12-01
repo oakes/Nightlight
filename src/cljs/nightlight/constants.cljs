@@ -5,7 +5,7 @@
 (def ^:const page-url "https://clojars.org/nightlight")
 
 (def ^:const clojure-exts #{"boot" "clj" "cljc" "cljs" "cljx" "edn" "pxi" "hl"})
-(def ^:const completion-exts #{"clj"})
+(def ^:const completion-exts #{"clj" "cljc" "cljs"})
 (def ^:const paren-soup-themes {:dark "paren-soup-dark.css" :light "paren-soup-light.css"})
 (def ^:const codemirror-themes {:dark "lesser-dark" :light "default"})
 (def ^:const extension->mode

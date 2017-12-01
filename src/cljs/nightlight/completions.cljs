@@ -20,7 +20,7 @@
 (defn refresh-completions [extension completions]
   (when (c/completion-exts extension)
     (if-let [info (psd/get-completion-info)]
-      (a/download-completions info completions)
+      (a/download-completions (assoc info :ext extension) completions)
       (reset! completions nil))))
 
 (defn completion-shortcut? [e]

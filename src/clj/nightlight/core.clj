@@ -2,6 +2,7 @@
   (:require [clojure.edn :as edn]
             [clojure.java.io :as io]
             [clojure.set :as set]
+            [clojure.string :as str]
             [ring.middleware.resource :refer [wrap-resource]]
             [ring.middleware.file :refer [wrap-file]]
             [ring.middleware.basic-authentication :refer [wrap-basic-authentication]]
@@ -121,20 +122,39 @@
                     :body (spit pref-file (body-string request))}
     "/completions" {:status 200
                     :headers {"Content-Type" "text/plain"}
-                    :body (let [{:keys [ns context-before context-after prefix text]}
+                    :body (let [{:keys [ext ns context-before context-after prefix text]}
                                 (->> request body-string edn/read-string)]
-                            (try
-                              (->> {:ns ns
-                                    :context (read-string (str context-before "__prefix__" context-after))}
-                                   (com/completions prefix)
-                                   (map (fn [{:keys [candidate]}]
-                                          {:primary-text candidate
-                                           :value candidate}))
-                                   (filter #(not= text (:primary-text %)))
-                                   (take 50)
-                                   vec
-                                   pr-str)
-                              (catch Exception _ "[]")))}
+                            (case ext
+                              ("clj" "cljc")
+                              (try
+                                (->> {:ns ns
+                                      :context (read-string (str context-before "__prefix__" context-after))}
+                                     (com/completions prefix)
+                                     (map (fn [{:keys [candidate]}]
+                                            {:primary-text candidate
+                                             :value candidate}))
+                                     (filter #(not= text (:primary-text %)))
+                                     (take 50)
+                                     vec
+                                     pr-str)
+                                (catch Exception _ "[]"))
+                              "cljs"
+                              (or (->> (concat
+                                         (vals (get @watch/cljs-info 'cljs.core))
+                                         (vals (get @watch/cljs-info ns)))
+                                       (filter #(-> % :sym str
+                                                    (str/starts-with? prefix)))
+                                       (map (fn [{:keys [sym]}]
+                                              (let [s (str sym)]
+                                                {:primary-text s
+                                                 :value s})))
+                                       (filter #(not= text (:primary-text %)))
+                                       set
+                                       (sort-by :sym)
+                                       (take 50)
+                                       vec
+                                       pr-str)
+                                  "[]")))}
     "/repl" (repl/repl-request request)
     "/watch" (watch/watch-request request)
     nil))
@@ -156,6 +176,7 @@
   ([opts]
    (start (wrap-resource handler "nightlight-public") opts))
   ([app opts]
+   (watch/init-cljs-info)
    (when-not @web-server
      (->> (merge {:port 0} opts)
           (reset! options)
