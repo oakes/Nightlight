@@ -139,22 +139,21 @@
                                      pr-str)
                                 (catch Exception _ "[]"))
                               "cljs"
-                              (or (->> (concat
-                                         (vals (get @watch/cljs-info 'cljs.core))
-                                         (vals (get @watch/cljs-info ns)))
-                                       (filter #(-> % :sym str
-                                                    (str/starts-with? prefix)))
-                                       (map (fn [{:keys [sym]}]
-                                              (let [s (str sym)]
-                                                {:primary-text s
-                                                 :value s})))
-                                       (filter #(not= text (:primary-text %)))
-                                       set
-                                       (sort-by :sym)
-                                       (take 50)
-                                       vec
-                                       pr-str)
-                                  "[]")))}
+                              (->> (concat
+                                     (vals (get @watch/cljs-info 'cljs.core))
+                                     (vals (get @watch/cljs-info ns)))
+                                   (filter #(-> % :sym str
+                                                (str/starts-with? prefix)))
+                                   (map (fn [{:keys [sym]}]
+                                          (let [s (str sym)]
+                                            {:primary-text s
+                                             :value s})))
+                                   (filter #(not= text (:primary-text %)))
+                                   set
+                                   (sort-by :sym)
+                                   (take 50)
+                                   vec
+                                   pr-str)))}
     "/repl" (repl/repl-request request)
     "/watch" (watch/watch-request request)
     nil))
