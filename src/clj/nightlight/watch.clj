@@ -24,7 +24,8 @@
                 (catch Exception e
                   (.printStackTrace e)
                   ns->vars)))
-            (recur (rest files) ns->vars)))))))
+            (recur (rest files) ns->vars))
+          ns->vars)))))
 
 (defonce watcher (hawk/watch! [{:paths [(.getCanonicalPath (io/file "."))]
                                 :handler (fn [ctx {:keys [kind file]}]
