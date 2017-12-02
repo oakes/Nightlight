@@ -19,7 +19,8 @@
                   [javax.xml.bind/jaxb-api "2.3.0"] ; necessary for Java 9 compatibility
                   [compliment "0.3.1"]
                   [eval-soup "1.2.2"]
-                  [dynadoc "1.0.0" :exclusions [cljsjs/react cljsjs/react-dom]]]
+                  [dynadoc "1.1.1"
+                   :exclusions [org.clojure/clojurescript rum paren-soup html-soup]]]
   :repositories (conj (get-env :repositories)
                   ["clojars" {:url "https://clojars.org/repo/"
                               :username (System/getenv "CLOJARS_USER")

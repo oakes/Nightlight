@@ -3,7 +3,7 @@
             [clojure.string :as str]
             [org.httpkit.server :refer [send! with-channel on-receive on-close]]
             [hawk.core :as hawk]
-            [dynadoc.core :as dyn]))
+            [dynadoc.static :as dyn]))
 
 (defonce channels (atom #{}))
 (defonce file-content (atom {}))
