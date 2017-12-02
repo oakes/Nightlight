@@ -11,21 +11,7 @@
 
 (defn init-cljs-info []
   (when-not @cljs-info
-    (reset! cljs-info
-      (loop [files (file-seq (io/file "."))
-             ns->vars {}]
-        (if-let [f (first files)]
-          (if (and (.isFile f)
-                   (-> f .getName (.endsWith ".cljs")))
-            (recur
-              (rest files)
-              (try
-                (dyn/read-cljs-file ns->vars f)
-                (catch Exception e
-                  (.printStackTrace e)
-                  ns->vars)))
-            (recur (rest files) ns->vars))
-          ns->vars)))))
+    (reset! cljs-info (dyn/get-cljs-nses-and-vars))))
 
 (defonce watcher (hawk/watch! [{:paths [(.getCanonicalPath (io/file "."))]
                                 :handler (fn [ctx {:keys [kind file]}]
