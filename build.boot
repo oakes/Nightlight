@@ -11,7 +11,7 @@
                   [reagent "0.7.0" :exclusions [cljsjs/react cljsjs/react-dom] :scope "test"]
                   [cljs-react-material-ui "0.2.34" :scope "test"]
                   ; clj deps
-                  [org.clojure/clojure "1.8.0" :scope "provided"]
+                  [org.clojure/clojure "1.9.0" :scope "provided"]
                   [ring "1.6.1"]
                   [ring-basic-authentication "1.0.5"]
                   [hawk "0.2.11"]
