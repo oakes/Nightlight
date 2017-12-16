@@ -19,7 +19,7 @@
                   [javax.xml.bind/jaxb-api "2.3.0"] ; necessary for Java 9 compatibility
                   [compliment "0.3.1"]
                   [eval-soup "1.2.2"]
-                  [dynadoc "1.1.3"
+                  [dynadoc "1.1.6"
                    :exclusions [org.clojure/clojurescript rum paren-soup html-soup]]]
   :repositories (conj (get-env :repositories)
                   ["clojars" {:url "https://clojars.org/repo/"
