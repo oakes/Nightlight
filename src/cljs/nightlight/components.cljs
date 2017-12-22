@@ -9,6 +9,7 @@
             [nightlight.watch :as watch]
             [paren-soup.dom :as psd]
             [reagent.core :as r]
+            [cljsjs.material-ui]
             [cljs-react-material-ui.core :refer [get-mui-theme color]]
             [cljs-react-material-ui.reagent :as ui]
             [cljs-react-material-ui.icons :as icons]
@@ -29,22 +30,22 @@
                   :open (= :new (:dialog @s/runtime-state))
                   :actions
                   [(r/as-element
-                     [ui/flat-button {:on-touch-tap (fn []
-                                                      (swap! s/runtime-state dissoc :dialog)
-                                                      (reset! path nil)
-                                                      (reset! upload nil))
+                     [ui/flat-button {:on-click (fn []
+                                                  (swap! s/runtime-state dissoc :dialog)
+                                                  (reset! path nil)
+                                                  (reset! upload nil))
                                       :style {:margin "10px"}}
                       "Cancel"])
                    (r/as-element
                      [ui/flat-button {:disabled (and (not (seq @path))
                                                      (not @upload))
-                                      :on-touch-tap (fn []
-                                                      (if-let [form @upload]
-                                                        (a/new-file-upload form refresh-tree)
-                                                        (a/new-file @path refresh-tree))
-                                                      (swap! s/runtime-state dissoc :dialog)
-                                                      (reset! path nil)
-                                                      (reset! upload nil))
+                                      :on-click (fn []
+                                                  (if-let [form @upload]
+                                                    (a/new-file-upload form refresh-tree)
+                                                    (a/new-file @path refresh-tree))
+                                                  (swap! s/runtime-state dissoc :dialog)
+                                                  (reset! path nil)
+                                                  (reset! upload nil))
                                       :style {:margin "10px"}}
                       "New File"])]}
        [ui/text-field
@@ -71,27 +72,27 @@
                     :open (= :rename (:dialog @s/runtime-state))
                     :actions
                     [(r/as-element
-                       [ui/flat-button {:on-touch-tap (fn []
-                                                        (swap! s/runtime-state dissoc :dialog :node)
-                                                        (reset! to nil))
+                       [ui/flat-button {:on-click (fn []
+                                                    (swap! s/runtime-state dissoc :dialog :node)
+                                                    (reset! to nil))
                                         :style {:margin "10px"}}
                         "Cancel"])
                      (r/as-element
                        [ui/flat-button {:disabled (not (seq @to))
-                                        :on-touch-tap (fn []
-                                                        (let [path (:value node)]
-                                                          (swap! s/runtime-state
-                                                            (fn [state]
-                                                              (-> state
-                                                                  (dissoc :dialog :node)
-                                                                  (update :editors dissoc path))))
-                                                          (swap! s/pref-state assoc :selection nil)
-                                                          (a/rename-file path @to
-                                                            (fn [e]
-                                                              (let [new-path (.. e -target getResponseText)]
-                                                                (swap! s/runtime-state update :editors dissoc new-path)
-                                                                (refresh-tree))))
-                                                          (reset! to nil)))
+                                        :on-click (fn []
+                                                    (let [path (:value node)]
+                                                      (swap! s/runtime-state
+                                                        (fn [state]
+                                                          (-> state
+                                                              (dissoc :dialog :node)
+                                                              (update :editors dissoc path))))
+                                                      (swap! s/pref-state assoc :selection nil)
+                                                      (a/rename-file path @to
+                                                        (fn [e]
+                                                          (let [new-path (.. e -target getResponseText)]
+                                                            (swap! s/runtime-state update :editors dissoc new-path)
+                                                            (refresh-tree))))
+                                                      (reset! to nil)))
                                         :style {:margin "10px"}}
                         "Rename"])]}
          [ui/text-field
@@ -107,19 +108,19 @@
                 :open (= :delete (:dialog @s/runtime-state))
                 :actions
                 [(r/as-element
-                   [ui/flat-button {:on-touch-tap #(swap! s/runtime-state dissoc :dialog :node)
+                   [ui/flat-button {:on-click #(swap! s/runtime-state dissoc :dialog :node)
                                     :style {:margin "10px"}}
                     "Cancel"])
                  (r/as-element
-                   [ui/flat-button {:on-touch-tap (fn []
-                                                    (let [path (:value node)]
-                                                      (swap! s/runtime-state
-                                                              (fn [state]
-                                                                (-> state
-                                                                    (dissoc :dialog :node)
-                                                                    (update :editors dissoc path))))
-                                                      (swap! s/pref-state assoc :selection nil)
-                                                      (a/delete-file path refresh-tree)))
+                   [ui/flat-button {:on-click (fn []
+                                                (let [path (:value node)]
+                                                  (swap! s/runtime-state
+                                                          (fn [state]
+                                                            (-> state
+                                                                (dissoc :dialog :node)
+                                                                (update :editors dissoc path))))
+                                                  (swap! s/pref-state assoc :selection nil)
+                                                  (a/delete-file path refresh-tree)))
                                     :style {:margin "10px"}}
                     "Delete"])]}
      (str "Are you sure you want to delete " (:primary-text node) "?")]))
@@ -129,7 +130,7 @@
               :open (= :connection-lost (:dialog @s/runtime-state))
               :actions
               [(r/as-element
-                 [ui/flat-button {:on-touch-tap #(swap! s/runtime-state dissoc :dialog)
+                 [ui/flat-button {:on-click #(swap! s/runtime-state dissoc :dialog)
                                   :style {:margin "10px"}}
                   "OK"])]}
    "Connection to server has been lost. Try refreshing or check to see if the server is still running."])
@@ -139,7 +140,7 @@
               :open (= :unsupported-browser (:dialog @s/runtime-state))
               :actions
               [(r/as-element
-                 [ui/flat-button {:on-touch-tap #(swap! s/runtime-state dissoc :dialog)
+                 [ui/flat-button {:on-click #(swap! s/runtime-state dissoc :dialog)
                                   :style {:margin "10px"}}
                   "OK"])]}
    "Your browser is not currently supported. Webkit-based browsers (like Chrome and Safari) are recommended."])
@@ -149,9 +150,9 @@
     [ui/icon-menu {:icon-button-element (r/as-element
                                           [ui/icon-button {:touch true}
                                            [icons/navigation-more-vert {:color (color :grey700)}]])}
-     [ui/menu-item {:on-touch-tap #(swap! s/runtime-state assoc :dialog :rename :node node)}
+     [ui/menu-item {:on-click #(swap! s/runtime-state assoc :dialog :rename :node node)}
       "Rename"]
-     [ui/menu-item {:on-touch-tap #(swap! s/runtime-state assoc :dialog :delete :node node)}
+     [ui/menu-item {:on-click #(swap! s/runtime-state assoc :dialog :delete :node node)}
       "Delete"]]))
 
 (defn node->element [editable? {:keys [nested-items] :as node}]
@@ -222,7 +223,7 @@
     [:div {:style {:float "left"
                    :margin-top "5px"
                    :margin-left "20px"}}
-     [ui/raised-button {:on-touch-tap #(swap! s/runtime-state assoc :dialog :new)
+     [ui/raised-button {:on-click #(swap! s/runtime-state assoc :dialog :new)
                         :disabled (:read-only? options)}
       "New File"]]]
    [:div {:class "leftsidebar"}
@@ -268,23 +269,23 @@
             (when-not (c/repl-path? selection)
               [ui/raised-button {:disabled (or (:read-only? options)
                                                (c/clean? editor))
-                                 :on-touch-tap #(a/write-file editor)
+                                 :on-click #(a/write-file editor)
                                  :key :save}
                "Save"])
             [ui/raised-button {:disabled (or (:read-only? options)
                                              (not (c/can-undo? editor)))
-                               :on-touch-tap #(c/undo editor)
+                               :on-click #(c/undo editor)
                                :key :undo}
              "Undo"]
             [ui/raised-button {:disabled (or (:read-only? options)
                                              (not (c/can-redo? editor)))
-                               :on-touch-tap #(c/redo editor)
+                               :on-click #(c/redo editor)
                                :key :redo}
              "Redo"]))
         (when (-> selection e/get-extension e/show-instarepl?)
           (list
             [ui/raised-button {:disabled (not (seq (c/get-focused-text editor)))
-                               :on-touch-tap #(c/eval-selection editor)
+                               :on-click #(c/eval-selection editor)
                                :key :eval}
              "Eval"]
             [ui/toggle {:label "InstaREPL"
@@ -297,15 +298,15 @@
       {:style {:z-index 100}}
       [ui/raised-button {:background-color "#FF6F00"
                          :style {:display (if (:hosted? options) "block" "none")}
-                         :on-touch-tap #(set! (.-location js/window) "export.zip")}
+                         :on-click #(set! (.-location js/window) "export.zip")}
        "Export"]
       [ui/raised-button {:background-color "#FF6F00"
                          :style {:display (if (:url options) "block" "none")}
-                         :on-touch-tap #(.open js/window (:url options))}
+                         :on-click #(.open js/window (:url options))}
        "View App"]
       [ui/raised-button {:background-color "#FF6F00"
                          :style {:display (if update? "block" "none")}
-                         :on-touch-tap #(.open js/window c/page-url)}
+                         :on-click #(.open js/window c/page-url)}
        "Update"]]]]])
 
 (defn watcher-overlay [selection]
@@ -324,7 +325,7 @@
        "This file was modified externally. You can either refresh your browser or ignore the change and continue editing."
        [:br][:br]
        [ui/raised-button {:background-color "#FF6F00"
-                          :on-touch-tap #(swap! watch/modified-files disj selection)}
+                          :on-click #(swap! watch/modified-files disj selection)}
         "Continue"]]]]))
 
 (defn app []
@@ -338,9 +339,9 @@
                     (get-mui-theme (gobj/get js/MaterialUIStyles "LightRawTheme"))
                     (let [dark-raw-theme (gobj/get js/MaterialUIStyles "DarkRawTheme")]
                       (doto (gobj/get dark-raw-theme "palette")
-                        (gobj/set "accent1Color" "darkgray")
-                        (gobj/set "accent2Color" "darkgray")
-                        (gobj/set "accent3Color" "darkgray"))
+                        (gobj/set "accent1Color" "#A9A9A9")
+                        (gobj/set "accent2Color" "#A9A9A9")
+                        (gobj/set "accent3Color" "#A9A9A9"))
                       (get-mui-theme dark-raw-theme)))]
     [ui/mui-theme-provider
      {:mui-theme mui-theme}
