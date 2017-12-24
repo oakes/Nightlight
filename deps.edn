@@ -1,4 +1,4 @@
-{:paths ["src/clj" "src/cljs"]
+{:paths ["src/clj" "src/cljs" "resources"]
  :deps {org.clojure/clojure {:mvn/version "1.9.0"
                              :scope "provided"}
         org.clojure/clojurescript {:mvn/version "1.9.946"
@@ -13,12 +13,16 @@
                  :scope "test"}
         cljs-react-material-ui {:mvn/version "0.2.50"
                                 :scope "test"}
-        ring {:mvn/version "1.6.1"}
+        cljsjs/react {:mvn/version "15.6.1-1"
+                      :scope "test"}
+        cljsjs/react-dom {:mvn/version "15.6.1-1"
+                          :scope "test"}
+        ring {:mvn/version "1.6.3"}
         ring-basic-authentication {:mvn/version "1.0.5"}
         hawk {:mvn/version "0.2.11"}
         http-kit {:mvn/version "2.2.0"}
         javax.xml.bind/jaxb-api {:mvn/version "2.3.0"} ; necessary for Java 9 compatibility
         compliment {:mvn/version "0.3.1"}
-        eval-soup {:mvn/version "1.2.2"}
+        eval-soup {:mvn/version "1.2.3"}
         dynadoc {:mvn/version "1.1.6"
                  :exclusions [org.clojure/clojurescript rum paren-soup html-soup]}}}
