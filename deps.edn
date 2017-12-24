@@ -9,14 +9,10 @@
                             :scope "test"}
         cljsjs/codemirror {:mvn/version "5.24.0-1"
                            :scope "test"}
-        reagent {:mvn/version "0.7.0"
+        reagent {:mvn/version "0.8.0-alpha2"
                  :scope "test"}
         cljs-react-material-ui {:mvn/version "0.2.50"
                                 :scope "test"}
-        cljsjs/react {:mvn/version "15.6.1-1"
-                      :scope "test"}
-        cljsjs/react-dom {:mvn/version "15.6.1-1"
-                          :scope "test"}
         ring {:mvn/version "1.6.3"}
         ring-basic-authentication {:mvn/version "1.0.5"}
         hawk {:mvn/version "0.2.11"}
