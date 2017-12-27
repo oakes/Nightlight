@@ -7,7 +7,8 @@
         compliment {:mvn/version "0.3.1"}
         eval-soup {:mvn/version "1.2.3"}
         dynadoc {:mvn/version "1.1.6"
-                 :exclusions [org.clojure/clojurescript rum paren-soup html-soup]}}
+                 :exclusions [org.clojure/clojurescript rum paren-soup html-soup]}
+        org.clojure/tools.reader {:mvn/version "1.1.1"}}
  :aliases {:cljs {:extra-deps {org.clojure/clojurescript {:mvn/version "1.9.946" :scope "test"}
                                paren-soup {:mvn/version "2.9.3" :scope "test"}
                                mistakes-were-made {:mvn/version "1.7.3" :scope "test"}
