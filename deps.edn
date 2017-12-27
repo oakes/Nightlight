@@ -1,5 +1,6 @@
 {:paths ["src/clj" "src/cljs" "resources"]
- :deps {ring {:mvn/version "1.6.3"}
+ :deps {org.clojure/clojure {:mvn/version "1.9.0" :scope "provided"}
+        ring {:mvn/version "1.6.3"}
         ring-basic-authentication {:mvn/version "1.0.5"}
         hawk {:mvn/version "0.2.11"}
         http-kit {:mvn/version "2.2.0"}
