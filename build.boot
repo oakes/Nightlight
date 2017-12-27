@@ -2,7 +2,7 @@
   :dependencies '[[adzerk/boot-cljs "2.1.4" :scope "test"]
                   [adzerk/boot-reload "0.5.2" :scope "test"]
                   [org.clojure/test.check "0.9.0" :scope "test"]
-                  [org.clojars.oakes/boot-tools-deps "0.1.4" :scope "test"]]
+                  [org.clojars.oakes/boot-tools-deps "0.1.4.1" :scope "test"]]
   :repositories (conj (get-env :repositories)
                   ["clojars" {:url "https://clojars.org/repo/"
                               :username (System/getenv "CLOJARS_USER")
@@ -25,16 +25,16 @@
 
 (deftask local []
   (set-env! :resource-paths #{"src/clj" "src/cljs" "resources" "prod-resources"})
-  (comp (deps) (cljs :optimizations :advanced) (sift) (pom) (jar) (install)))
+  (comp (deps :aliases [:cljs]) (cljs :optimizations :advanced) (sift) (pom) (jar) (install)))
 
 (deftask deploy []
   (set-env! :resource-paths #{"src/clj" "src/cljs" "resources" "prod-resources"})
-  (comp (deps) (cljs :optimizations :advanced) (sift) (pom) (jar) (push)))
+  (comp (deps :aliases [:cljs]) (cljs :optimizations :advanced) (sift) (pom) (jar) (push)))
 
 (deftask run []
   (set-env! :resource-paths #{"src/clj" "src/cljs" "resources" "dev-resources"})
   (comp
-    (deps)
+    (deps :aliases [:cljs])
     (watch)
     (reload :asset-path "nightlight-public")
     (cljs :source-map true :optimizations :none :compiler-options {:asset-path "main.out"})
