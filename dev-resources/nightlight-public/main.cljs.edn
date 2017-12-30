@@ -1,3 +1,3 @@
-{:require  [paren-soup.core-spec nightlight.core]
+{:require  [nightlight.core]
  :init-fns [cljs.spec.test.alpha/instrument]
  :compiler-options {}}
