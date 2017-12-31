@@ -12,7 +12,7 @@
   (eval/eval-in-project
     (deps/add-if-missing
       project
-      '[nightlight/lein-nightlight "2.0.6"])
+      '[nightlight/lein-nightlight "2.1.0"])
     `(do
        (nightlight.core/start ~options)
        (when '~main (require '~main)))
