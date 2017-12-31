@@ -1,7 +1,6 @@
 (ns nightlight.watch
   (:require [clojure.java.io :as io]
             [clojure.string :as str]
-            [clojure.pprint]
             [org.httpkit.server :refer [send! with-channel on-receive on-close]]
             [hawk.core :as hawk]
             [dynadoc.static :as dyn]))

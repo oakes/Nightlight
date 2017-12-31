@@ -7,7 +7,7 @@
         javax.xml.bind/jaxb-api {:mvn/version "2.3.0"} ; necessary for Java 9 compatibility
         compliment {:mvn/version "0.3.1"}
         eval-soup {:mvn/version "1.2.5"}
-        dynadoc {:mvn/version "1.1.6"
+        dynadoc {:mvn/version "1.2.0"
                  :exclusions [org.clojure/clojurescript rum paren-soup html-soup]}
         org.clojure/tools.reader {:mvn/version "1.1.1"}}
  :aliases {:cljs {:extra-deps {org.clojure/clojurescript {:mvn/version "1.9.946" :scope "test"}
