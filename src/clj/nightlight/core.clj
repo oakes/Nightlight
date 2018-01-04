@@ -12,6 +12,7 @@
             [compliment.core :as com]
             [nightlight.repl :as repl]
             [nightlight.watch :as watch]
+            [nightlight.utils :as u]
             [org.httpkit.server :refer [run-server]]
             [clojure.tools.cli :as cli])
   (:import [java.io File FilenameFilter]))
@@ -21,11 +22,6 @@
 
 (defonce web-server (atom nil))
 (defonce options (atom nil))
-
-(defn form->serializable [form]
-  (if (instance? Exception form)
-    [(.getMessage form)]
-    (pr-str form)))
 
 (defn read-state []
   (try (edn/read-string (slurp pref-file))
@@ -51,17 +47,6 @@
        (assoc node :nested-items children)
        node))))
 
-(defn delete-parents-recursively!
-  "Deletes the given file along with all empty parents up to top-level-file."
-  [top-level-file file]
-  (when (and (zero? (count (.listFiles file)))
-             (not (.equals file top-level-file)))
-    (io/delete-file file true)
-    (->> file
-         .getParentFile
-         (delete-parents-recursively! top-level-file)))
-  nil)
-
 (defn handler [request]
   (case (:uri request)
     "/" {:status 200
@@ -73,7 +58,7 @@
                         body-string
                         edn/read-string
                         es/code->results
-                        (mapv form->serializable)
+                        (mapv u/form->serializable)
                         pr-str)}
     "/tree" {:status 200
              :headers {"Content-Type" "text/plain"}
@@ -108,12 +93,12 @@
                          to-file (io/file "." to)]
                      (.mkdirs (.getParentFile to-file))
                      (.renameTo from-file to-file)
-                     (delete-parents-recursively! (io/file ".") from-file)
+                     (u/delete-parents-recursively! (io/file ".") from-file)
                      {:status 200
                       :headers {"Content-Type" "text/plain"}
                       :body (.getCanonicalPath to-file)})
     "/delete-file" (let [file (-> request body-string io/file)]
-                     (delete-parents-recursively! (io/file ".") file)
+                     (u/delete-parents-recursively! (io/file ".") file)
                      {:status 200})
     "/read-state" {:status 200
                    :headers {"Content-Type" "text/plain"}
@@ -189,23 +174,8 @@
     (.mkdirs (io/file "target" "nightlight-public"))
     (start (wrap-file handler "target/nightlight-public") opts)))
 
-(def cli-options
-  [["-p" "--port PORT" "Port number"
-    :default 4000
-    :parse-fn #(Integer/parseInt %)
-    :validate [#(< 0 % 0x10000) "Must be an integer between 0 and 65536"]]
-   [nil "--host HOST" "The hostname that Nightlight listens on"
-    :default "0.0.0.0"]
-   [nil "--url URL" "The URL that the ClojureScript app is being served on"]
-   [nil "--users USERS" "A map of usernames and passwords to restrict access to"
-    :parse-fn edn/read-string
-    :validate [map? "Must be a hash-map"]]
-   [nil "--user USER" "A single username/password, separated by a space"
-    :parse-fn #(apply hash-map (str/split % #" "))]
-   ["-u" "--usage" "Show CLI usage options"]])
-
 (defn -main [& args]
-  (let [cli (cli/parse-opts args cli-options)]
+  (let [cli (cli/parse-opts args u/cli-options)]
     (cond
       ;; if there are CLI errors, print error messages and usage summary
       (:errors cli)

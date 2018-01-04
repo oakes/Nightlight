@@ -4,7 +4,7 @@
             [clojure.tools.cli :as cli]
             [clojure.edn :as edn]
             [clojure.string :as str]
-            [nightlight.core :refer [cli-options]]))
+            [nightlight.utils :as u]))
 
 
 (defn start-nightlight
@@ -23,7 +23,7 @@
   "A conveninent Nightlight launcher
   Run with -u to see CLI usage."
   [project & args]
-  (let [cli (cli/parse-opts args cli-options)]
+  (let [cli (cli/parse-opts args u/cli-options)]
     (cond
       ;; if there are CLI errors, print error messages and usage summary
       (:errors cli)
