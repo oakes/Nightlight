@@ -179,10 +179,14 @@
     (cond
       ;; if there are CLI errors, print error messages and usage summary
       (:errors cli)
-      (println (:errors cli) "\n" (:summary cli))
+      (do
+        (println (:errors cli) "\n" (:summary cli))
+        (System/exit 0))
       ;; if user asked for CLI usage, print the usage summary
       (get-in cli [:options :usage])
-      (println (:summary cli))
+      (do
+        (println (:summary cli))
+        (System/exit 0))
       ;; in other cases start Nightlight
       :otherwise
       (start (:options cli)))))
