@@ -14,14 +14,15 @@
             [nightlight.watch :as watch]
             [nightlight.utils :as u]
             [org.httpkit.server :refer [run-server]]
-            [clojure.tools.cli :as cli])
+            [clojure.tools.cli :as cli]
+            [dynadoc.watch :as dw])
   (:import [java.io File FilenameFilter]))
 
 (def ^:const max-file-size (* 1024 1024 2))
 (def ^:const pref-file ".nightlight.edn")
 
-(defonce web-server (atom nil))
-(defonce options (atom nil))
+(defonce *web-server (atom nil))
+(defonce *options (atom nil))
 
 (defn read-state []
   (try (edn/read-string (slurp pref-file))
@@ -32,7 +33,7 @@
    (let [pref-state (read-state)]
      (-> (file-node file pref-state)
          (assoc :selection (:selection pref-state))
-         (assoc :options @options))))
+         (assoc :options @*options))))
   ([^File file {:keys [expansions] :as pref-state}]
    (let [path (.getCanonicalPath file)
          children (->> (reify FilenameFilter
@@ -78,7 +79,7 @@
                       :headers {"Content-Type" "text/plain"}
                       :body f}))
     "/write-file" (let [{:keys [path content]} (-> request body-string edn/read-string)]
-                    (swap! watch/file-content assoc path content)
+                    (swap! watch/*file-content assoc path content)
                     (spit path content)
                     {:status 200})
     "/new-file" (let [file (->> request body-string (io/file "."))]
@@ -126,8 +127,8 @@
                                 (catch Exception _ "[]"))
                               "cljs"
                               (->> (concat
-                                     (vals (get @watch/cljs-info 'cljs.core))
-                                     (vals (get @watch/cljs-info ns)))
+                                     (vals (get @dw/*cljs-info 'cljs.core))
+                                     (vals (get @dw/*cljs-info ns)))
                                    (filter #(-> % :sym str
                                                 (str/starts-with? prefix)))
                                    (map (fn [{:keys [sym]}]
@@ -161,16 +162,16 @@
   ([opts]
    (start (wrap-resource handler "nightlight-public") opts))
   ([app opts]
-   (watch/init-cljs-info)
-   (when-not @web-server
+   (watch/init-watcher!)
+   (when-not @*web-server
      (->> (merge {:port 0} opts)
-          (reset! options)
+          (reset! *options)
           (run-server (wrap-auth app opts))
-          (reset! web-server)
+          (reset! *web-server)
           print-server))))
 
 (defn dev-start [opts]
-  (when-not @web-server
+  (when-not @*web-server
     (.mkdirs (io/file "target" "nightlight-public"))
     (start (wrap-file handler "target/nightlight-public") opts)))
 
