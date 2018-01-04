@@ -4,7 +4,7 @@
   (:import [clojure.lang LineNumberingPushbackReader]
            [java.io PipedWriter PipedReader PrintWriter]))
 
-(defonce state (atom {}))
+(defonce *state (atom {}))
 
 (defn remove-returns [^String s]
   (str/escape s {\return ""}))
@@ -54,17 +54,17 @@
   (with-channel request channel
     (on-close channel
       (fn [status]
-        (when-let [{:keys [in-pipe out-pipe]} (get @state channel)]
+        (when-let [{:keys [in-pipe out-pipe]} (get @*state channel)]
           (doto out-pipe (.write "nightlight.repl/exit\n") (.flush))
           (.close in-pipe))
-        (swap! state dissoc channel)))
+        (swap! *state dissoc channel)))
     (on-receive channel
       (fn [text]
-        (when-not (get @state channel)
+        (when-not (get @*state channel)
           (->> (create-pipes)
                (start-repl-thread! channel)
-               (swap! state assoc channel)))
-        (doto (get-in @state [channel :out-pipe])
+               (swap! *state assoc channel)))
+        (doto (get-in @*state [channel :out-pipe])
           (.write text)
           (.flush))))))
 
