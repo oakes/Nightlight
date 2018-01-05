@@ -2,13 +2,14 @@
   :dependencies '[[adzerk/boot-cljs "2.1.4" :scope "test"]
                   [adzerk/boot-reload "0.5.2" :scope "test"]
                   [org.clojure/test.check "0.9.0" :scope "test"]
-                  [org.clojars.oakes/boot-tools-deps "0.1.4.1" :scope "test"]]
+                  [seancorfield/boot-tools-deps "0.1.4" :scope "test"]]
   :repositories (conj (get-env :repositories)
                   ["clojars" {:url "https://clojars.org/repo/"
                               :username (System/getenv "CLOJARS_USER")
                               :password (System/getenv "CLOJARS_PASS")}]))
 
 (require
+  '[clojure.edn :as edn]
   '[adzerk.boot-cljs :refer [cljs]]
   '[adzerk.boot-reload :refer [reload]]
   '[boot-tools-deps.core :refer [deps]])
@@ -18,7 +19,19 @@
        :version "2.1.1-SNAPSHOT"
        :description "An embedded Clojure editor"
        :url "https://github.com/oakes/Nightlight"
-       :license {"Public Domain" "http://unlicense.org/UNLICENSE"}}
+       :license {"Public Domain" "http://unlicense.org/UNLICENSE"}
+       :dependencies (->> "deps.edn"
+                          slurp
+                          edn/read-string
+                          :deps
+                          (reduce
+                            (fn [deps [artifact info]]
+                              (if-let [version (:mvn/version info)]
+                                (conj deps
+                                  (transduce cat conj [artifact version]
+                                    (select-keys info [:scope :exclusions])))
+                                deps))
+                            []))}
   push {:repo "clojars"}
   sift {:include #{#"nightlight-public/main.out"}
         :invert true})
