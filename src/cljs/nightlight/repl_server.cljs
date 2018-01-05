@@ -11,7 +11,7 @@
 
 (defn init-cljs-server []
   (when (not= js/window.self js/window.top)
-    (let [current-ns (atom cljs-start-ns)]
+    (let [*current-ns (atom cljs-start-ns)]
       (set! (.-onmessage js/window)
         (fn [e]
           (es/code->results
@@ -20,15 +20,15 @@
               (.postMessage (.-parent js/window)
                 (clj->js {:type (.-type (.-data e))
                           :results (into-array (mapv form->serializable results))
-                          :ns (str @current-ns)})
+                          :ns (str @*current-ns)})
                 "*"))
-            {:current-ns current-ns
+            {:*current-ns *current-ns
              :custom-load (fn [opts cb]
                             (cb {:lang :clj :source ""}))})))
       (.postMessage (.-parent js/window)
         (clj->js {:type "repl"
                   :results (array "")
-                  :ns (str @current-ns)})
+                  :ns (str @*current-ns)})
         "*"))))
 
 (init-cljs-server)

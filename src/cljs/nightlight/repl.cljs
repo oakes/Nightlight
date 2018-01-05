@@ -22,7 +22,7 @@
   (init [this])
   (send [this text]))
 
-(defn clj-sender [text-atom]
+(defn clj-sender [*text]
   (let [protocol (if (= (.-protocol js/location) "https:") "wss:" "ws:")
         host (-> js/window .-location .-host)
         sock (js/WebSocket. (str protocol "//" host "/repl"))]
@@ -33,7 +33,7 @@
             (.send sock "")))
         (set! (.-onmessage sock)
           (fn [event]
-            (swap! text-atom str (.-data event))))
+            (swap! *text str (.-data event))))
         (set! (.-onclose sock)
           (fn [event]
             (swap! s/runtime-state
@@ -44,7 +44,7 @@
       (send [this text]
         (.send sock (str text "\n"))))))
 
-(defn cljs-sender [text-atom]
+(defn cljs-sender [*text]
   (swap! s/runtime-state update :callbacks assoc "repl"
     (fn [results current-ns]
       (let [result (aget results 0)
@@ -52,8 +52,8 @@
                      (str "Error: " (aget result 0))
                      result)]
         (when (seq result)
-          (swap! text-atom str result "\n"))
-        (swap! text-atom str current-ns "=> "))))
+          (swap! *text str result "\n"))
+        (swap! *text str current-ns "=> "))))
   (let [iframe (.querySelector js/document "#cljsapp")]
     (reify ReplSender
       (init [this])
@@ -62,10 +62,10 @@
           (clj->js {:type "repl" :forms (array text)})
           "*")))))
 
-(defn create-repl-sender [path text-atom]
+(defn create-repl-sender [path *text]
   (if (= path c/cljs-repl-path)
-    (cljs-sender text-atom)
-    (clj-sender text-atom)))
+    (cljs-sender *text)
+    (clj-sender *text)))
 
 (defn compile-clj [forms cb]
   (try
