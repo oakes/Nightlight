@@ -1,14 +1,15 @@
 (set-env!
   :dependencies '[[adzerk/boot-cljs "2.1.4" :scope "test"]
                   [adzerk/boot-reload "0.5.2" :scope "test"]
-                  [org.clojure/test.check "0.9.0" :scope "test"]
-                  [seancorfield/boot-tools-deps "0.1.4" :scope "test"]]
+                  [seancorfield/boot-tools-deps "0.1.4" :scope "test"]
+                  [orchestra "2017.11.12-1"]]
   :repositories (conj (get-env :repositories)
                   ["clojars" {:url "https://clojars.org/repo/"
                               :username (System/getenv "CLOJARS_USER")
                               :password (System/getenv "CLOJARS_PASS")}]))
 
 (require
+  '[orchestra.spec.test :refer [instrument]]
   '[clojure.edn :as edn]
   '[adzerk.boot-cljs :refer [cljs]]
   '[adzerk.boot-reload :refer [reload]]
@@ -52,10 +53,8 @@
     (reload :asset-path "nightlight-public")
     (cljs :source-map true :optimizations :none :compiler-options {:asset-path "main.out"})
     (with-pass-thru _
-      (require
-        '[clojure.spec.test.alpha :refer [instrument]]
-        '[nightlight.core :refer [dev-start]])
-      ((resolve 'instrument))
+      (require '[nightlight.core :refer [dev-start]])
+      (instrument)
       ((resolve 'dev-start) {:port 4000 :url "http://localhost:4000"}))
     (target)))
 
