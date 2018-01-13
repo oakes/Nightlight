@@ -5,7 +5,7 @@
             [goog.object :as gobj])
   (:import goog.net.XhrIo))
 
-(defn check-version []
+(defn check-version [version]
   (.send XhrIo
     c/api-url
     (fn [e]
@@ -13,7 +13,7 @@
                  (some->> (.. e -target getResponseText)
                           (.parse js/JSON)
                           (#(gobj/get % "latest_release"))
-                          (not= c/version)))
+                          (not= version)))
         (swap! s/runtime-state assoc :update? true)))
     "GET"))
 

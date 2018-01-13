@@ -1,6 +1,5 @@
 (ns nightlight.constants)
 
-(def ^:const version "2.1.1")
 (def ^:const api-url "https://clojars.org/api/artifacts/nightlight")
 (def ^:const page-url "https://clojars.org/nightlight")
 

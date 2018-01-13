@@ -9,6 +9,8 @@
             [nightlight.watch :as watch]
             [reagent.core :as r]))
 
+(def version "2.1.2")
+
 (defn check-browser []
   (when (not= -1 (.indexOf js/navigator.userAgent "Edge"))
     (swap! s/runtime-state
@@ -23,7 +25,7 @@
     (e/init-and-add-editor c/control-panel-path (cp/control-panel-init)))
   (when-not (:hosted? options)
     (e/init-and-add-editor c/repl-path (e/ps-repl-init c/repl-path))
-    (a/check-version)
+    (a/check-version version)
     (watch/init-watcher!))
   (when (:url options)
     (e/init-and-add-editor c/cljs-repl-path (e/ps-repl-init c/cljs-repl-path)))
