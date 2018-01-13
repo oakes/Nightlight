@@ -2,7 +2,8 @@
   :dependencies '[[adzerk/boot-cljs "2.1.4" :scope "test"]
                   [adzerk/boot-reload "0.5.2" :scope "test"]
                   [seancorfield/boot-tools-deps "0.1.4" :scope "test"]
-                  [orchestra "2017.11.12-1"]]
+                  [javax.xml.bind/jaxb-api "2.3.0"] ; necessary for Java 9 compatibility
+                  [orchestra "2017.11.12-1" :scope "test"]]
   :repositories (conj (get-env :repositories)
                   ["clojars" {:url "https://clojars.org/repo/"
                               :username (System/getenv "CLOJARS_USER")
