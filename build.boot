@@ -1,55 +1,63 @@
-(set-env!
-  :dependencies '[[adzerk/boot-cljs "2.1.4" :scope "test"]
-                  [adzerk/boot-reload "0.5.2" :scope "test"]
-                  [seancorfield/boot-tools-deps "0.1.4" :scope "test"]
-                  [javax.xml.bind/jaxb-api "2.3.0" :scope "test"] ; necessary for Java 9 compatibility
-                  [orchestra "2017.11.12-1" :scope "test"]]
-  :repositories (conj (get-env :repositories)
-                  ["clojars" {:url "https://clojars.org/repo/"
-                              :username (System/getenv "CLOJARS_USER")
-                              :password (System/getenv "CLOJARS_PASS")}]))
+(defn read-deps-edn [aliases-to-include]
+  (let [{:keys [paths deps aliases]} (-> "deps.edn" slurp clojure.edn/read-string)
+        deps (->> (select-keys aliases aliases-to-include)
+                  vals
+                  (mapcat :extra-deps)
+                  (into deps)
+                  (reduce
+                    (fn [deps [artifact info]]
+                      (if-let [version (:mvn/version info)]
+                        (conj deps
+                          (transduce cat conj [artifact version]
+                            (select-keys info [:scope :exclusions])))
+                        deps))
+                    []))]
+    {:dependencies deps
+     :source-paths (set paths)
+     :resource-paths (set paths)}))
+
+(let [{:keys [source-paths resource-paths dependencies]} (read-deps-edn [])]
+  (set-env!
+    :source-paths source-paths
+    :resource-paths resource-paths
+    :dependencies (into '[[adzerk/boot-cljs "2.1.4" :scope "test"]
+                          [adzerk/boot-reload "0.5.2" :scope "test"]
+                          [javax.xml.bind/jaxb-api "2.3.0" :scope "test"] ; necessary for Java 9 compatibility
+                          [orchestra "2017.11.12-1" :scope "test"]]
+                        dependencies)
+    :repositories (conj (get-env :repositories)
+                    ["clojars" {:url "https://clojars.org/repo/"
+                                :username (System/getenv "CLOJARS_USER")
+                                :password (System/getenv "CLOJARS_PASS")}])))
 
 (require
   '[orchestra.spec.test :refer [instrument]]
-  '[clojure.edn :as edn]
   '[adzerk.boot-cljs :refer [cljs]]
-  '[adzerk.boot-reload :refer [reload]]
-  '[boot-tools-deps.core :refer [deps]])
+  '[adzerk.boot-reload :refer [reload]])
 
 (task-options!
   pom {:project 'nightlight
        :version "2.1.4-SNAPSHOT"
        :description "An embedded Clojure editor"
        :url "https://github.com/oakes/Nightlight"
-       :license {"Public Domain" "http://unlicense.org/UNLICENSE"}
-       :dependencies (->> "deps.edn"
-                          slurp
-                          edn/read-string
-                          :deps
-                          (reduce
-                            (fn [deps [artifact info]]
-                              (if-let [version (:mvn/version info)]
-                                (conj deps
-                                  (transduce cat conj [artifact version]
-                                    (select-keys info [:scope :exclusions])))
-                                deps))
-                            []))}
+       :license {"Public Domain" "http://unlicense.org/UNLICENSE"}}
   push {:repo "clojars"}
   sift {:include #{#"nightlight-public/main.out"}
         :invert true})
 
 (deftask local []
-  (set-env! :resource-paths #{"src/clj" "src/cljs" "resources" "prod-resources"})
-  (comp (deps :aliases [:cljs]) (cljs :optimizations :advanced) (sift) (pom) (jar) (install)))
+  (set-env! :resource-paths #(conj % "prod-resources"))
+  (comp (cljs :optimizations :advanced) (sift) (pom) (jar) (install)))
 
 (deftask deploy []
-  (set-env! :resource-paths #{"src/clj" "src/cljs" "resources" "prod-resources"})
-  (comp (deps :aliases [:cljs]) (cljs :optimizations :advanced) (sift) (pom) (jar) (push)))
+  (set-env! :resource-paths #(conj % "prod-resources"))
+  (comp (cljs :optimizations :advanced) (sift) (pom) (jar) (push)))
 
 (deftask run []
-  (set-env! :resource-paths #{"src/clj" "src/cljs" "resources" "dev-resources"})
+  (set-env!
+    :dependencies #(into (set %) (:dependencies (read-deps-edn [:cljs])))
+    :resource-paths #(conj % "dev-resources"))
   (comp
-    (deps :aliases [:cljs])
     (watch)
     (reload :asset-path "nightlight-public")
     (cljs :source-map true :optimizations :none :compiler-options {:asset-path "main.out"})
