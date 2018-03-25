@@ -35,7 +35,7 @@
 
 (defn init-completions [extension editor-atom elem completions]
   (when (c/completion-exts extension)
-    (events/listen elem "keyup"
+    (events/listen elem "keydown"
       (fn [e]
         (when (completion-shortcut? e)
           (when-let [comps @completions]
