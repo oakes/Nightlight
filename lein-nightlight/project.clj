@@ -6,5 +6,7 @@
   :dependencies [[nightlight "2.1.4" :exclusions [org.clojure/core.async]]
                  [leinjacker "0.4.2"]
                  [org.clojure/tools.cli "0.3.5"]]
+  :repositories [["clojars" {:url "https://clojars.org/repo"
+                             :sign-releases false}]]
   :eval-in-leiningen true)
 
