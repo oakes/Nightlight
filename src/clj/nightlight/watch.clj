@@ -3,7 +3,8 @@
             [clojure.string :as str]
             [org.httpkit.server :refer [send! with-channel on-receive on-close]]
             [hawk.core :as hawk]
-            [dynadoc.watch :as dw]))
+            [dynadoc.watch :as dw]
+            [nightlight.utils :as u]))
 
 (defonce *channels (atom #{}))
 (defonce *file-content (atom {}))
@@ -14,10 +15,12 @@
   (hawk/watch! [{:paths [(.getCanonicalPath (io/file "."))]
                  :handler (fn [ctx {:keys [kind file]}]
                             (when (#{:create :modify} kind)
-                              (let [path (.getCanonicalPath file)]
+                              (let [path (.getCanonicalPath file)
+                                    content (@*file-content path)]
                                 (when (and (.isFile file)
-                                           (not= (@*file-content path)
-                                                 (slurp file)))
+                                           content
+                                           (not= (u/remove-returns content)
+                                                 (u/remove-returns (slurp file))))
                                   (doseq [channel @*channels]
                                     (send! channel path)))))
                             ctx)}]))

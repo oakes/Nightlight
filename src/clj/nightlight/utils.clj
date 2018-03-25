@@ -34,3 +34,8 @@
          (delete-parents-recursively! top-level-file)))
   nil)
 
+(defn remove-returns [^String s]
+  (-> s
+      (str/escape {\return ""})
+      (str/replace #"\u001b[^\n]*" "")))
+
