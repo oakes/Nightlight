@@ -9,7 +9,7 @@
             [nightlight.watch :as watch]
             [reagent.core :as r]))
 
-(def version "2.1.3")
+(def version "2.1.4")
 
 (defn check-browser []
   (when (not= -1 (.indexOf js/navigator.userAgent "Edge"))
