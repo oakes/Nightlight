@@ -46,11 +46,15 @@
         :invert true})
 
 (deftask local []
-  (set-env! :resource-paths #(conj % "prod-resources"))
+  (set-env!
+    :dependencies #(into (set %) (:dependencies (read-deps-edn [:cljs])))
+    :resource-paths #(conj % "prod-resources"))
   (comp (cljs :optimizations :advanced) (sift) (pom) (jar) (install)))
 
 (deftask deploy []
-  (set-env! :resource-paths #(conj % "prod-resources"))
+  (set-env!
+    :dependencies #(into (set %) (:dependencies (read-deps-edn [:cljs])))
+    :resource-paths #(conj % "prod-resources"))
   (comp (cljs :optimizations :advanced) (sift) (pom) (jar) (push)))
 
 (deftask run []
