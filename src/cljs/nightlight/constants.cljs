@@ -1,4 +1,5 @@
-(ns nightlight.constants)
+(ns nightlight.constants
+  (:refer-clojure :exclude [eval]))
 
 (def ^:const api-url "https://clojars.org/api/artifacts/nightlight")
 (def ^:const page-url "https://clojars.org/nightlight")
