@@ -10,9 +10,9 @@
   (when (= js/window.self js/window.top)
     (set! (.-onmessage js/window)
       (fn [e]
-        (let [data (.-data e)
-              callback (get-in @s/runtime-state [:callbacks (gobj/get data "type")])]
-          (callback (gobj/get data "results") (gobj/get data "ns")))))))
+        (let [data (.-data e)]
+          (when-let [callback (get-in @s/runtime-state [:callbacks (gobj/get data "type")])]
+            (callback (gobj/get data "results") (gobj/get data "ns"))))))))
 
 (defn scroll-to-bottom [elem]
   (when-let [ps (.querySelector elem "#paren-soup")]
