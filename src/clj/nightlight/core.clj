@@ -55,12 +55,12 @@
          :body (-> "nightlight-public/index.html" io/resource slurp)}
     "/eval" {:status 200
              :headers {"Content-Type" "text/plain"}
-             :body (->> request
-                        body-string
-                        edn/read-string
-                        es/code->results
-                        (mapv u/form->serializable)
-                        pr-str)}
+             :body (-> request
+                       body-string
+                       edn/read-string
+                       (es/code->results {:disable-timeout? true})
+                       ((partial mapv u/form->serializable))
+                       pr-str)}
     "/tree" {:status 200
              :headers {"Content-Type" "text/plain"}
              :body (-> "." io/file .getCanonicalFile file-node pr-str)}
