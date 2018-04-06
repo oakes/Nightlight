@@ -5,13 +5,13 @@
         hawk {:mvn/version "0.2.11"}
         http-kit {:mvn/version "2.2.0"}
         compliment {:mvn/version "0.3.1"}
-        eval-soup {:mvn/version "1.4.1"}
+        eval-soup {:mvn/version "1.4.2"}
         dynadoc {:mvn/version "1.4.5"
                  :exclusions [org.clojure/clojurescript rum paren-soup html-soup]}
         org.clojure/tools.reader {:mvn/version "1.2.1"}
         org.clojure/tools.cli {:mvn/version "0.3.5"}}
  :aliases {:cljs {:extra-deps {org.clojure/clojurescript {:mvn/version "1.10.238" :scope "test"}
-                               paren-soup {:mvn/version "2.11.2" :scope "test"}
+                               paren-soup {:mvn/version "2.12.1" :scope "test"}
                                cljsjs/codemirror {:mvn/version "5.24.0-1" :scope "test"}
                                reagent {:mvn/version "0.8.0-alpha2" :scope "test"}
                                cljs-react-material-ui {:mvn/version "0.2.50" :scope "test"}}}}}
