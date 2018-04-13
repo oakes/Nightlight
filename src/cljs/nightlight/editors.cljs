@@ -271,7 +271,8 @@
               (clj->js {:value content
                         :lineNumbers true
                         :theme (:dark c/codemirror-themes)
-                        :mode (c/extension->mode extension)}))
+                        :mode (c/extension->mode extension)
+                        :lineWrapping (contains? c/wrap-exts extension)}))
             (.on "beforeChange"
               (fn [editor-object change]
                 (when (or (-> @s/runtime-state :options :read-only?)
