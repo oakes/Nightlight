@@ -22,7 +22,7 @@
     :resource-paths resource-paths
     :dependencies (into '[[adzerk/boot-cljs "2.1.4" :scope "test"]
                           [adzerk/boot-reload "0.5.2" :scope "test"]
-                          [javax.xml.bind/jaxb-api "2.3.0" :scope "test"] ; necessary for Java 9 compatibility
+                          [javax.xml.bind/jaxb-api "2.3.0"] ; necessary for Java 9 compatibility
                           [orchestra "2017.11.12-1" :scope "test"]]
                         dependencies)
     :repositories (conj (get-env :repositories)
