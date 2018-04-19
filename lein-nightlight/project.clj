@@ -1,9 +1,9 @@
-(defproject nightlight/lein-nightlight "2.1.7"
+(defproject nightlight/lein-nightlight "2.1.8"
   :description "A conveninent Nightlight launcher for Leiningen projects"
   :url "https://github.com/oakes/Nightlight"
   :license {:name "Public Domain"
             :url "http://unlicense.org/UNLICENSE"}
-  :dependencies [[nightlight "2.1.7" :exclusions [org.clojure/core.async]]
+  :dependencies [[nightlight "2.1.8" :exclusions [org.clojure/core.async]]
                  [leinjacker "0.4.2"]
                  [org.clojure/tools.cli "0.3.5"]]
   :repositories [["clojars" {:url "https://clojars.org/repo"
