@@ -43,12 +43,23 @@ html, body {
 }
 .leftsidebar {
     position: fixed;
-    width: 300px;
     left: 0px;
     top: 60px;
     bottom: 0px;
     padding: 5px;
     overflow: auto;
+  box-sizing: border-box;
+.resizer {
+  width: 1px;
+  height: 100%;
+  position: absolute;
+  top: 0;
+  right: 0;
+  cursor: ew-resize;
+  border-right: 1px solid rgba(255, 255, 255, 0.2);
+}
+.resizer:hover {
+  border-right: 1px dotted rgba(255, 255, 255, 0.5);
 }
 .rightsidebar {
     margin: 5px;

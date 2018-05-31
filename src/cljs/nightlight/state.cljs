@@ -2,7 +2,7 @@
   (:require [reagent.core :as r])
   (:import goog.net.XhrIo))
 
-(defonce pref-state (r/atom {}))
+(defonce pref-state (r/atom {:left-sidebar-width 300}))
 (defonce runtime-state (r/atom {:title "Nightlight"}))
 
 (add-watch pref-state :write-prefs
@@ -20,4 +20,3 @@
                 (set! (.-src iframe) url)))))
         "POST"
         (pr-str new-state)))))
-
