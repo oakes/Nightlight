@@ -59,12 +59,12 @@ body {
   height: 100%;
 }
 .resizer {
-  width: 4px;
+  width: 8px;
   height: 100%;
   position: absolute;
   top: 0;
+  right: 0;
   cursor: ew-resize;
-  border-right: 1px solid rgba(255, 255, 255, 0.2);
   z-index: 1;
 }
 .resizer:hover .resizer-button {
@@ -88,13 +88,13 @@ body {
   align-items: center;
 }
 .resizer-button.left {
-  left: -26px;
+  left: -25px;
 }
 .resizer-button.left .resizer-button-inner {
   border-radius: 50% 0 0 50%;
 }
 .resizer-button.right {
-  left: 4px;
+  left: 0px;
 }
 .resizer-button.right .resizer-button-inner {
   border-radius: 0 50% 50% 0;
@@ -110,9 +110,6 @@ body {
 }
 .resizer-button.left .resizer-button-inner span {
   left: -12px;
-}
-.resizer:hover {
-  border-right: 1px dotted rgba(255, 255, 255, 0.5);
 }
 .rightsidebar {
   margin: 5px;

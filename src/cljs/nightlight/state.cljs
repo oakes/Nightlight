@@ -1,8 +1,9 @@
 (ns nightlight.state
-  (:require [reagent.core :as r])
+  (:require [reagent.core :as r]
+            [nightlight.constants :as c])
   (:import goog.net.XhrIo))
 
-(defonce pref-state (r/atom {:left-sidebar-width 300}))
+(defonce pref-state (r/atom {:left-sidebar-width c/default-sidebar-width}))
 (defonce runtime-state (r/atom {:title "Nightlight"}))
 
 (add-watch pref-state :write-prefs

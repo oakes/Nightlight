@@ -218,6 +218,17 @@
         btn-pos-y (r/atom 0)
         update-sidebar-width #(swap! state assoc :left-sidebar-width %)
         reset-resize #(when @active?
+                        (swap! state update :left-sidebar-width
+                          (fn [width]
+                            (cond
+                              (< width (/ c/minimum-sidebar-width 2))
+                              0
+                              (< (/ c/minimum-sidebar-width 2)
+                                 width
+                                 c/minimum-sidebar-width)
+                              c/minimum-sidebar-width
+                              :else
+                              width)))
                         (reset! active? false))
         handle-resize #(when @active?
                          (.preventDefault %)
@@ -237,14 +248,15 @@
           [:div.resizer
            {:on-mouse-down #(reset! active? true)
             :on-mouse-over #(reset! btn-pos-y (- (.-clientY %) 56))
-            :style {:right (if (zero? width) "9px" "-2px")}}
+            :style {(if (pos? width) :border-right :border-left)
+                    "1px solid rgba(255, 255, 255, 0.2)"}}
            (when (pos? width)
              [resizer-button {:on-click #(update-sidebar-width 0)
                               :position :left
                               :y @btn-pos-y}
               "<"])
            (when (zero? width)
-             [resizer-button {:on-click #(update-sidebar-width 300)
+             [resizer-button {:on-click #(update-sidebar-width c/default-sidebar-width)
                               :position :right
                               :y @btn-pos-y}
               ">"])]))})))
