@@ -195,17 +195,32 @@
      (into
       [ui/selectable-list
        {:value selection
+        :class "tree-view"
         :on-change (fn [event value]
                      (e/set-selection value))}]
       nodes))])
 
+(defn resizer-button [{:keys [on-click position y]} text]
+  (let [class-name (case position
+                     :left "left"
+                     :right "right"
+                     nil)]
+    [:div.resizer-button
+     {:class class-name
+      :style {:top (str y "px")}}
+     [:div.resizer-button-inner
+      {:on-click on-click}
+      [:span text]]]))
+
 (defn resizer [state]
   (let [active? (atom false)
+        btn-pos-y (r/atom 0)
+        update-sidebar-width #(swap! state assoc :left-sidebar-width %)
         reset-resize #(when @active?
                         (reset! active? false))
         handle-resize #(when @active?
                          (.preventDefault %)
-                         (swap! state assoc :left-sidebar-width (.-clientX %)))]
+                         (update-sidebar-width (.-clientX %)))]
     (r/create-class
      {:component-did-mount
       (fn []
@@ -217,8 +232,21 @@
         (.removeEventListener js/document "mouseup" reset-resize))
       :reagent-render
       (fn []
-        [:div.resizer
-         {:on-mouse-down #(reset! active? true)}])})))
+        (let [width  (:left-sidebar-width @state)]
+          [:div.resizer
+           {:on-mouse-down #(reset! active? true)
+            :on-mouse-over #(reset! btn-pos-y (- (.-clientY %) 56))
+            :style {:right (if (zero? width) "9px" "-2px")}}
+           (when (pos? width)
+             [resizer-button {:on-click #(update-sidebar-width 0)
+                              :position :left
+                              :y @btn-pos-y}
+              "<"])
+           (when (zero? width)
+             [resizer-button {:on-click #(update-sidebar-width 300)
+                              :position :right
+                              :y @btn-pos-y}
+              ">"])]))})))
 
 (defn left-sidebar [mui-theme
                     {:keys [nodes editors options] :as runtime-state}
