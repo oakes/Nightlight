@@ -1,87 +1,151 @@
 @font-face {
-    font-family: 'Fira Code';
-    src: url('fonts/FiraCode-Regular.otf') format('opentype');
+  font-family: 'Fira Code';
+  src: url('fonts/FiraCode-Regular.otf') format('opentype');
 }
-html, body, .paren-soup, .CodeMirror {
-    -webkit-font-feature-settings: "liga" on, "calt" on;
-    -webkit-font-smoothing: antialiased;
-    text-rendering: optimizeLegibility;
-    font-family: 'Fira Code';
-    font-size: 16px;
-    height: 100%;
-    margin: 0;
+html,
+body,
+.paren-soup,
+.CodeMirror {
+  -webkit-font-feature-settings: 'liga' on, 'calt' on;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+  font-family: 'Fira Code';
+  font-size: 16px;
+  height: 100%;
+  margin: 0;
 }
-html, body {
-    overflow: hidden;
+html,
+body {
+  overflow: hidden;
 }
-.outer-editor {
-    position: fixed;
-    top: 0px;
-    left: 300px;
-    right: 0px;
-    bottom: 0px;
+.editor {
+  position: fixed;
+  top: 60px;
+  left: 300px;
+  right: 0px;
+  bottom: 0px;
 }
 .toolbar {
-    height: 60px;
-    z-index: 100;
-}
-.paren-soup, .CodeMirror {
-    height: calc(100% - 60px);
+  position: fixed;
+  left: 300px;
+  right: 0px;
+  height: 60px;
+  z-index: 100;
 }
 .paren-soup {
-    overflow: auto;
+  overflow: hidden;
 }
 .paren-soup .content {
-    min-height: 100%;
-    padding-right: 150px;
+  height: 100%;
+  padding-right: 150px;
 }
 .settings {
-    position: fixed;
-    left: 0px;
-    height: 60px;
-    padding: 5px;
+  position: fixed;
+  left: 0px;
+  height: 60px;
+  padding: 5px 10px;
 }
 .leftsidebar {
-    position: fixed;
-    width: 300px;
-    left: 0px;
-    top: 60px;
-    bottom: 0px;
-    padding: 5px;
-    overflow: auto;
+  position: fixed;
+  left: 0px;
+  top: 60px;
+  bottom: 0px;
+  padding: 0px 5px;
+  box-sizing: border-box;
+  z-index: 1;
+}
+.tree-view {
+  overflow: auto;
+  height: 100%;
+}
+.resizer {
+  width: 4px;
+  height: 100%;
+  position: absolute;
+  top: 0;
+  cursor: ew-resize;
+  border-right: 1px solid rgba(255, 255, 255, 0.2);
+  z-index: 1;
+}
+.resizer:hover .resizer-button {
+  display: block;
+  cursor: pointer;
+}
+.resizer-button {
+  width: 30px;
+  height: 60px;
+  position: absolute;
+  transform: translate3d(-0, -50%, 0);
+  overflow: hidden;
+  display: none;
+}
+.resizer-button-inner {
+  height: 60px;
+  width: 60px;
+  background: #6e6e6e;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+.resizer-button.left {
+  left: -26px;
+}
+.resizer-button.left .resizer-button-inner {
+  border-radius: 50% 0 0 50%;
+}
+.resizer-button.right {
+  left: 4px;
+}
+.resizer-button.right .resizer-button-inner {
+  border-radius: 0 50% 50% 0;
+  left: -30px;
+  position: absolute;
+}
+.resizer-button-inner span {
+  position: relative;
+  color: #fff;
+}
+.resizer-button.right .resizer-button-inner span {
+  left: 12px;
+}
+.resizer-button.left .resizer-button-inner span {
+  left: -12px;
+}
+.resizer:hover {
+  border-right: 1px dotted rgba(255, 255, 255, 0.5);
 }
 .rightsidebar {
-    margin: 5px;
-    position: fixed;
-    width: 150px;
-    right: 0px;
-    top: 50px;
-    bottom: 0px;
-    padding: 5px;
-    overflow: auto;
+  margin: 5px;
+  position: fixed;
+  width: 150px;
+  right: 0px;
+  top: 50px;
+  bottom: 0px;
+  padding: 5px;
+  overflow: auto;
 }
 li {
-    white-space: nowrap;
-    overflow: hidden;
+  white-space: nowrap;
+  overflow: hidden;
 }
 .lower-half {
-    position: fixed;
-    left: 300px;
-    top: 50%;
-    border: none;
-    padding-right: 300px;
-    height: 50%;
-    width: 100%;
+  position: fixed;
+  left: 300px;
+  top: 50%;
+  border: none;
+  padding-right: 300px;
+  height: 50%;
+  width: 100%;
 }
 .card {
-    float: left;
-    padding: 10px;
-    margin: 10px;
+  float: left;
+  padding: 10px;
+  margin: 10px;
 }
 .overlay {
-    position: fixed;
-    top: 50px;
-    left: 300px;
-    right: 0px;
-    bottom: 0px;
+  position: fixed;
+  top: 50px;
+  left: 300px;
+  right: 0px;
+  bottom: 0px;
 }
