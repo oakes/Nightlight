@@ -18,45 +18,45 @@ html,
 body {
   overflow: hidden;
 }
-.outer-editor {
+.editor {
   position: fixed;
-  top: 0px;
+  top: 60px;
   left: 300px;
   right: 0px;
   bottom: 0px;
 }
 .toolbar {
+  position: fixed;
+  left: 300px;
+  right: 0px;
   height: 60px;
   z-index: 100;
 }
-.paren-soup,
-.CodeMirror {
-  height: calc(100% - 60px);
-}
 .paren-soup {
-  overflow: auto;
+  overflow: hidden;
 }
 .paren-soup .content {
-  min-height: 100%;
+  height: 100%;
   padding-right: 150px;
 }
 .settings {
   position: fixed;
   left: 0px;
   height: 60px;
-  padding: 5px;
+  padding: 5px 10px;
 }
 .leftsidebar {
   position: fixed;
   left: 0px;
   top: 60px;
   bottom: 0px;
-  padding: 5px;
+  padding: 0px 5px;
   box-sizing: border-box;
   z-index: 1;
 }
 .tree-view {
   overflow: auto;
+  height: 100%;
 }
 .resizer {
   width: 4px;

@@ -196,6 +196,7 @@
       [ui/selectable-list
        {:value selection
         :class "tree-view"
+        :style {:padding 0}
         :on-change (fn [event value]
                      (e/set-selection value))}]
       nodes))])
@@ -252,7 +253,7 @@
                     {:keys [nodes editors options] :as runtime-state}
                     {:keys [auto-save? theme left-sidebar-width] :as pref-state}]
   [:span
-   [:div {:class "settings" :style {:padding-left "10px"}}
+   [:div {:class "settings"}
     [:div {:style {:float "left"
                    :white-space "nowrap"}}
      [ui/toggle {:label "Auto Save"
@@ -401,10 +402,11 @@
       [:link {:rel "stylesheet" :type "text/css" :href paren-soup-css}]
       [:link {:rel "stylesheet" :type "text/css" :href "style.css"}]
       [left-sidebar mui-theme runtime-state pref-state]
-      [:span {:class "outer-editor"
-              :style {:left (str left-sidebar-width "px")}}
-       [toolbar mui-theme runtime-state pref-state]
-       [:span {:id "editor"}]]
+      [toolbar mui-theme runtime-state pref-state]
+      [:span {:class "editor"
+              :id "editor"
+              :style {:left (str left-sidebar-width "px")
+                      :bottom (if (= selection c/cljs-repl-path) "50%" "0px")}}]
       [watcher-overlay selection]
       (case selection
         c/control-panel-path

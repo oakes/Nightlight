@@ -15,7 +15,7 @@
             (callback (gobj/get data "results") (gobj/get data "ns"))))))))
 
 (defn scroll-to-bottom [elem]
-  (when-let [ps (.querySelector elem "#paren-soup")]
+  (when-let [ps (.querySelector elem "#content")]
     (set! (.-scrollTop ps) (.-scrollHeight ps))))
 
 (defprotocol ReplSender
