@@ -127,10 +127,9 @@ li {
 }
 .lower-half {
   position: fixed;
-  left: 300px;
   top: 50%;
+  right: 0px;
   border: none;
-  padding-right: 300px;
   height: 50%;
   width: 100%;
 }

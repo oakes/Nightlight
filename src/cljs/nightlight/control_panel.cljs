@@ -141,12 +141,13 @@
        :hint-text "Example: 1.0.0"
        :on-change #(reset! library-version (sanitize-name (.-value (.-target %))))}]]))
 
-(defn panel [mui-theme reset-count {:keys [deps project-name main-ns] :as new-prefs}]
+(defn panel [mui-theme reset-count {:keys [deps project-name main-ns left-sidebar-width] :as new-prefs}]
   (when new-prefs
     [ui/mui-theme-provider
      {:mui-theme mui-theme}
      [:div {:class "lower-half"
-            :style {:overflow "auto"}}
+            :style {:left (str left-sidebar-width "px")
+                    :overflow "auto"}}
       [ui/card {:class "card"
                 ; this is a hacky way to force the control panel
                 ; to re-render after reset is clicked

@@ -418,13 +418,10 @@
       [:span {:class "editor"
               :id "editor"
               :style {:left (str left-sidebar-width "px")
-                      :bottom (if (= selection c/cljs-repl-path) "50%" "0px")}}]
+                      :bottom (if (#{c/cljs-repl-path c/control-panel-path} selection) "50%" "0px")}}]
       [watcher-overlay selection]
-      (case selection
-        c/control-panel-path
-        (when (:hosted? options)
-          (cp/panel mui-theme reset-count new-prefs))
-        nil)
+      (when (= selection c/control-panel-path)
+        [cp/panel mui-theme reset-count new-prefs])
       [right-sidebar mui-theme runtime-state pref-state]
       [rename-dialog]
       [delete-dialog]
