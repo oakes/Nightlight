@@ -30,7 +30,7 @@
     "read-state"
     (fn [e]
       (when (.isSuccess (.-target e))
-        (reset! s/pref-state (read-string (.. e -target getResponseText))))
+        (swap! s/pref-state merge (read-string (.. e -target getResponseText))))
       (download-tree cb))
     "GET"))
 

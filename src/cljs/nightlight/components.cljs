@@ -421,7 +421,7 @@
                       :bottom (if (#{c/cljs-repl-path c/control-panel-path} selection) "50%" "0px")}}]
       [watcher-overlay selection]
       (when (= selection c/control-panel-path)
-        [cp/panel mui-theme reset-count new-prefs])
+        (cp/panel mui-theme reset-count left-sidebar-width new-prefs))
       [right-sidebar mui-theme runtime-state pref-state]
       [rename-dialog]
       [delete-dialog]
