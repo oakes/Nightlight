@@ -227,6 +227,8 @@
                                  width
                                  c/minimum-sidebar-width)
                               c/minimum-sidebar-width
+                              (> width c/maximum-sidebar-width)
+                              c/maximum-sidebar-width
                               :else
                               width)))
                         (reset! active? false))
