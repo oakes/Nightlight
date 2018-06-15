@@ -33,7 +33,7 @@ body {
   z-index: 100;
 }
 .paren-soup {
-  overflow: hidden;
+  overflow: scroll;
 }
 .paren-soup .content {
   height: 100%;

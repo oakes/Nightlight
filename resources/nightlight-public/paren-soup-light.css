@@ -60,7 +60,6 @@ html, body, .paren-soup {
 	outline: 0px solid transparent;
 	white-space: pre;
 	word-wrap: normal;
-	overflow: scroll;
 	background-color: white;
 }
 
