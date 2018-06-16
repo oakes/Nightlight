@@ -37,7 +37,7 @@
 
 (task-options!
   pom {:project 'nightlight
-       :version "2.2.5"
+       :version "2.2.6-SNAPSHOT"
        :description "An embedded Clojure editor"
        :url "https://github.com/oakes/Nightlight"
        :license {"Public Domain" "http://unlicense.org/UNLICENSE"}}
