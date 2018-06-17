@@ -1,9 +1,8 @@
 (ns nightlight.state
-  (:require [reagent.core :as r]
-            [nightlight.constants :as c])
+  (:require [reagent.core :as r])
   (:import goog.net.XhrIo))
 
-(defonce pref-state (r/atom {:left-sidebar-width c/default-sidebar-width}))
+(defonce pref-state (r/atom {}))
 (defonce runtime-state (r/atom {:title "Nightlight"}))
 
 (add-watch pref-state :write-prefs
@@ -21,3 +20,4 @@
                 (set! (.-src iframe) url)))))
         "POST"
         (pr-str new-state)))))
+

@@ -13,5 +13,5 @@
  :aliases {:cljs {:extra-deps {org.clojure/clojurescript {:mvn/version "1.10.312" :scope "test"}
                                paren-soup {:mvn/version "2.12.3" :scope "test"}
                                cljsjs/codemirror {:mvn/version "5.31.0-0" :scope "test"}
-                               reagent {:mvn/version "0.8.1" :scope "test"}
+                               reagent {:mvn/version "0.8.0-alpha2" :scope "test"}
                                cljs-react-material-ui {:mvn/version "0.2.50" :scope "test"}}}}}

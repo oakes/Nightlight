@@ -3,9 +3,6 @@
 
 (def ^:const api-url "https://clojars.org/api/artifacts/nightlight")
 (def ^:const page-url "https://clojars.org/nightlight")
-(def ^:const default-sidebar-width 300)
-(def ^:const minimum-sidebar-width 200)
-(def ^:const maximum-sidebar-width 600)
 
 (def ^:const clojure-exts #{"boot" "clj" "cljc" "cljs" "cljx" "edn" "pxi" "hl" "carp"})
 (def ^:const wrap-exts #{"md" "txt"})

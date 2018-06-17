@@ -193,81 +193,17 @@
                     (map (partial node->element true))
                     (concat header-nodes))]
      (into
-      [ui/selectable-list
-       {:value selection
-        :class "tree-view"
-        :style {:padding 0}
-        :on-change (fn [event value]
-                     (e/set-selection value))}]
-      nodes))])
-
-(defn resizer-button [{:keys [on-click position y]} text]
-  (let [class-name (case position
-                     :left "left"
-                     :right "right"
-                     nil)]
-    [:div.resizer-button
-     {:class class-name
-      :style {:top (str y "px")}}
-     [:div.resizer-button-inner
-      {:on-click on-click}
-      [:span text]]]))
-
-(defn resizer [state]
-  (let [active? (atom false)
-        btn-pos-y (r/atom 0)
-        update-sidebar-width #(swap! state assoc :left-sidebar-width %)
-        reset-resize #(when @active?
-                        (swap! state update :left-sidebar-width
-                          (fn [width]
-                            (cond
-                              (< width (/ c/minimum-sidebar-width 2))
-                              0
-                              (< (/ c/minimum-sidebar-width 2)
-                                 width
-                                 c/minimum-sidebar-width)
-                              c/minimum-sidebar-width
-                              (> width c/maximum-sidebar-width)
-                              c/maximum-sidebar-width
-                              :else
-                              width)))
-                        (reset! active? false))
-        handle-resize #(when @active?
-                         (.preventDefault %)
-                         (update-sidebar-width (.-clientX %)))]
-    (r/create-class
-     {:component-did-mount
-      (fn []
-        (.addEventListener js/document "mousemove" handle-resize)
-        (.addEventListener js/document "mouseup" reset-resize))
-      :component-will-unmount
-      (fn []
-        (.removeEventListener js/document "mousemove" identity)
-        (.removeEventListener js/document "mouseup" reset-resize))
-      :reagent-render
-      (fn []
-        (let [width  (:left-sidebar-width @state)]
-          [:div.resizer
-           {:on-mouse-down #(reset! active? true)
-            :on-mouse-over #(reset! btn-pos-y (- (.-clientY %) 56))
-            :style {(if (pos? width) :border-right :border-left)
-                    "1px solid rgba(255, 255, 255, 0.2)"}}
-           (when (pos? width)
-             [resizer-button {:on-click #(update-sidebar-width 0)
-                              :position :left
-                              :y @btn-pos-y}
-              "<"])
-           (when (zero? width)
-             [resizer-button {:on-click #(update-sidebar-width c/default-sidebar-width)
-                              :position :right
-                              :y @btn-pos-y}
-              ">"])]))})))
+       [ui/selectable-list
+        {:value selection
+         :on-change (fn [event value]
+                      (e/set-selection value))}]
+       nodes))])
 
 (defn left-sidebar [mui-theme
                     {:keys [nodes editors options] :as runtime-state}
-                    {:keys [auto-save? theme left-sidebar-width] :as pref-state}]
+                    {:keys [auto-save? theme] :as pref-state}]
   [:span
-   [:div {:class "settings"}
+   [:div {:class "settings" :style {:padding-left "10px"}}
     [:div {:style {:float "left"
                    :white-space "nowrap"}}
      [ui/toggle {:label "Auto Save"
@@ -290,10 +226,8 @@
      [ui/raised-button {:on-click #(swap! s/runtime-state assoc :dialog :new)
                         :disabled (:read-only? options)}
       "New File"]]]
-   [:div {:class "leftsidebar"
-          :style {:width (str left-sidebar-width "px")}}
+   [:div {:class "leftsidebar"}
     [tree mui-theme runtime-state pref-state]
-    [resizer s/pref-state]
     [:div {:id "tree" :style {:display "none"}}]]])
 
 (defn right-sidebar [mui-theme
@@ -397,7 +331,7 @@
 (defn app []
   (let [{:keys [title nodes new-prefs reset-count options connection-lost?]
          :as runtime-state} @s/runtime-state
-        {:keys [theme selection left-sidebar-width]
+        {:keys [theme selection]
          :as pref-state} @s/pref-state
         paren-soup-css (if (= :light theme) "paren-soup-light.css" "paren-soup-dark.css")
         text-color (if (= :light theme) (color :black) (color :white))
@@ -416,14 +350,15 @@
       [:link {:rel "stylesheet" :type "text/css" :href paren-soup-css}]
       [:link {:rel "stylesheet" :type "text/css" :href "style.css"}]
       [left-sidebar mui-theme runtime-state pref-state]
-      [toolbar mui-theme runtime-state pref-state]
-      [:span {:class "editor"
-              :id "editor"
-              :style {:left (str left-sidebar-width "px")
-                      :bottom (if (#{c/cljs-repl-path c/control-panel-path} selection) "50%" "0px")}}]
+      [:span {:class "outer-editor"}
+       [toolbar mui-theme runtime-state pref-state]
+       [:span {:id "editor"}]]
       [watcher-overlay selection]
-      (when (= selection c/control-panel-path)
-        (cp/panel mui-theme reset-count left-sidebar-width new-prefs))
+      (case selection
+        c/control-panel-path
+        (when (:hosted? options)
+          (cp/panel mui-theme reset-count new-prefs))
+        nil)
       [right-sidebar mui-theme runtime-state pref-state]
       [rename-dialog]
       [delete-dialog]
@@ -433,7 +368,7 @@
       [:iframe {:id "cljsapp"
                 :class "lower-half"
                 :style {:background-color "white"
-                        :left (str left-sidebar-width "px")
                         :display (if (= selection c/cljs-repl-path) "block" "none")}
                 :src (when (= js/window.self js/window.top)
                        (:url options))}]]]))
+

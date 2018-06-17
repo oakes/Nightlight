@@ -98,7 +98,7 @@
   (list
     [ui/raised-button {:disabled (= old-prefs new-prefs)
                        :on-click (fn []
-                                   (swap! s/pref-state merge new-prefs)
+                                   (reset! s/pref-state new-prefs)
                                    (swap! s/runtime-state assoc :title (:project-name new-prefs)))
                        :key :save}
      "Save"]
@@ -141,13 +141,12 @@
        :hint-text "Example: 1.0.0"
        :on-change #(reset! library-version (sanitize-name (.-value (.-target %))))}]]))
 
-(defn panel [mui-theme reset-count left-sidebar-width {:keys [deps project-name main-ns] :as new-prefs}]
+(defn panel [mui-theme reset-count {:keys [deps project-name main-ns] :as new-prefs}]
   (when new-prefs
     [ui/mui-theme-provider
      {:mui-theme mui-theme}
      [:div {:class "lower-half"
-            :style {:left (str left-sidebar-width "px")
-                    :overflow "auto"}}
+            :style {:overflow "auto"}}
       [ui/card {:class "card"
                 ; this is a hacky way to force the control panel
                 ; to re-render after reset is clicked

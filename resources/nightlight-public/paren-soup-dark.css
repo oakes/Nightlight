@@ -62,6 +62,7 @@ button {
 	outline: 0px solid transparent;
 	white-space: pre;
 	word-wrap: normal;
+	overflow: scroll;
 }
 
 .paren-soup .content .symbol {
