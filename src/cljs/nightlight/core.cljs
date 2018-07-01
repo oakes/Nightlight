@@ -9,7 +9,7 @@
             [nightlight.watch :as watch]
             [reagent.core :as r]))
 
-(def version "2.3.0")
+(def version "2.3.1")
 
 (defn init-tree [{:keys [primary-text nested-items selection options]}]
   (when (and (:hosted? options)
