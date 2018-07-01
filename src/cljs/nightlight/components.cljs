@@ -135,16 +135,6 @@
                   "OK"])]}
    "Connection to server has been lost. Try refreshing or check to see if the server is still running."])
 
-(defn unsupported-browser-dialog []
-  [ui/dialog {:modal true
-              :open (= :unsupported-browser (:dialog @s/runtime-state))
-              :actions
-              [(r/as-element
-                 [ui/flat-button {:on-click #(swap! s/runtime-state dissoc :dialog)
-                                  :style {:margin "10px"}}
-                  "OK"])]}
-   "Your browser is not currently supported. Webkit-based browsers (like Chrome and Safari) are recommended."])
-
 (defn icon-button [node]
   (r/as-element
     [ui/icon-menu {:icon-button-element (r/as-element
@@ -364,7 +354,6 @@
       [delete-dialog]
       [new-file-dialog]
       [connection-lost-dialog]
-      [unsupported-browser-dialog]
       [:iframe {:id "cljsapp"
                 :class "lower-half"
                 :style {:background-color "white"
