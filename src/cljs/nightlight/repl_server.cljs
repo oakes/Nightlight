@@ -1,7 +1,7 @@
 (ns nightlight.repl-server
   (:require [eval-soup.core :as es]))
 
-(def ^:const cljs-start-ns 'cljs.user)
+(def cljs-start-ns 'cljs.user)
 
 (defn form->serializable [form]
   (if (instance? js/Error form)
