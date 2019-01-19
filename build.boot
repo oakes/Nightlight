@@ -68,6 +68,6 @@
     (with-pass-thru _
       (require '[nightlight.core :refer [dev-start]])
       (instrument)
-      ((resolve 'dev-start) {:port 4000 :url "http://localhost:4000"}))
+      ((resolve 'dev-start) {:port 4000 :url "http://localhost:4000" :main 'nightlight.core}))
     (target)))
 

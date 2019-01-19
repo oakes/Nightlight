@@ -13,9 +13,7 @@
     (deps/add-if-missing
       project
       '[nightlight/lein-nightlight "2.3.2"])
-    `(do
-       (nightlight.core/start ~options)
-       (when '~main (require '~main)))
+    `(nightlight.core/start (assoc ~options :main '~main))
     `(require 'nightlight.core)))
 
 

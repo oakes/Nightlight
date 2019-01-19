@@ -141,7 +141,7 @@
                                    (take 50)
                                    vec
                                    pr-str)))}
-    "/repl" (repl/repl-request request)
+    "/repl" (repl/repl-request request (:main @*options))
     "/watch" (watch/watch-request request)
     nil))
 

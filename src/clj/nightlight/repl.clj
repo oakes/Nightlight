@@ -31,7 +31,7 @@
         in-pipe (PipedReader. pout)]
     {:in in :out out :in-pipe in-pipe :out-pipe out-pipe}))
 
-(defn start-repl-thread! [channel pipes]
+(defn start-repl-thread! [main-ns channel pipes]
   (let [{:keys [in-pipe in out]} pipes]
     (pipe-into-console! in-pipe channel)
     (.start
@@ -42,6 +42,10 @@
                     *in* in]
             (try
               (clojure.main/repl
+                :init
+                (fn []
+                  (when main-ns
+                    (doto main-ns require in-ns)))
                 :read
                 (fn [request-prompt request-exit]
                   (let [form (clojure.main/repl-read request-prompt request-exit)]
@@ -50,7 +54,7 @@
               (finally (println "=== Finished ==="))))))))
   pipes)
 
-(defn repl-request [request]
+(defn repl-request [request main-ns]
   (with-channel request channel
     (on-close channel
       (fn [status]
@@ -62,7 +66,7 @@
       (fn [text]
         (when-not (get @*state channel)
           (->> (create-pipes)
-               (start-repl-thread! channel)
+               (start-repl-thread! main-ns channel)
                (swap! *state assoc channel)))
         (doto (get-in @*state [channel :out-pipe])
           (.write text)
