@@ -244,7 +244,7 @@
                 (assoc-in comps [0 :style :background-color] bg-color))))]]))))
 
 (defn toolbar [mui-theme
-               {:keys [update? editors options new-prefs] :as runtime-state}
+               {:keys [editors options new-prefs] :as runtime-state}
                {:keys [selection] :as pref-state}]
   [:div {:class "toolbar"}
    [ui/mui-theme-provider
@@ -293,11 +293,7 @@
       [ui/raised-button {:background-color "#FF6F00"
                          :style {:display (if (:url options) "block" "none")}
                          :on-click #(.open js/window (:url options))}
-       "View App"]
-      [ui/raised-button {:background-color "#FF6F00"
-                         :style {:display (if update? "block" "none")}
-                         :on-click #(.open js/window c/page-url)}
-       "Update"]]]]])
+       "View App"]]]]])
 
 (defn watcher-overlay [selection]
   (when (@watch/modified-files selection)

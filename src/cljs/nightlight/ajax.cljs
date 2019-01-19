@@ -1,21 +1,8 @@
 (ns nightlight.ajax
   (:require [cljs.reader :refer [read-string]]
             [nightlight.state :as s]
-            [nightlight.constants :as c]
-            [goog.object :as gobj])
+            [nightlight.constants :as c])
   (:import goog.net.XhrIo))
-
-(defn check-version [version]
-  (.send XhrIo
-    c/api-url
-    (fn [e]
-      (when (and (.isSuccess (.-target e))
-                 (some->> (.. e -target getResponseText)
-                          (.parse js/JSON)
-                          (#(gobj/get % "latest_release"))
-                          (not= version)))
-        (swap! s/runtime-state assoc :update? true)))
-    "GET"))
 
 (defn download-tree [cb]
   (.send XhrIo

@@ -1,9 +1,6 @@
 (ns nightlight.constants
   (:refer-clojure :exclude [eval]))
 
-(def ^:const api-url "https://clojars.org/api/artifacts/nightlight")
-(def ^:const page-url "https://clojars.org/nightlight")
-
 (def ^:const clojure-exts #{"boot" "clj" "cljc" "cljs" "cljx" "edn" "pxi" "hl" "carp"})
 (def ^:const wrap-exts #{"md" "txt"})
 (def ^:const completion-exts #{"clj" "cljc" "cljs"})
