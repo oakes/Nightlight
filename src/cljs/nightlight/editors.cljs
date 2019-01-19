@@ -128,7 +128,8 @@
                           (com/refresh-completions extension completions))
                         (reset! focused-text (or (ps/selected-text) (ps/focused-text))))
                       :compiler-fn compiler-fn
-                      :edit-history edit-history}))))
+                      :edit-history edit-history
+                      :focus? true}))))
       (set-theme [this theme]
         (swap! s/runtime-state assoc :paren-soup-css (c/paren-soup-themes theme)))
       (hide [this]
@@ -206,7 +207,8 @@
                       (fn [text]
                         (repl/send sender text))
                       :compiler-fn (fn [_ _])
-                      :append-limit 10000})))
+                      :append-limit 10000
+                      :focus? true})))
         (repl/init sender)
         @editor-atom)
       (set-theme [this theme]
