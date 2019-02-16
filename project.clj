@@ -1,4 +1,4 @@
-(defproject nightlight "2.4.1-SNAPSHOT"
+(defproject nightlight "2.4.1"
   :description "An embedded Clojure editor"
   :url "https://github.com/oakes/Nightlight"
   :license {:name "Public Domain"
