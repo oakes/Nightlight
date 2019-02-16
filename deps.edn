@@ -21,6 +21,4 @@
                               orchestra {:mvn/version "2018.12.06-2"}
                               expound {:mvn/version "0.7.2"}}
                  :extra-paths ["target"]}
-           :prod {:extra-deps {leiningen {:mvn/version "2.9.0"}
-                               lein-tools-deps {:mvn/version "0.4.3"
-                                                :exclusions [com.google.inject/guice$no_aop]}}}}}
+           :prod {:extra-deps {leiningen {:mvn/version "2.9.0"}}}}}

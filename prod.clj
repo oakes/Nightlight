@@ -49,7 +49,6 @@
   [_]
   (task ["build"])
   (-> (read-project-clj)
-      (dissoc :middleware)
       (merge (read-deps-edn []))
       p/init-project
       install)
@@ -59,7 +58,6 @@
   [_]
   (task ["build"])
   (-> (read-project-clj)
-      (dissoc :middleware)
       (merge (read-deps-edn []))
       p/init-project
       (deploy "clojars"))
