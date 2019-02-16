@@ -18,7 +18,8 @@
                                reagent {:mvn/version "0.8.1" :scope "test"}
                                cljs-react-material-ui {:mvn/version "0.2.50" :scope "test"}}}
            :dev {:extra-deps {com.bhauman/figwheel-main {:mvn/version "0.2.0"}
-                              orchestra {:mvn/version "2018.12.06-2"}}
+                              orchestra {:mvn/version "2018.12.06-2"}
+                              expound {:mvn/version "0.7.2"}}
                  :extra-paths ["target"]}
            :prod {:extra-deps {leiningen {:mvn/version "2.9.0"}
                                lein-tools-deps {:mvn/version "0.4.3"
