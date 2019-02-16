@@ -1,3 +1,0 @@
-{:require  [nightlight.core]
- :init-fns [orchestra-cljs.spec.test/instrument]
- :compiler-options {}}

@@ -1,0 +1,5 @@
+{:main          nightlight.dev
+ :optimizations :none
+ :output-to     "target-js/nightlight-public/main.js"
+ :output-dir    "target/nightlight-public/main.out"
+ :asset-path    "/main.out"}

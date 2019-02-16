@@ -6,7 +6,6 @@
             [ring.middleware.resource :refer [wrap-resource]]
             [ring.middleware.file :refer [wrap-file]]
             [ring.middleware.basic-authentication :refer [wrap-basic-authentication]]
-            [ring.util.response :refer [redirect]]
             [ring.util.request :refer [body-string]]
             [eval-soup.core :as es]
             [compliment.core :as com]
@@ -173,7 +172,10 @@
 (defn dev-start [opts]
   (when-not @*web-server
     (.mkdirs (io/file "target" "nightlight-public"))
-    (start (wrap-file handler "target/nightlight-public") opts)))
+    (-> handler
+        (wrap-resource "nightlight-public")
+        (wrap-file "target/nightlight-public")
+        (start opts))))
 
 (defn -main [& args]
   (let [cli (cli/parse-opts args u/cli-options)]

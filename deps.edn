@@ -1,6 +1,6 @@
-{:paths ["src/clj" "src/cljs" "resources"]
- :deps {org.clojure/clojure {:mvn/version "1.10.0" :scope "provided"}
-        ring {:mvn/version "1.7.1"}
+{:paths ["src" "resources" "target-js"]
+ :deps {ring {:mvn/version "1.7.1"}
+        org.eclipse.jetty/jetty-server {:mvn/version "9.4.12.v20180830"}
         org.eclipse.jetty.websocket/websocket-servlet {:mvn/version "9.4.12.v20180830"}
         org.eclipse.jetty.websocket/websocket-server {:mvn/version "9.4.12.v20180830"}
         ring-basic-authentication {:mvn/version "1.0.5"}
@@ -8,12 +8,18 @@
         http-kit {:mvn/version "2.3.0"}
         compliment {:mvn/version "0.3.8"}
         eval-soup {:mvn/version "1.5.0"}
-        dynadoc {:mvn/version "1.5.3"
-                 :exclusions [org.clojure/clojurescript rum paren-soup html-soup]}
+        dynadoc {:mvn/version "1.5.5"
+                 :exclusions [rum paren-soup html-soup]}
         org.clojure/tools.reader {:mvn/version "1.3.2"}
         org.clojure/tools.cli {:mvn/version "0.3.5"}}
- :aliases {:cljs {:extra-deps {org.clojure/clojurescript {:mvn/version "1.10.439" :scope "test"}
-                               paren-soup {:mvn/version "2.14.2" :scope "test"}
+ :aliases {:cljs {:extra-deps {org.clojure/clojurescript {:mvn/version "1.10.520"}
+                               paren-soup {:mvn/version "2.14.3" :scope "test"}
                                cljsjs/codemirror {:mvn/version "5.40.2-1" :scope "test"}
                                reagent {:mvn/version "0.8.1" :scope "test"}
-                               cljs-react-material-ui {:mvn/version "0.2.50" :scope "test"}}}}}
+                               cljs-react-material-ui {:mvn/version "0.2.50" :scope "test"}}}
+           :dev {:extra-deps {com.bhauman/figwheel-main {:mvn/version "0.2.0"}
+                              orchestra {:mvn/version "2018.12.06-2"}}
+                 :extra-paths ["target"]}
+           :prod {:extra-deps {leiningen {:mvn/version "2.9.0"}
+                               lein-tools-deps {:mvn/version "0.4.3"
+                                                :exclusions [com.google.inject/guice$no_aop]}}}}}
