@@ -1,6 +1,8 @@
 {:paths ["src/clj" "src/cljs" "resources"]
  :deps {org.clojure/clojure {:mvn/version "1.10.0" :scope "provided"}
         ring {:mvn/version "1.7.1"}
+        org.eclipse.jetty.websocket/websocket-servlet {:mvn/version "9.4.12.v20180830"}
+        org.eclipse.jetty.websocket/websocket-server {:mvn/version "9.4.12.v20180830"}
         ring-basic-authentication {:mvn/version "1.0.5"}
         hawk {:mvn/version "0.2.11"}
         http-kit {:mvn/version "2.3.0"}
