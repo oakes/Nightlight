@@ -1,2 +1,2 @@
-{:open-url false
+{:open-url "http://localhost:4000"
  :css-dirs ["resources/nightlight-public"]}
