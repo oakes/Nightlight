@@ -8,7 +8,7 @@
         http-kit {:mvn/version "2.3.0"}
         compliment {:mvn/version "0.3.8"}
         eval-soup {:mvn/version "1.5.0"}
-        dynadoc {:mvn/version "1.6.2"
+        dynadoc {:mvn/version "1.6.5"
                  :exclusions [rum paren-soup html-soup]}
         org.clojure/tools.reader {:mvn/version "1.3.2"}
         org.clojure/tools.cli {:mvn/version "0.3.5"}}
