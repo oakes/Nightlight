@@ -2,6 +2,7 @@ hs_err_pid*.log
 pom.xml
 pom.xml.asc
 target/
-target-js/
+resources/nightlight-public/*.js
+resources/nightlight-public/*.out
 .*
 !.gitignore
