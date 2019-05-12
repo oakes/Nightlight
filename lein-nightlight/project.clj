@@ -1,4 +1,4 @@
-(defproject nightlight/lein-nightlight "2.4.1"
+(defproject nightlight/lein-nightlight "2.4.1.1"
   :description "A convenient Nightlight launcher for Leiningen projects"
   :url "https://github.com/oakes/Nightlight"
   :license {:name "Public Domain"
