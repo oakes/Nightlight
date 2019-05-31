@@ -1,6 +1,7 @@
 (ns nightlight.repl
   (:require [clojure.string :as str]
-            [org.httpkit.server :refer [send! with-channel on-receive on-close]])
+            [org.httpkit.server :refer [send! with-channel on-receive on-close]]
+            [clojure.main])
   (:import [clojure.lang LineNumberingPushbackReader]
            [java.io PipedWriter PipedReader PrintWriter]))
 
