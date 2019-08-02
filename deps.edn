@@ -4,7 +4,6 @@
         org.eclipse.jetty.websocket/websocket-servlet {:mvn/version "9.4.12.v20180830"}
         org.eclipse.jetty.websocket/websocket-server {:mvn/version "9.4.12.v20180830"}
         ring-basic-authentication {:mvn/version "1.0.5"}
-        hawk {:mvn/version "0.2.11"}
         http-kit {:mvn/version "2.3.0"}
         compliment {:mvn/version "0.3.8"}
         eval-soup {:mvn/version "1.5.0"}
@@ -17,7 +16,7 @@
                                cljsjs/codemirror {:mvn/version "5.40.2-1"}
                                reagent {:mvn/version "0.8.1"}
                                cljs-react-material-ui {:mvn/version "0.2.50"}}}
-           :dev {:extra-deps {com.bhauman/figwheel-main {:mvn/version "0.2.0"}
+           :dev {:extra-deps {com.bhauman/figwheel-main {:mvn/version "0.2.3"}
                               orchestra {:mvn/version "2018.12.06-2"}
                               expound {:mvn/version "0.7.2"}}}
            :prod {:extra-deps {leiningen {:mvn/version "2.9.0"}}}}}
