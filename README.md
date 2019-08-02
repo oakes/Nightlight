@@ -11,8 +11,8 @@ See [the website](https://sekao.net/nightlight/) for instructions on how to use 
 ## Development
 
 * Install [the Clojure CLI tool](https://clojure.org/guides/getting_started#_clojure_installer_and_cli_tools)
-* To develop with figwheel: `clj -A:dev:cljs dev.clj`
-* To build and install the release version: `clj -A:prod:cljs prod.clj install`
+* To develop with figwheel: `clj -A:dev:cljs`
+* To build and install the release version: `clj -A:prod:cljs install`
 
 ## Licensing
 

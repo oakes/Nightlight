@@ -20,5 +20,7 @@
                                cljs-react-material-ui {:mvn/version "0.2.50"}}}
            :dev {:extra-deps {com.bhauman/figwheel-main {:mvn/version "0.2.3"}
                               orchestra {:mvn/version "2018.12.06-2"}
-                              expound {:mvn/version "0.7.2"}}}
-           :prod {:extra-deps {leiningen {:mvn/version "2.9.0"}}}}}
+                              expound {:mvn/version "0.7.2"}}
+                 :main-opts ["dev.clj"]}
+           :prod {:extra-deps {leiningen {:mvn/version "2.9.0"}}
+                  :main-opts ["prod.clj"]}}}
