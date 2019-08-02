@@ -6,7 +6,6 @@
             [nightlight.completions :refer [select-completion refresh-completions]]
             [nightlight.control-panel :as cp]
             [nightlight.ajax :as a]
-            [nightlight.watch :as watch]
             [paren-soup.dom :as psd]
             [reagent.core :as r]
             [cljsjs.material-ui]
@@ -295,25 +294,6 @@
                          :on-click #(.open js/window (:url options))}
        "View App"]]]]])
 
-(defn watcher-overlay [selection]
-  (when (@watch/modified-files selection)
-    [:span
-     [:span {:class "overlay"
-             :style {:background-color "black"
-                     :opacity 0.8
-                     :z-index 100}}]
-     [:span {:class "overlay"
-             :style {:z-index 100}}
-      [:div {:style {:color "white"
-                     :margin "auto"
-                     :padding-top 50
-                     :width 500}}
-       "This file was modified externally. You can either refresh your browser or ignore the change and continue editing."
-       [:br][:br]
-       [ui/raised-button {:background-color "#FF6F00"
-                          :on-click #(swap! watch/modified-files disj selection)}
-        "Continue"]]]]))
-
 (defn app []
   (let [{:keys [title nodes new-prefs reset-count options connection-lost?]
          :as runtime-state} @s/runtime-state
@@ -339,7 +319,6 @@
       [:span {:class "outer-editor"}
        [toolbar mui-theme runtime-state pref-state]
        [:span {:id "editor"}]]
-      [watcher-overlay selection]
       (case selection
         c/control-panel-path
         (when (:hosted? options)

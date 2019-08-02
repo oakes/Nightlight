@@ -10,7 +10,6 @@
             [eval-soup.core :as es]
             [compliment.core :as com]
             [nightlight.repl :as repl]
-            [nightlight.watch :as watch]
             [nightlight.utils :as u]
             [org.httpkit.server :refer [run-server]]
             [clojure.tools.cli :as cli]
@@ -78,7 +77,6 @@
                       :headers {"Content-Type" "text/plain"}
                       :body f}))
     "/write-file" (let [{:keys [path content]} (-> request body-string edn/read-string)]
-                    (swap! watch/*file-content assoc path content)
                     (spit path content)
                     {:status 200})
     "/new-file" (let [file (->> request body-string (io/file "."))]
@@ -141,7 +139,6 @@
                                    vec
                                    pr-str)))}
     "/repl" (repl/repl-request request (:main @*options))
-    "/watch" (watch/watch-request request)
     nil))
 
 (defn print-server [server]
@@ -161,7 +158,8 @@
   ([opts]
    (start (wrap-resource handler "nightlight-public") opts))
   ([app opts]
-   (watch/init-watcher!)
+   (when-not @dw/*cljs-info
+     (dw/init-watcher!))
    (when-not @*web-server
      (->> (merge {:port 0} opts)
           (reset! *options)

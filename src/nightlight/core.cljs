@@ -6,7 +6,6 @@
             [nightlight.control-panel :as cp]
             [nightlight.ajax :as a]
             [nightlight.constants :as c]
-            [nightlight.watch :as watch]
             [reagent.core :as r]))
 
 (defn init-tree [{:keys [primary-text nested-items selection options]}]
@@ -14,8 +13,7 @@
              (not (:read-only? options)))
     (e/init-and-add-editor c/control-panel-path (cp/control-panel-init)))
   (when-not (:hosted? options)
-    (e/init-and-add-editor c/repl-path (e/ps-repl-init c/repl-path))
-    (watch/init-watcher!))
+    (e/init-and-add-editor c/repl-path (e/ps-repl-init c/repl-path)))
   (when (:url options)
     (e/init-and-add-editor c/cljs-repl-path (e/ps-repl-init c/cljs-repl-path)))
   (swap! s/runtime-state assoc

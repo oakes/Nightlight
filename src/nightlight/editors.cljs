@@ -8,7 +8,6 @@
             [nightlight.constants :as c]
             [nightlight.control-panel :as cp]
             [nightlight.ajax :as a]
-            [nightlight.watch :as watch]
             [goog.functions :refer [debounce]]
             [reagent.core :as r]
             [cljsjs.codemirror]
@@ -117,8 +116,7 @@
             (clj->js {:before-change-callback
                       (fn [event]
                         (or (com/completion-shortcut? event)
-                            (-> @s/runtime-state :options :read-only?)
-                            (@watch/modified-files path)))
+                            (-> @s/runtime-state :options :read-only?)))
                       :change-callback
                       (fn [event]
                         (when (= (.-type event) "keyup")
@@ -277,8 +275,7 @@
                         :lineWrapping (contains? c/wrap-exts extension)}))
             (.on "beforeChange"
               (fn [editor-object change]
-                (when (or (-> @s/runtime-state :options :read-only?)
-                          (@watch/modified-files path))
+                (when (-> @s/runtime-state :options :read-only?)
                   (.cancel change))))
             (.on "change"
               (fn [editor-object change]
