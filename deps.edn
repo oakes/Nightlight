@@ -14,7 +14,7 @@
         org.clojure/tools.reader {:mvn/version "1.3.2"}
         org.clojure/tools.cli {:mvn/version "0.3.5"}}
  :aliases {:cljs {:extra-deps {org.clojure/clojurescript {:mvn/version "1.10.520"}
-                               paren-soup {:mvn/version "2.15.6"}
+                               paren-soup {:mvn/version "2.16.0"}
                                cljsjs/codemirror {:mvn/version "5.40.2-1"}
                                reagent {:mvn/version "0.8.1"}
                                cljs-react-material-ui {:mvn/version "0.2.50"}}}
