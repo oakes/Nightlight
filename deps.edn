@@ -13,7 +13,7 @@
                               html-soup/html-soup]}
         org.clojure/tools.reader {:mvn/version "1.3.2"}
         org.clojure/tools.cli {:mvn/version "0.3.5"}}
- :aliases {:cljs {:extra-deps {org.clojure/clojurescript {:mvn/version "1.10.520"}
+ :aliases {:cljs {:extra-deps {org.clojure/clojurescript {:mvn/version "1.10.597"}
                                paren-soup {:mvn/version "2.16.0"}
                                cljsjs/codemirror {:mvn/version "5.40.2-1"}
                                reagent {:mvn/version "0.8.1"}
