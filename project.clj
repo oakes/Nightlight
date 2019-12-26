@@ -4,5 +4,4 @@
   :license {:name "Public Domain"
             :url "http://unlicense.org/UNLICENSE"}
   :repositories [["clojars" {:url "https://clojars.org/repo"
-                             :sign-releases false}]]
-  :profiles {:dev {:main nightlight.core}})
+                             :sign-releases false}]])
