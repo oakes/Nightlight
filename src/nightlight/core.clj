@@ -7,6 +7,7 @@
             [ring.middleware.file :refer [wrap-file]]
             [ring.middleware.basic-authentication :refer [wrap-basic-authentication]]
             [ring.util.request :refer [body-string]]
+            [ring.util.response :refer [redirect]]
             [eval-soup.core :as es]
             [compliment.core :as com]
             [nightlight.repl :as repl]
@@ -139,6 +140,7 @@
                                    vec
                                    pr-str)))}
     "/repl" (repl/repl-request request (:main @*options))
+    "/app" (some-> @*options :url redirect)
     nil))
 
 (defn print-server [server]
